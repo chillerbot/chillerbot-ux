@@ -26,3 +26,12 @@ To compile DDNet yourself, execute the following commands in the source root:
     make
 
 
+Building on windows
+-------------------
+
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build .
+
+If you use MinGW as a compiler the client is in build/DDNet.exe if vs in build/Debug/DDNet.exe
