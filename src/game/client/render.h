@@ -14,6 +14,7 @@ public:
 	CTeeRenderInfo()
 	{
 		m_Texture = -1;
+		m_PlayerPicTexture = -1;
 		m_ColorBody = vec4(1,1,1,1);
 		m_ColorFeet = vec4(1,1,1,1);
 		m_Size = 1.0f;
@@ -21,6 +22,7 @@ public:
 	};
 
 	int m_Texture;
+	int m_PlayerPicTexture;
 	vec4 m_ColorBody;
 	vec4 m_ColorFeet;
 	float m_Size;

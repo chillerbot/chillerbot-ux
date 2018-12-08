@@ -1084,7 +1084,6 @@ void CGameClient::OnNewSnapshot()
 				}
 
 				m_aClients[ClientID].UpdateRenderInfo();
-
 			}
 			else if(Item.m_Type == NETOBJTYPE_PLAYERINFO)
 			{
