@@ -147,11 +147,14 @@ int CSkins::SkinScan(const char *pName, int IsDir, int DirType, void *pUser)
 	return 0;
 }
 
+int testfun(const char *pName, int IsDir, int DirType, void *pUser) {return 0;}
+
 
 void CSkins::OnInit()
 {
 	// load skins
 	m_aSkins.clear();
+	Storage()->ListDirectory(IStorage::TYPE_ALL, "skins", testfun, this);
 	Storage()->ListDirectory(IStorage::TYPE_ALL, "skins", SkinScan, this);
 	if(!m_aSkins.size())
 	{
