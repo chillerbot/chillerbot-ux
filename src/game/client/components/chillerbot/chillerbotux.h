@@ -52,6 +52,7 @@ class CChillerBotUX : public CComponent
 	void RenderSpeedHud();
 	void GotoSwitch(int Number, int Offset = -1);
 	void GotoTele(int Number, int Offset = -1);
+	void RenderCaptchaMask();
 
 	virtual void OnRender();
 	virtual void OnConsoleInit();

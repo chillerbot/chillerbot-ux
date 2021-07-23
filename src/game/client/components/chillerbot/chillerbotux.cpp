@@ -36,6 +36,7 @@ void CChillerBotUX::OnRender()
 		SetComponentNoteShort("afk", aBuf);
 	}
 	RenderSpeedHud();
+	RenderCaptchaMask();
 	RenderEnabledComponents();
 	FinishRenameTick();
 	ChangeTileNotifyTick();
@@ -47,6 +48,27 @@ void CChillerBotUX::OnRender()
 		m_pClient->m_pControls->m_InputDirectionLeft[g_Config.m_ClDummy] = 0;
 	}
 	m_LastForceDir = m_ForceDir;
+}
+
+void CChillerBotUX::RenderCaptchaMask()
+{
+	if(!g_Config.m_ClCaptchaMask)
+		return;
+	Graphics()->MapScreen(0, 0, Graphics()->ScreenWidth(), Graphics()->ScreenHeight());
+	float w = Graphics()->ScreenWidth();
+	float h = Graphics()->ScreenHeight();
+	Graphics()->BlendNormal();
+	Graphics()->TextureClear();
+	Graphics()->QuadsBegin();
+	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	for (float i = 0.25f; i <= 0.9f;i += 0.25f)
+	{
+		float x = w * i;
+		float y = h * i;
+		RenderTools()->DrawRoundRect(x, 0.0f, 2.0f, Graphics()->ScreenHeight(), 0.0f);
+		RenderTools()->DrawRoundRect(0.0f, y, Graphics()->ScreenWidth(), 2.0f, 0.0f);
+	}
+	Graphics()->QuadsEnd();
 }
 
 void CChillerBotUX::ChangeTileNotifyTick()
