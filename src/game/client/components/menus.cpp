@@ -1131,15 +1131,13 @@ void CMenus::RenderLoading()
 	RenderTools()->DrawRoundRect(x, y, w, h, 40.0f);
 	Graphics()->QuadsEnd();
 
-	const char *pCaption = "Loading chillerbot-ux";
+	const char *pCaption = "Loading chillerbot-sus";
 	const char *apMsg[] = {
-		"fng > gores",
-		"I was a faithful friend...",
-		"MAPLE MAPLE MAPLE",
-		"you zooz you loose",
-		"I am LIBAN",
-		"das große ßßßßßß",
-		"ddnet++ > ddnet"};
+		"sus",
+		"amogus",
+		"imposter",
+		"susmogus",
+		"Susman"};
 	static int len = sizeof(apMsg) / sizeof(*apMsg);
 	static int index = rand() % len;
 

@@ -480,7 +480,7 @@ void CRenderTools::DrawUIRect(const CUIRect *r, ColorRGBA Color, int Corners, fl
 {
 	Graphics()->TextureClear();
 
-	// TODO: FIX US
+	// TODO: FIX SUS
 	Graphics()->QuadsBegin();
 	Graphics()->SetColor(vec4(1, 1, 1, 1));
 	DrawRoundRectExt(r->x - 2, r->y - 2, r->w + 4, r->h + 4, Rounding * UI()->Scale(), Corners);
