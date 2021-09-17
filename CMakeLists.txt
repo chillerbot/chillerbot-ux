@@ -1262,6 +1262,10 @@ set(EXPECTED_DATA
   shader/text.vert
   shader/tile.frag
   shader/tile.vert
+  skins/AmongUsBlack.png
+  skins/AmongUsPink.png
+  skins/AmongUsRed.png
+  skins/AmongUsWhite.png
   skins/Aoe4leg.png
   skins/PaladiN.png
   skins/antiantey.png
