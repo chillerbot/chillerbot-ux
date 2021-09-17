@@ -233,7 +233,10 @@ void CParticles::RenderGroup(int Group)
 			{
 				if(LastColor[0] != m_aParticles[i].m_Color.r || LastColor[1] != m_aParticles[i].m_Color.g || LastColor[2] != m_aParticles[i].m_Color.b || LastColor[3] != m_aParticles[i].m_Color.a || LastQuadOffset != QuadOffset)
 				{
-					Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_SpriteParticles[LastQuadOffset - SPRITE_PART_SLICE]);
+					if(m_aParticles[i].m_Spr == -9999)
+						Graphics()->TextureSet(g_pData->m_aImages[IMAGE_SUS_BODY].m_Id);
+					else
+						Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_SpriteParticles[LastQuadOffset - SPRITE_PART_SLICE]);
 					Graphics()->RenderQuadContainerAsSpriteMultiple(m_ParticleQuadContainerIndex, LastQuadOffset, CurParticleRenderCount, s_aParticleRenderInfo);
 					CurParticleRenderCount = 0;
 					LastQuadOffset = QuadOffset;
@@ -261,8 +264,10 @@ void CParticles::RenderGroup(int Group)
 
 			i = m_aParticles[i].m_NextPart;
 		}
-
-		Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_SpriteParticles[LastQuadOffset - SPRITE_PART_SLICE]);
+		if(m_aParticles[LastQuadOffset].m_Spr == -9999)
+			Graphics()->TextureSet(g_pData->m_aImages[IMAGE_SUS_BODY].m_Id);
+		else
+			Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_SpriteParticles[LastQuadOffset - SPRITE_PART_SLICE]);
 		Graphics()->RenderQuadContainerAsSpriteMultiple(m_ParticleQuadContainerIndex, LastQuadOffset, CurParticleRenderCount, s_aParticleRenderInfo);
 	}
 	else
@@ -281,7 +286,10 @@ void CParticles::RenderGroup(int Group)
 			// the current position, respecting the size, is inside the viewport, render it, else ignore
 			if(ParticleIsVisibleOnScreen(p, Size))
 			{
-				Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_SpriteParticles[m_aParticles[i].m_Spr - SPRITE_PART_SLICE]);
+				if(m_aParticles[i].m_Spr == -9999)
+					Graphics()->TextureSet(g_pData->m_aImages[IMAGE_SUS_BODY].m_Id);
+				else
+					Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_SpriteParticles[m_aParticles[i].m_Spr - SPRITE_PART_SLICE]);
 				Graphics()->QuadsBegin();
 
 				Graphics()->QuadsSetRotation(m_aParticles[i].m_Rot);

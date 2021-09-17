@@ -174,24 +174,21 @@ void CEffects::PlayerDeath(vec2 Pos, int ClientID)
 		}
 	}
 
-	for(int i = 0; i < 64; i++)
-	{
-		CParticle p;
-		p.SetDefault();
-		p.m_Spr = SPRITE_PART_SPLAT01 + (rand() % 3);
-		p.m_Pos = Pos;
-		p.m_Vel = RandomDir() * ((random_float() + 0.1f) * 900.0f);
-		p.m_LifeSpan = 0.3f + random_float() * 0.3f;
-		p.m_StartSize = 24.0f + random_float() * 16;
-		p.m_EndSize = 0;
-		p.m_Rot = random_float() * pi * 2;
-		p.m_Rotspeed = (random_float() - 0.5f) * pi;
-		p.m_Gravity = 800.0f;
-		p.m_Friction = 0.8f;
-		ColorRGBA c = BloodColor.v4() * (0.75f + random_float() * 0.25f);
-		p.m_Color = ColorRGBA(c.r, c.g, c.b, 0.75f);
-		m_pClient->m_Particles.Add(CParticles::GROUP_GENERAL, &p);
-	}
+	CParticle p;
+	p.SetDefault();
+	p.m_Spr = -9999;
+	p.m_Pos = Pos;
+	p.m_Vel = vec2(0, 0);
+	p.m_LifeSpan = 20.f + random_float() * 0.3f;
+	p.m_StartSize = 64.0f + random_float() * 16;
+	p.m_EndSize = 0;
+	p.m_Rot = random_float() * pi * 2;
+	p.m_Rotspeed = 0;
+	p.m_Gravity = 800.0f;
+	p.m_Friction = 0.8f;
+	ColorRGBA c = BloodColor.v4();
+	p.m_Color = ColorRGBA(c.r, c.g, c.b, 1.0f);
+	m_pClient->m_Particles.Add(CParticles::GROUP_GENERAL, &p);
 }
 
 void CEffects::Explosion(vec2 Pos)
