@@ -3168,6 +3168,7 @@ void CClient::Run()
 		str_copy(g_Config.m_SteamName, Steam()->GetPlayerName(), sizeof(g_Config.m_SteamName));
 	}
 
+	str_copy(g_Config.m_ClMenuMap, "amogus", sizeof(g_Config.m_ClMenuMap));
 	GameClient()->OnInit();
 	m_ServerBrowser.OnInit();
 
