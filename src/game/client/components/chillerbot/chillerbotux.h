@@ -93,6 +93,7 @@ class CChillerBotUX : public CComponent
 	void GotoSwitch(int Number, int Offset = -1);
 	void GotoTele(int Number, int Offset = -1);
 	void RenderCaptchaMask();
+	void GenerateCaptcha();
 	void DumpPlayers(const char *pSearch = 0);
 
 	virtual void OnRender() override;

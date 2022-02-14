@@ -102,20 +102,72 @@ void CChillerBotUX::RenderCaptchaMask()
 	if(!g_Config.m_ClCaptchaMask)
 		return;
 	Graphics()->MapScreen(0, 0, Graphics()->ScreenWidth(), Graphics()->ScreenHeight());
-	float w = Graphics()->ScreenWidth();
-	float h = Graphics()->ScreenHeight();
-	Graphics()->BlendNormal();
-	Graphics()->TextureClear();
-	Graphics()->QuadsBegin();
-	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	for (float i = 0.25f; i <= 0.9f;i += 0.25f)
 	{
-		float x = w * i;
-		float y = h * i;
-		RenderTools()->DrawRoundRect(x, 0.0f, 2.0f, Graphics()->ScreenHeight(), 0.0f);
-		RenderTools()->DrawRoundRect(0.0f, y, Graphics()->ScreenWidth(), 2.0f, 0.0f);
+		float w = Graphics()->ScreenWidth();
+		float h = Graphics()->ScreenHeight();
+		Graphics()->BlendNormal();
+		Graphics()->TextureClear();
+		Graphics()->QuadsBegin();
+		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+		for (float i = 0.25f; i <= 0.9f;i += 0.25f)
+		{
+			float x = w * i;
+			float y = h * i;
+			RenderTools()->DrawRoundRect(x, 0.0f, 2.0f, Graphics()->ScreenHeight(), 0.0f);
+			RenderTools()->DrawRoundRect(0.0f, y, Graphics()->ScreenWidth(), 2.0f, 0.0f);
+		}
+	}
+	int w = 4;
+	int h = 4;
+	int CellWidth = 11;
+	int CellHeight = 6;
+	int m_aAreas[w * h] = {0};
+	vec2 Center = vec2(m_pClient->m_Camera.m_Center.x / 32, m_pClient->m_Camera.m_Center.y / 32);
+	vec2 Origin = vec2(Center.x - CellWidth * 2, Center.y - CellHeight * 2);
+	for(auto &Char : m_pClient->m_Snap.m_aCharacters)
+	{
+		if(!Char.m_Active)
+			continue;
+
+		vec2 Tee = vec2(Char.m_Cur.m_X / 32, Char.m_Cur.m_Y / 32);
+		for(int x = 0; x < w; x++)
+		{
+			for(int y = 0; y < h; y++)
+			{
+				if(Tee.x > Origin.x + CellWidth * x && Tee.x < Origin.x + CellWidth * (x + 1) &&
+					Tee.y > Origin.y + CellHeight * y && Tee.y < Origin.y + CellHeight * (y + 1))
+					m_aAreas[y * w + x] = 1;
+			}
+		}
+		// dbg_msg("captcha", "tee pos %d %d", Char.m_Cur.m_X / 32, Char.m_Cur.m_Y / 32);
+	}
+
+	for(int x = 0; x < w; x++)
+	{
+		for(int y = 0; y < h; y++)
+		{
+			if(!m_aAreas[w * y + x])
+				continue;
+
+			Graphics()->SetColor(0.0f, 1.0f, 0.0f, 0.3f);
+			RenderTools()->DrawRoundRect(x, y, Graphics()->ScreenWidth() / 4, Graphics()->ScreenHeight() / 4, 0.0f);
+		}
 	}
 	Graphics()->QuadsEnd();
+
+	float Width = 300 * Graphics()->ScreenAspect();
+	Graphics()->MapScreen(0, 0, Width, 300);
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "%.2f %.2f", Center.x / 32, Center.y / 32);
+	const float Fontsize = 15.0f;
+	w = TextRender()->TextWidth(0, Fontsize, aBuf, -1, -1.0f);
+	TextRender()->Text(0, 200, 200, Fontsize, aBuf, -1.0f);
+
+}
+
+void CChillerBotUX::GenerateCaptcha()
+{
+
 }
 
 void CChillerBotUX::ChangeTileNotifyTick()
