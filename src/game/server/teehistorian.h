@@ -57,12 +57,15 @@ public:
 	void BeginPlayers();
 	void RecordPlayer(int ClientID, const CNetObj_CharacterCore *pChar);
 	void RecordDeadPlayer(int ClientID);
+	void RecordPlayerTeam(int ClientID, int Team);
+	void RecordTeamPractice(int Team, bool Practice);
 	void EndPlayers();
 
 	void BeginInputs();
 	void RecordPlayerInput(int ClientID, const CNetObj_PlayerInput *pInput);
 	void RecordPlayerMessage(int ClientID, const void *pMsg, int MsgSize);
 	void RecordPlayerJoin(int ClientID, int Protocol);
+	void RecordPlayerReady(int ClientID);
 	void RecordPlayerDrop(int ClientID, const char *pReason);
 	void RecordConsoleCommand(int ClientID, int FlagMask, const char *pCmd, IConsole::IResult *pResult);
 	void RecordTestExtra();
@@ -111,6 +114,14 @@ private:
 
 		CNetObj_PlayerInput m_Input;
 		bool m_InputExists;
+
+		// DDNet team
+		int m_Team;
+	};
+
+	struct CTeam
+	{
+		bool m_Practice;
 	};
 
 	WRITE_CALLBACK m_pfnWriteCallback;
@@ -124,6 +135,7 @@ private:
 	int m_PrevMaxClientID;
 	int m_MaxClientID;
 	CPlayer m_aPrevPlayers[MAX_CLIENTS];
+	CTeam m_aPrevTeams[MAX_CLIENTS];
 };
 
 #endif // GAME_SERVER_TEEHISTORIAN_H

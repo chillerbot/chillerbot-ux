@@ -95,9 +95,6 @@ Client
 Close
 == Закрыть
 
-Compatible version
-== Совместимая версия
-
 Connect
 == Подключиться
 
@@ -253,9 +250,6 @@ MOTD
 
 Map
 == Карта
-
-Maximum ping:
-== Макс. пинг:
 
 Mouse sens.
 == Чувств. мыши
@@ -1120,7 +1114,7 @@ Skip the main menu
 == Пропускать главное меню
 
 https://wiki.ddnet.tw/
-== https://wiki.ddnet.tw/
+== https://wiki.ddnet.tw/wiki/Main_Page/ru
 
 Website
 == Сайт
@@ -1315,14 +1309,47 @@ Desktop fullscreen
 Use modern OpenGL
 == Использовать новый OpenGL
 
-Hookline
-== 
-
-No hit
-== 
-
-Hookable
-== 
-
 Tee
 == Tee
+
+Are you sure that you want to disconnect and switch to a different server?
+== Вы уверены, что хотите отключиться и перейти на другой сервер?
+
+Refreshing...
+== Обновление...
+
+Kill Messages
+== Сообщения об убийстве
+
+Kill Message Normal Color
+== Цвет сообщения об убийстве
+
+Kill Message Highlight Color
+== Цвет подсветки сообщения об убийстве
+
+Hookline
+== Линия крюка
+
+No hit
+== Нельзя зацепиться
+
+Hookable
+== Можно зацепиться
+
+Show local player's key presses
+== Показывать нажатия клавиш игрока
+
+Settings file
+== 
+
+Config directory
+== 
+
+Windowed fullscreen
+== 
+
+Run on join
+== 
+
+Chat command (e.g. showall 1)
+== 

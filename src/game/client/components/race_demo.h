@@ -25,7 +25,7 @@ class CRaceDemo : public CComponent
 	int m_RecordStopTick;
 	int m_Time;
 
-	static int RaceDemolistFetchCallback(const char *pName, time_t Date, int IsDir, int StorageType, void *pUser);
+	static int RaceDemolistFetchCallback(const CFsFileInfo *pInfo, int IsDir, int StorageType, void *pUser);
 
 	void GetPath(char *pBuf, int Size, int Time = -1) const;
 
@@ -36,11 +36,13 @@ public:
 	bool m_AllowRestart;
 
 	CRaceDemo();
+	virtual int Sizeof() const override { return sizeof(*this); }
 
-	virtual void OnReset();
-	virtual void OnStateChange(int NewState, int OldState);
-	virtual void OnMessage(int MsgType, void *pRawMsg);
-	virtual void OnMapLoad();
+	virtual void OnReset() override;
+	virtual void OnStateChange(int NewState, int OldState) override;
+	virtual void OnMessage(int MsgType, void *pRawMsg) override;
+	virtual void OnMapLoad() override;
+	virtual void OnShutdown() override;
 
 	void OnNewSnapshot();
 };

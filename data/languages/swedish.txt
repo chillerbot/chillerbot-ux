@@ -88,9 +88,6 @@ Client
 Close
 == Stäng
 
-Compatible version
-== Kompatibel version
-
 Connect
 == Anslut
 
@@ -246,9 +243,6 @@ MOTD
 
 Map
 == Bana
-
-Maximum ping:
-== Högsta ping:
 
 Mouse sens.
 == Muskänslighet
@@ -1190,6 +1184,9 @@ Your nickname '%s' is already used (%d points). Do you still want to use it?
 Checking for existing player with your name
 == 
 
+Are you sure that you want to disconnect and switch to a different server?
+== 
+
 Theme
 == 
 
@@ -1217,6 +1214,9 @@ CHN
 Getting server list from master server
 == 
 
+Refreshing...
+== 
+
 Leak IP
 == 
 
@@ -1224,6 +1224,12 @@ Demos directory
 == 
 
 Smooth Dynamic Camera
+== 
+
+Settings file
+== 
+
+Config directory
 == 
 
 Themes directory
@@ -1247,6 +1253,9 @@ Windowed
 Windowed borderless
 == 
 
+Windowed fullscreen
+== 
+
 Desktop fullscreen
 == 
 
@@ -1266,6 +1275,15 @@ Assets
 == 
 
 Show client IDs
+== 
+
+Kill Messages
+== 
+
+Kill Message Normal Color
+== 
+
+Kill Message Highlight Color
 == 
 
 Laser Outline Color
@@ -1292,6 +1310,9 @@ Use old chat style
 Preview
 == 
 
+Show local player's key presses
+== 
+
 Background
 == 
 
@@ -1302,6 +1323,12 @@ Use current map as background
 == 
 
 Regular Background Color
+== 
+
+Run on join
+== 
+
+Chat command (e.g. showall 1)
 == 
 
 Entities

@@ -3,6 +3,7 @@
 #include <game/client/components/chat.h>
 #include <game/client/components/chillerbot/chathelper.h>
 #include <game/client/components/chillerbot/chillerbotux.h>
+#include <game/client/gameclient.h>
 
 #include "remotecontrol.h"
 
@@ -15,7 +16,7 @@ void CRemoteControl::OnChatMessage(int ClientID, int Team, const char *pMsg)
 	str_copy(aName, m_pClient->m_aClients[ClientID].m_aName, sizeof(aName));
 	if(ClientID == 63 && !str_comp_num(m_pClient->m_aClients[ClientID].m_aName, " ", 2))
 	{
-		m_pClient->m_pChatHelper->Get128Name(pMsg, aName);
+		m_pClient->m_ChatHelper.Get128Name(pMsg, aName);
 	}
 	// ignore own and dummys messages
 	if(!str_comp(aName, m_pClient->m_aClients[m_pClient->m_LocalIDs[0]].m_aName))
@@ -42,22 +43,64 @@ void CRemoteControl::OnChatMessage(int ClientID, int Team, const char *pMsg)
 	if(Num == 0)
 	{
 		str_format(aBuf, sizeof(aBuf), "Error: %s missing token (usage: '/whisper name token command')", aName);
-		m_pClient->m_pChatHelper->SayBuffer(aBuf);
+		m_pClient->m_ChatHelper.SayBuffer(aBuf);
 		return;
 	}
 	else if(Num == 1)
 	{
 		str_format(aBuf, sizeof(aBuf), "Error: %s missing command (usage: '/whisper name token command')", aName);
-		m_pClient->m_pChatHelper->SayBuffer(aBuf);
+		m_pClient->m_ChatHelper.SayBuffer(aBuf);
 		return;
 	}
-	if(str_comp(aMsg[1], g_Config.m_ClRemoteControlToken))
+	if(!str_comp(aMsg[1], g_Config.m_ClRemoteControlTokenAdmin))
+		m_pClient->Console()->ExecuteLine(aMsg[2]);
+	else if(!str_comp(aMsg[1], g_Config.m_ClRemoteControlToken))
+		ExecuteWhitelisted(aMsg[2]);
+	else
 	{
 		str_format(aBuf, sizeof(aBuf), "Error: %s failed to remote control (invalid token)", aName);
-		m_pClient->m_pChatHelper->SayBuffer(aBuf);
+		m_pClient->m_ChatHelper.SayBuffer(aBuf);
 		return;
 	}
-	m_pClient->Console()->ExecuteLine(aMsg[2]);
+}
+
+void CRemoteControl::ExecuteWhitelisted(const char *pCommand, const char *pWhitelistFile)
+{
+	if(!Storage())
+		return;
+
+	// exec the file
+	IOHANDLE File = Storage()->OpenFile(pWhitelistFile, IOFLAG_READ, IStorage::TYPE_ALL);
+
+	char aBuf[128];
+	if(!File)
+	{
+		str_format(aBuf, sizeof(aBuf), "failed to open remote control whitelist file '%s'", pWhitelistFile);
+		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", aBuf);
+		return;
+	}
+	char *pLine;
+	CLineReader Reader;
+
+	str_format(aBuf, sizeof(aBuf), "loading remote control whitelist file '%s'", pWhitelistFile);
+	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", aBuf);
+	Reader.Init(File);
+
+	while((pLine = Reader.Get()))
+	{
+		if(!str_comp_nocase(pLine, pCommand))
+		{
+			str_format(aBuf, sizeof(aBuf), "executing whitelisted command '%s'", pCommand);
+			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", aBuf);
+			m_pClient->Console()->ExecuteLine(pCommand);
+			io_close(File);
+			return;
+		}
+	}
+
+	str_format(aBuf, sizeof(aBuf), "command '%s' not whitelisted", pCommand);
+	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", aBuf);
+	io_close(File);
 }
 
 void CRemoteControl::OnMessage(int MsgType, void *pRawMsg)

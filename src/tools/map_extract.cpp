@@ -51,10 +51,23 @@ bool Process(IStorage *pStorage, const char *pMapName, const char *pPathSave)
 		dbg_msg("map_extract", "writing image: %s (%dx%d)", aBuf, pItem->m_Width, pItem->m_Height);
 
 		// copy image data
+		IOHANDLE File = io_open(aBuf, IOFLAG_WRITE);
+		if(!File)
+		{
+			dbg_msg("map_extract", "failed to open file. filename='%s'", aBuf);
+			continue;
+		}
 		png_t Png;
-		png_open_file_write(&Png, aBuf);
-		png_set_data(&Png, pItem->m_Width, pItem->m_Height, 8, PNG_TRUECOLOR_ALPHA, (unsigned char *)Map.GetData(pItem->m_ImageData));
-		png_close_file(&Png);
+		int Error = png_open_write(&Png, 0, File);
+		if(Error != PNG_NO_ERROR)
+		{
+			dbg_msg("map_extract", "failed to write image file. filename='%s', pnglite: %s", aBuf, png_error_string(Error));
+		}
+		else
+		{
+			png_set_data(&Png, pItem->m_Width, pItem->m_Height, 8, PNG_TRUECOLOR_ALPHA, (unsigned char *)Map.GetData(pItem->m_ImageData));
+		}
+		io_close(File);
 	}
 
 	// load sounds
@@ -80,8 +93,9 @@ bool Process(IStorage *pStorage, const char *pMapName, const char *pPathSave)
 	return Map.Close();
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
+	cmdline_fix(&argc, &argv);
 	dbg_logger_stdout();
 
 	char aMap[512];
@@ -113,5 +127,7 @@ int main(int argc, char *argv[])
 
 	png_init(0, 0);
 
-	return Process(pStorage, aMap, aDir) ? 0 : 1;
+	int Result = Process(pStorage, aMap, aDir) ? 0 : 1;
+	cmdline_free(argc, argv);
+	return Result;
 }

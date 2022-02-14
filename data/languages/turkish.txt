@@ -90,9 +90,6 @@ Client
 Close
 == Kapat
 
-Compatible version
-== Uyumlu versiyon
-
 Connect
 == Bağlan
 
@@ -248,9 +245,6 @@ MOTD
 
 Map
 == Harita
-
-Maximum ping:
-== Maksimum ping
 
 Mouse sens.
 == Mouse duyarlılığı
@@ -1143,6 +1137,9 @@ Your nickname '%s' is already used (%d points). Do you still want to use it?
 Checking for existing player with your name
 == 
 
+Are you sure that you want to disconnect and switch to a different server?
+== 
+
 Country / Region
 == 
 
@@ -1188,6 +1185,9 @@ Getting server list from master server
 %d player
 == 
 
+Refreshing...
+== 
+
 Leak IP
 == 
 
@@ -1198,6 +1198,12 @@ Smooth Dynamic Camera
 == 
 
 Skip the main menu
+== 
+
+Settings file
+== 
+
+Config directory
 == 
 
 Themes directory
@@ -1224,6 +1230,9 @@ Windowed
 Windowed borderless
 == 
 
+Windowed fullscreen
+== 
+
 Desktop fullscreen
 == 
 
@@ -1243,6 +1252,15 @@ Assets
 == 
 
 Show client IDs
+== 
+
+Kill Messages
+== 
+
+Kill Message Normal Color
+== 
+
+Kill Message Highlight Color
 == 
 
 Laser Outline Color
@@ -1269,6 +1287,9 @@ Use old chat style
 Preview
 == 
 
+Show local player's key presses
+== 
+
 Background
 == 
 
@@ -1279,6 +1300,12 @@ Use current map as background
 == 
 
 Regular Background Color
+== 
+
+Run on join
+== 
+
+Chat command (e.g. showall 1)
 == 
 
 Entities

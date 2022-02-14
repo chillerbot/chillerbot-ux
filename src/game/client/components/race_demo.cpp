@@ -11,6 +11,8 @@
 
 #include "race_demo.h"
 
+#include <game/client/gameclient.h>
+
 const char *CRaceDemo::ms_pRaceDemoDir = "demos/auto/race";
 
 struct CDemoItem
@@ -115,6 +117,11 @@ void CRaceDemo::OnReset()
 	StopRecord();
 }
 
+void CRaceDemo::OnShutdown()
+{
+	StopRecord();
+}
+
 void CRaceDemo::OnMessage(int MsgType, void *pRawMsg)
 {
 	// check for messages from server
@@ -173,15 +180,15 @@ void CRaceDemo::StopRecord(int Time)
 	m_RecordStopTick = -1;
 }
 
-int CRaceDemo::RaceDemolistFetchCallback(const char *pName, time_t Date, int IsDir, int StorageType, void *pUser)
+int CRaceDemo::RaceDemolistFetchCallback(const CFsFileInfo *pInfo, int IsDir, int StorageType, void *pUser)
 {
 	CDemoListParam *pParam = (CDemoListParam *)pUser;
 	int MapLen = str_length(pParam->pMap);
-	if(IsDir || !str_endswith(pName, ".demo") || !str_startswith(pName, pParam->pMap) || pName[MapLen] != '_')
+	if(IsDir || !str_endswith(pInfo->m_pName, ".demo") || !str_startswith(pInfo->m_pName, pParam->pMap) || pInfo->m_pName[MapLen] != '_')
 		return 0;
 
 	CDemoItem Item;
-	str_truncate(Item.m_aName, sizeof(Item.m_aName), pName, str_length(pName) - 5);
+	str_truncate(Item.m_aName, sizeof(Item.m_aName), pInfo->m_pName, str_length(pInfo->m_pName) - 5);
 
 	const char *pTime = Item.m_aName + MapLen + 1;
 	const char *pTEnd = pTime;
@@ -220,7 +227,7 @@ bool CRaceDemo::CheckDemo(int Time) const
 			return false;
 
 		// delete old demo
-		char aFilename[512];
+		char aFilename[IO_MAX_PATH_LENGTH];
 		str_format(aFilename, sizeof(aFilename), "%s/%s.demo", ms_pRaceDemoDir, Demo.m_aName);
 		Storage()->RemoveFile(aFilename, IStorage::TYPE_SAVE);
 	}

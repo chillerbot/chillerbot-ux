@@ -46,11 +46,20 @@
 #define PLATFORM_STRING "openbsd"
 #endif
 
-#if defined(__LINUX__) || defined(__linux__)
+#if(defined(__LINUX__) || defined(__linux__)) && !defined(__ANDROID__)
 #define CONF_FAMILY_UNIX 1
 #define CONF_FAMILY_STRING "unix"
 #define CONF_PLATFORM_LINUX 1
 #define PLATFORM_STRING "linux"
+#define CONF_BACKEND_OPENGL_ES3 1
+#endif
+
+#if defined(__ANDROID__)
+#define CONF_FAMILY_UNIX 1
+#define CONF_FAMILY_STRING "unix"
+#define CONF_PLATFORM_ANDROID 1
+#define PLATFORM_STRING "android"
+#define CONF_BACKEND_OPENGL_ES 1
 #define CONF_BACKEND_OPENGL_ES3 1
 #endif
 
@@ -87,7 +96,7 @@
 #define CONF_FAMILY_UNIX 1
 #define CONF_FAMILY_STRING "unix"
 #define CONF_PLATFORM_HAIKU 1
-#define CONF_PLATFORM_STRING "haiku"
+#define PLATFORM_STRING "haiku"
 #endif
 
 /* use gcc endianness definitions when available */
@@ -155,6 +164,12 @@
 #if defined(__ARMEL__)
 #define CONF_ARCH_ARM 1
 #define CONF_ARCH_STRING "arm"
+#define CONF_ARCH_ENDIAN_LITTLE 1
+#endif
+
+#if defined(__aarch64__) || defined(__arm64__)
+#define CONF_ARCH_ARM64 1
+#define CONF_ARCH_STRING "arm64"
 #define CONF_ARCH_ENDIAN_LITTLE 1
 #endif
 

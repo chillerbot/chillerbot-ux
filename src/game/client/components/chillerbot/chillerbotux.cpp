@@ -1,5 +1,6 @@
 // ChillerDragon 2020 - chillerbot ux
 
+#include "engine/shared/protocol.h"
 #include <engine/client/notifications.h>
 #include <engine/config.h>
 #include <engine/console.h>
@@ -14,8 +15,10 @@
 #include <game/client/components/controls.h>
 #include <game/client/components/menus.h>
 #include <game/client/components/voting.h>
+#include <game/client/gameclient.h>
 #include <game/client/race.h>
 #include <game/client/render.h>
+#include <game/generated/client_data.h>
 #include <game/generated/protocol.h>
 #include <game/version.h>
 
@@ -25,6 +28,50 @@ void CChillerBotUX::OnRender()
 {
 	if(time_get() % 10 == 0)
 	{
+		if(g_Config.m_ClSendOnlineTime)
+		{
+			if(m_NextHeartbeat < time_get())
+			{
+				m_NextHeartbeat = time_get() + time_freq() * 60;
+				m_HeartbeatState = STATE_WANTREFRESH;
+			}
+			if(m_HeartbeatState == STATE_WANTREFRESH)
+			{
+				char aUrl[1024];
+				char aEscaped[128];
+				str_copy(aUrl, "https://chillerbot.zillyhuhn.com/api/v1/beat/", sizeof(aUrl));
+				EscapeUrl(aEscaped, sizeof(aEscaped), g_Config.m_ClChillerbotId);
+				str_append(aUrl, aEscaped, sizeof(aUrl));
+				str_append(aUrl, "/ux-" CHILLERBOT_VERSION "/", sizeof(aUrl));
+				if(g_Config.m_PlayerName[0])
+					EscapeUrl(aEscaped, sizeof(aEscaped), g_Config.m_PlayerName);
+				else
+					str_copy(aEscaped, "nameless tee", sizeof(aEscaped));
+				str_append(aUrl, aEscaped, sizeof(aUrl));
+				// 10 seconds connection timeout, lower than 8KB/s for 10 seconds to fail.
+				CTimeout Timeout{10000, 8000, 10};
+				m_pClient->Engine()->AddJob(m_pAliveGet = std::make_shared<CGet>(aUrl, Timeout));
+				m_HeartbeatState = STATE_REFRESHING;
+			}
+			else if(m_HeartbeatState == STATE_REFRESHING)
+			{
+				if(m_pAliveGet->State() == HTTP_QUEUED || m_pAliveGet->State() == HTTP_RUNNING)
+				{
+					return;
+				}
+				m_HeartbeatState = STATE_DONE;
+				std::shared_ptr<CGet> pGetServers = nullptr;
+				std::swap(m_pAliveGet, pGetServers);
+
+				bool Success = true;
+				// json_value *pJson = pGetServers->ResultJson();
+				// Success = Success && pJson;
+				// Success = Success && Parse(pJson);
+				// json_value_free(pJson);
+				if(!Success)
+					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", "failed to hearthbeat");
+			}
+		}
 		// if tabbing into tw and going afk set to inactive again over time
 		if(m_AfkActivity && time_get() % 100 == 0)
 			m_AfkActivity--;
@@ -44,8 +91,8 @@ void CChillerBotUX::OnRender()
 	CampHackTick();
 	if(!m_ForceDir && m_LastForceDir)
 	{
-		m_pClient->m_pControls->m_InputDirectionRight[g_Config.m_ClDummy] = 0;
-		m_pClient->m_pControls->m_InputDirectionLeft[g_Config.m_ClDummy] = 0;
+		m_pClient->m_Controls.m_InputDirectionRight[g_Config.m_ClDummy] = 0;
+		m_pClient->m_Controls.m_InputDirectionLeft[g_Config.m_ClDummy] = 0;
 	}
 	m_LastForceDir = m_ForceDir;
 }
@@ -123,13 +170,15 @@ void CChillerBotUX::RenderSpeedHud()
 
 void CChillerBotUX::RenderEnabledComponents()
 {
-	if(m_pClient->m_pMenus->IsActive())
+	if(m_pClient->m_Menus.IsActive())
 		return;
-	if(m_pClient->m_pVoting->IsVoting())
+	if(m_pClient->m_Voting.IsVoting())
 		return;
 	if(!g_Config.m_ClChillerbotHud)
 		return;
 	int offset = 0;
+	if(m_IsLeftSidedBroadcast && Client()->GameTick(g_Config.m_ClDummy) < m_BroadcastTick)
+		offset = 2;
 	for(auto &m_aEnabledComponent : m_aEnabledComponents)
 	{
 		if(m_aEnabledComponent.m_aName[0] == '\0')
@@ -239,7 +288,7 @@ void CChillerBotUX::CampHackTick()
 	{
 		float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 		Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-		MapScreenToGroup(m_pClient->m_pCamera->m_Center.x, m_pClient->m_pCamera->m_Center.y, Layers()->GameGroup(), m_pClient->m_pCamera->m_Zoom);
+		MapScreenToGroup(m_pClient->m_Camera.m_Center.x, m_pClient->m_Camera.m_Center.y, Layers()->GameGroup(), m_pClient->m_Camera.m_Zoom);
 		Graphics()->BlendNormal();
 		Graphics()->TextureClear();
 		Graphics()->QuadsBegin();
@@ -265,14 +314,14 @@ void CChillerBotUX::CampHackTick()
 		return;
 	if(m_CampHackX1 > GameClient()->m_Snap.m_pLocalCharacter->m_X)
 	{
-		m_pClient->m_pControls->m_InputDirectionRight[g_Config.m_ClDummy] = 1;
-		m_pClient->m_pControls->m_InputDirectionLeft[g_Config.m_ClDummy] = 0;
+		m_pClient->m_Controls.m_InputDirectionRight[g_Config.m_ClDummy] = 1;
+		m_pClient->m_Controls.m_InputDirectionLeft[g_Config.m_ClDummy] = 0;
 		m_ForceDir = 1;
 	}
 	else if(m_CampHackX2 < GameClient()->m_Snap.m_pLocalCharacter->m_X)
 	{
-		m_pClient->m_pControls->m_InputDirectionRight[g_Config.m_ClDummy] = 0;
-		m_pClient->m_pControls->m_InputDirectionLeft[g_Config.m_ClDummy] = 1;
+		m_pClient->m_Controls.m_InputDirectionRight[g_Config.m_ClDummy] = 0;
+		m_pClient->m_Controls.m_InputDirectionLeft[g_Config.m_ClDummy] = 1;
 		m_ForceDir = -1;
 	}
 }
@@ -312,7 +361,7 @@ void CChillerBotUX::SelectCampArea(int Key)
 		{
 			m_CampHackX1 = 0;
 			m_CampHackY1 = 0;
-			GameClient()->m_pChat->AddLine(-2, 0, "Unset camp[1]");
+			GameClient()->m_Chat.AddLine(-2, 0, "Unset camp[1]");
 			return;
 		}
 		vec2 CrackPos2 = vec2(m_CampHackX2, m_CampHackY2);
@@ -321,7 +370,7 @@ void CChillerBotUX::SelectCampArea(int Key)
 		{
 			m_CampHackX2 = 0;
 			m_CampHackY2 = 0;
-			GameClient()->m_pChat->AddLine(-2, 0, "Unset camp[2]");
+			GameClient()->m_Chat.AddLine(-2, 0, "Unset camp[2]");
 			return;
 		}
 		// SET OTHERWISE
@@ -340,7 +389,7 @@ void CChillerBotUX::SelectCampArea(int Key)
 			"Set camp[%d] %d",
 			m_CampClick == 2 ? 1 : 2,
 			GameClient()->m_Snap.m_pLocalCharacter->m_X / 32);
-		GameClient()->m_pChat->AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 	}
 	if(m_CampClick > 3)
 		m_CampClick = 0;
@@ -355,7 +404,7 @@ void CChillerBotUX::FinishRenameTick()
 	vec2 Pos = m_pClient->m_PredictedChar.m_Pos;
 	if(CRaceHelper::IsNearFinish(m_pClient, Pos))
 	{
-		if(Client()->State() == IClient::STATE_ONLINE && !m_pClient->m_pMenus->IsActive() && g_Config.m_ClEditor == 0)
+		if(Client()->State() == IClient::STATE_ONLINE && !m_pClient->m_Menus.IsActive() && g_Config.m_ClEditor == 0)
 		{
 			Graphics()->BlendNormal();
 			Graphics()->TextureClear();
@@ -380,7 +429,7 @@ void CChillerBotUX::FinishRenameTick()
 
 void CChillerBotUX::OnInit()
 {
-	m_pChatHelper = m_pClient->m_pChatHelper;
+	m_pChatHelper = &m_pClient->m_ChatHelper;
 
 	m_AfkTill = 0;
 	m_AfkActivity = 0;
@@ -399,6 +448,17 @@ void CChillerBotUX::OnInit()
 	m_GotoTeleOffset = 0;
 	m_GotoTeleLastX = -1;
 	m_GotoTeleLastY = -1;
+	m_aLastKiller[0][0] = '\0';
+	m_aLastKiller[1][0] = '\0';
+	m_aLastKillerTime[0][0] = '\0';
+	m_aLastKillerTime[1][0] = '\0';
+	m_BroadcastTick = 0;
+	m_IsLeftSidedBroadcast = false;
+	m_HeartbeatState = STATE_WANTREFRESH;
+	m_NextHeartbeat = 0;
+	// TODO: replace this with priv pub key pairs otherwise account ownership claims are trash
+	if(!g_Config.m_ClChillerbotId[0])
+		secure_random_password(g_Config.m_ClChillerbotId, sizeof(g_Config.m_ClChillerbotId), 16);
 }
 
 void CChillerBotUX::UpdateComponents()
@@ -424,6 +484,14 @@ void CChillerBotUX::UpdateComponents()
 		EnableComponent("war list");
 	else
 		DisableComponent("war list");
+	if(g_Config.m_ClShowLastKiller)
+		EnableComponent("last killer");
+	else
+		DisableComponent("last killer");
+	if(g_Config.m_ClShowWallet)
+		EnableComponent("money");
+	else
+		DisableComponent("money");
 }
 
 void CChillerBotUX::OnConsoleInit()
@@ -435,11 +503,35 @@ void CChillerBotUX::OnConsoleInit()
 	Console()->Register("goto_switch", "i[number]?i[offset]", CFGFLAG_CLIENT, ConGotoSwitch, this, "Pause switch found (at offset) with given number");
 	Console()->Register("goto_tele", "i[number]?i[offset]", CFGFLAG_CLIENT, ConGotoTele, this, "Pause tele found (at offset) with given number");
 	Console()->Register("load_map", "s[file]", CFGFLAG_CLIENT, ConLoadMap, this, "Load mapfile");
+	Console()->Register("dump_players", "?s[search]", CFGFLAG_CLIENT, ConDumpPlayers, this, "Prints players to console");
+	Console()->Register("force_quit", "", CFGFLAG_CLIENT, ConForceQuit, this, "Forces a dirty client quit all data will be lost");
+	// Console()->Register("set_gametile", "i[x]i[y]i[index]", CFGFLAG_CLIENT, ConSetGametile, this, "Some ugly wip map edit hack");
 
 	Console()->Chain("cl_camp_hack", ConchainCampHack, this);
 	Console()->Chain("cl_chillerbot_hud", ConchainChillerbotHud, this);
 	Console()->Chain("cl_auto_reply", ConchainAutoReply, this);
 	Console()->Chain("cl_finish_rename", ConchainFinishRename, this);
+	Console()->Chain("cl_show_last_killer", ConchainShowLastKiller, this);
+}
+
+void CChillerBotUX::ConSetGametile(IConsole::IResult *pResult, void *pUserData)
+{
+	// CChillerBotUX *pSelf = (CChillerBotUX *)pUserData;
+	// char aBuf[IO_MAX_PATH_LENGTH];
+	// TODO: call some twmap py script in other thread let it edit loaded map and reload it using ConLoadMap
+	// str_format(aBuf, sizeof(aBuf), "maps/tmp/chillerbot-ux-%d.map.tmp", pid());
+	// pSelf->m_pClient->Client()->ChillerBotLoadMap(aBuf);
+}
+
+void CChillerBotUX::ConForceQuit(IConsole::IResult *pResult, void *pUserData)
+{
+	exit(0);
+}
+
+void CChillerBotUX::ConDumpPlayers(IConsole::IResult *pResult, void *pUserData)
+{
+	CChillerBotUX *pSelf = (CChillerBotUX *)pUserData;
+	pSelf->DumpPlayers(pResult->GetString(0));
 }
 
 void CChillerBotUX::ConchainCampHack(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
@@ -483,6 +575,16 @@ void CChillerBotUX::ConchainFinishRename(IConsole::IResult *pResult, void *pUser
 		pSelf->DisableComponent("finish rename");
 }
 
+void CChillerBotUX::ConchainShowLastKiller(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+{
+	CChillerBotUX *pSelf = (CChillerBotUX *)pUserData;
+	pfnCallback(pResult, pCallbackUserData);
+	if(pResult->GetInteger(0))
+		pSelf->EnableComponent("last killer");
+	else
+		pSelf->DisableComponent("last killer");
+}
+
 void CChillerBotUX::ConAfk(IConsole::IResult *pResult, void *pUserData)
 {
 	((CChillerBotUX *)pUserData)->GoAfk(pResult->NumArguments() ? pResult->GetInteger(0) : -1, pResult->GetString(1));
@@ -508,6 +610,111 @@ void CChillerBotUX::ConCampHackAbs(IConsole::IResult *pResult, void *pUserData)
 		}
 		return;
 	}
+}
+
+void CChillerBotUX::DumpPlayers(const char *pSearch)
+{
+	char aBuf[128];
+	char aTime[128];
+	char aLine[512];
+	int OldDDTeam = -1;
+	dbg_msg("dump_players", "+----------+--+----------------+----------------+---+-------+");
+	dbg_msg("dump_players", "|score     |id|name            |clan            |lat|team   |");
+	dbg_msg("dump_players", "+----------+--+----------------+----------------+---+-------+");
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		const CNetObj_PlayerInfo *pInfo = m_pClient->m_Snap.m_paInfoByDDTeamScore[i];
+		if(!pInfo)
+			continue;
+
+		bool IsMatch = !(pSearch && pSearch[0] != 0);
+		aLine[0] = '\0';
+		// score
+		if(m_pClient->m_GameInfo.m_TimeScore && g_Config.m_ClDDRaceScoreBoard)
+		{
+			if(pInfo->m_Score == -9999)
+				str_format(aBuf, sizeof(aBuf), "|%10s|", " ");
+			else
+			{
+				str_time((int64_t)abs(pInfo->m_Score) * 100, TIME_HOURS, aTime, sizeof(aTime));
+				str_format(aBuf, sizeof(aBuf), "|%10s|", aTime);
+			}
+		}
+		else
+			str_format(aBuf, sizeof(aBuf), "|%10d|", clamp(pInfo->m_Score, -999, 99999));
+		str_append(aLine, aBuf, sizeof(aLine));
+
+		// id | name
+		if(pSearch && pSearch[0] != 0)
+			if(str_find_nocase(m_pClient->m_aClients[pInfo->m_ClientID].m_aName, pSearch))
+				IsMatch = true;
+		str_format(aBuf, sizeof(aBuf), "%2d|%16s|", pInfo->m_ClientID, m_pClient->m_aClients[pInfo->m_ClientID].m_aName);
+		str_append(aLine, aBuf, sizeof(aLine));
+
+		// clan
+		if(pSearch && pSearch[0] != 0)
+			if(str_find_nocase(m_pClient->m_aClients[pInfo->m_ClientID].m_aClan, pSearch))
+				IsMatch = true;
+		str_format(aBuf, sizeof(aBuf), "%16s|", m_pClient->m_aClients[pInfo->m_ClientID].m_aClan);
+		str_append(aLine, aBuf, sizeof(aLine));
+
+		// ping
+		str_format(aBuf, sizeof(aBuf), "%3d|", clamp(pInfo->m_Latency, 0, 999));
+		str_append(aLine, aBuf, sizeof(aLine));
+
+		// team
+		int DDTeam = m_pClient->m_Teams.Team(pInfo->m_ClientID);
+		int NextDDTeam = 0;
+
+		for(int j = i + 1; j < MAX_CLIENTS; j++)
+		{
+			const CNetObj_PlayerInfo *pInfo2 = m_pClient->m_Snap.m_paInfoByDDTeamScore[j];
+
+			if(!pInfo2)
+				continue;
+
+			NextDDTeam = m_pClient->m_Teams.Team(pInfo2->m_ClientID);
+			break;
+		}
+
+		if(OldDDTeam == -1)
+		{
+			for(int j = i - 1; j >= 0; j--)
+			{
+				const CNetObj_PlayerInfo *pInfo2 = m_pClient->m_Snap.m_paInfoByDDTeamScore[j];
+
+				if(!pInfo2)
+					continue;
+
+				OldDDTeam = m_pClient->m_Teams.Team(pInfo2->m_ClientID);
+				break;
+			}
+		}
+
+		if(DDTeam != TEAM_FLOCK)
+		{
+			if(NextDDTeam != DDTeam)
+			{
+				char aBuf[64];
+				if(m_pClient->m_Snap.m_aTeamSize[0] > 8)
+					str_format(aBuf, sizeof(aBuf), "%7d|", DDTeam);
+				else
+					str_format(aBuf, sizeof(aBuf), "Team %2d|", DDTeam);
+			}
+			else
+				str_format(aBuf, sizeof(aBuf), "%7s|", " ");
+			str_append(aLine, aBuf, sizeof(aLine));
+			if(OldDDTeam != DDTeam)
+				dbg_msg("dump_players", "+----------+--+----------------+----------------+---+-------/");
+			if(NextDDTeam != DDTeam)
+				dbg_msg("dump_players", "+----------+--+----------------+----------------+---+-------\\");
+		}
+
+		OldDDTeam = DDTeam;
+		if(IsMatch)
+			dbg_msg("dump_players", "%s", aLine);
+	}
+	dbg_msg("dump_players", "+----------+--+----------------+----------------+---+-------+");
 }
 
 void CChillerBotUX::ConCampHack(IConsole::IResult *pResult, void *pUserData)
@@ -548,8 +755,8 @@ void CChillerBotUX::ConUnCampHack(IConsole::IResult *pResult, void *pUserData)
 	CChillerBotUX *pSelf = (CChillerBotUX *)pUserData;
 	g_Config.m_ClCampHack = 0;
 	pSelf->DisableComponent("camp hack");
-	pSelf->m_pClient->m_pControls->m_InputDirectionRight[g_Config.m_ClDummy] = 0;
-	pSelf->m_pClient->m_pControls->m_InputDirectionLeft[g_Config.m_ClDummy] = 0;
+	pSelf->m_pClient->m_Controls.m_InputDirectionRight[g_Config.m_ClDummy] = 0;
+	pSelf->m_pClient->m_Controls.m_InputDirectionLeft[g_Config.m_ClDummy] = 0;
 }
 
 void CChillerBotUX::ConGotoSwitch(IConsole::IResult *pResult, void *pUserData)
@@ -665,6 +872,74 @@ set_view:
 	m_GotoTeleOffset++;
 }
 
+void CChillerBotUX::OnMessage(int MsgType, void *pRawMsg)
+{
+	if(MsgType == NETMSGTYPE_SV_KILLMSG)
+	{
+		CNetMsg_Sv_KillMsg *pMsg = (CNetMsg_Sv_KillMsg *)pRawMsg;
+
+		// unpack messages
+		CKillMsg Kill;
+		Kill.m_aVictimName[0] = '\0';
+		Kill.m_aKillerName[0] = '\0';
+
+		Kill.m_VictimID = pMsg->m_Victim;
+		if(Kill.m_VictimID >= 0 && Kill.m_VictimID < MAX_CLIENTS)
+		{
+			Kill.m_VictimTeam = m_pClient->m_aClients[Kill.m_VictimID].m_Team;
+			Kill.m_VictimDDTeam = m_pClient->m_Teams.Team(Kill.m_VictimID);
+			str_copy(Kill.m_aVictimName, m_pClient->m_aClients[Kill.m_VictimID].m_aName, sizeof(Kill.m_aVictimName));
+			Kill.m_VictimRenderInfo = m_pClient->m_aClients[Kill.m_VictimID].m_RenderInfo;
+		}
+
+		Kill.m_KillerID = pMsg->m_Killer;
+		if(Kill.m_KillerID >= 0 && Kill.m_KillerID < MAX_CLIENTS)
+		{
+			Kill.m_KillerTeam = m_pClient->m_aClients[Kill.m_KillerID].m_Team;
+			str_copy(Kill.m_aKillerName, m_pClient->m_aClients[Kill.m_KillerID].m_aName, sizeof(Kill.m_aKillerName));
+			Kill.m_KillerRenderInfo = m_pClient->m_aClients[Kill.m_KillerID].m_RenderInfo;
+		}
+
+		Kill.m_Weapon = pMsg->m_Weapon;
+		Kill.m_ModeSpecial = pMsg->m_ModeSpecial;
+		Kill.m_Tick = Client()->GameTick(g_Config.m_ClDummy);
+
+		Kill.m_FlagCarrierBlue = m_pClient->m_Snap.m_pGameDataObj ? m_pClient->m_Snap.m_pGameDataObj->m_FlagCarrierBlue : -1;
+
+		bool KillMsgValid = (Kill.m_VictimRenderInfo.m_CustomColoredSkin && Kill.m_VictimRenderInfo.m_ColorableRenderSkin.m_Body.IsValid()) || (!Kill.m_VictimRenderInfo.m_CustomColoredSkin && Kill.m_VictimRenderInfo.m_OriginalRenderSkin.m_Body.IsValid());
+		// if killer != victim, killer must be valid too
+		KillMsgValid &= Kill.m_KillerID == Kill.m_VictimID || ((Kill.m_KillerRenderInfo.m_CustomColoredSkin && Kill.m_KillerRenderInfo.m_ColorableRenderSkin.m_Body.IsValid()) || (!Kill.m_KillerRenderInfo.m_CustomColoredSkin && Kill.m_KillerRenderInfo.m_OriginalRenderSkin.m_Body.IsValid()));
+		if(KillMsgValid && Kill.m_KillerID != Kill.m_VictimID)
+		{
+			for(int i = 0; i < 2; i++)
+			{
+				if(m_pClient->m_LocalIDs[i] != Kill.m_VictimID)
+					continue;
+
+				str_copy(m_aLastKiller[i], Kill.m_aKillerName, sizeof(m_aLastKiller[i]));
+				char aBuf[512];
+				str_timestamp_format(m_aLastKillerTime[i], sizeof(m_aLastKillerTime[i]), "%H:%M");
+				str_format(
+					aBuf,
+					sizeof(aBuf),
+					"[%s]main: %s [%s]dummy: %s",
+					m_aLastKillerTime[0],
+					m_aLastKiller[0],
+					m_aLastKillerTime[1],
+					m_aLastKiller[1]);
+				SetComponentNoteLong("last killer", aBuf);
+			}
+		}
+	}
+	else if(MsgType == NETMSGTYPE_SV_BROADCAST)
+	{
+		CNetMsg_Sv_Broadcast *pMsg = (CNetMsg_Sv_Broadcast *)pRawMsg;
+		str_copy(m_aBroadcastText, pMsg->m_pMessage, sizeof(m_aBroadcastText));
+		m_BroadcastTick = Client()->GameTick(g_Config.m_ClDummy) + Client()->GameTickSpeed() * 10;
+		m_IsLeftSidedBroadcast = str_find(m_aBroadcastText, "                                ") != NULL;
+	}
+}
+
 void CChillerBotUX::GoAfk(int Minutes, const char *pMsg)
 {
 	if(pMsg)
@@ -682,6 +957,8 @@ void CChillerBotUX::GoAfk(int Minutes, const char *pMsg)
 	m_AfkActivity = 0;
 	m_pChatHelper->ClearLastAfkPingMessage();
 	EnableComponent("afk");
+	EnableComponent("last killer");
+	g_Config.m_ClShowLastKiller = 1;
 }
 
 void CChillerBotUX::ReturnFromAfk(const char *pChatMessage)
@@ -698,7 +975,7 @@ void CChillerBotUX::ReturnFromAfk(const char *pChatMessage)
 	m_AfkActivity++;
 	if(m_AfkActivity < 200)
 		return;
-	m_pClient->m_pChat->AddLine(-2, 0, "[chillerbot-ux] welcome back :)");
+	m_pClient->m_Chat.AddLine(-2, 0, "[chillerbot-ux] welcome back :)");
 	m_AfkTill = 0;
 	DisableComponent("afk");
 }

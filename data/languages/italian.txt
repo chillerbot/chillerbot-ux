@@ -90,9 +90,6 @@ Client
 Close
 == Chiudi
 
-Compatible version
-== Versione compatibile
-
 Connect
 == Connetti
 
@@ -248,9 +245,6 @@ MOTD
 
 Map
 == Mappa
-
-Maximum ping:
-== Ping massimo:
 
 Mouse sens.
 == Sensibilità
@@ -1254,6 +1248,9 @@ Grabs
 The width of texture %s is not divisible by %d, or the height is not divisible by %d, which might cause visual bugs.
 == 
 
+Are you sure that you want to disconnect and switch to a different server?
+== 
+
 AFR
 == 
 
@@ -1278,6 +1275,9 @@ CHN
 Getting server list from master server
 == 
 
+Refreshing...
+== 
+
 Leak IP
 == 
 
@@ -1288,6 +1288,12 @@ Markers:
 == 
 
 %.2f KiB
+== 
+
+Settings file
+== 
+
+Config directory
 == 
 
 Converse
@@ -1305,6 +1311,9 @@ Windowed
 Windowed borderless
 == 
 
+Windowed fullscreen
+== 
+
 Desktop fullscreen
 == 
 
@@ -1312,6 +1321,15 @@ Use modern OpenGL
 == 
 
 Show client IDs
+== 
+
+Kill Messages
+== 
+
+Kill Message Normal Color
+== 
+
+Kill Message Highlight Color
 == 
 
 Laser Outline Color
@@ -1338,6 +1356,9 @@ Preview
 Overlay entities
 == 
 
+Show local player's key presses
+== 
+
 Background
 == 
 
@@ -1345,6 +1366,12 @@ Entities Background color
 == 
 
 Regular Background Color
+== 
+
+Run on join
+== 
+
+Chat command (e.g. showall 1)
 == 
 
 Discord

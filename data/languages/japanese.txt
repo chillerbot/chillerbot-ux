@@ -85,9 +85,6 @@ Client
 Close
 == 閉じる
 
-Compatible version
-== 互換性のあるバージョン
-
 Connect
 == 接続
 
@@ -240,9 +237,6 @@ MOTD
 
 Map
 == マップ
-
-Maximum ping:
-== Ping の最大値:
 
 Mouse sens.
 == マウス感度
@@ -729,27 +723,6 @@ transmits your player name to info2.ddnet.tw
 
 Theme
 == テーマ
-
-AFR
-== 
-
-ASI
-== 
-
-AUS
-== 
-
-EUR
-== 
-
-NA
-== 
-
-SA
-== 
-
-CHN
-== 
 
 Getting server list from master server
 == マスターサーバーからサーバーリストを取得しています
@@ -1318,3 +1291,57 @@ Grabs
 
 9+ new mentions
 == 9+ 件の新しいメンション
+
+Are you sure that you want to disconnect and switch to a different server?
+== 
+
+AFR
+== 
+
+ASI
+== 
+
+AUS
+== 
+
+EUR
+== 
+
+NA
+== 
+
+SA
+== 
+
+CHN
+== 
+
+Refreshing...
+== 
+
+Settings file
+== 
+
+Config directory
+== 
+
+Windowed fullscreen
+== 
+
+Kill Messages
+== 
+
+Kill Message Normal Color
+== 
+
+Kill Message Highlight Color
+== 
+
+Show local player's key presses
+== 
+
+Run on join
+== 
+
+Chat command (e.g. showall 1)
+== 

@@ -8,6 +8,9 @@
 #include <game/client/components/mapimages.h>
 #include <game/client/components/maplayers.h>
 
+#include <game/client/gameclient.h>
+#include <game/layers.h>
+
 #include "background.h"
 
 CBackground::CBackground(int MapType, bool OnlineOnly) :
@@ -68,14 +71,13 @@ void CBackground::LoadBackground()
 		if(m_pMap->IsLoaded())
 		{
 			m_pLayers = GameClient()->Layers();
-			m_pImages = GameClient()->m_pMapimages;
+			m_pImages = &GameClient()->m_MapImages;
 			m_Loaded = true;
 		}
 	}
 	else if(m_pMap->Load(aBuf))
 	{
 		m_pLayers->InitBackground(m_pMap);
-		RenderTools()->RenderTilemapGenerateSkip(m_pLayers);
 		NeedImageLoading = true;
 		m_Loaded = true;
 	}

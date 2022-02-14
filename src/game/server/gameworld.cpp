@@ -106,13 +106,25 @@ void CGameWorld::RemoveEntity(CEntity *pEnt)
 //
 void CGameWorld::Snap(int SnappingClient)
 {
-	for(auto *pEnt : m_apFirstEntityTypes)
-		for(; pEnt;)
+	for(CEntity *pEnt = m_apFirstEntityTypes[ENTTYPE_CHARACTER]; pEnt;)
+	{
+		m_pNextTraverseEntity = pEnt->m_pNextTypeEntity;
+		pEnt->Snap(SnappingClient);
+		pEnt = m_pNextTraverseEntity;
+	}
+
+	for(int i = 0; i < NUM_ENTTYPES; i++)
+	{
+		if(i == ENTTYPE_CHARACTER)
+			continue;
+
+		for(CEntity *pEnt = m_apFirstEntityTypes[i]; pEnt;)
 		{
 			m_pNextTraverseEntity = pEnt->m_pNextTypeEntity;
 			pEnt->Snap(SnappingClient);
 			pEnt = m_pNextTraverseEntity;
 		}
+	}
 }
 
 void CGameWorld::Reset()
@@ -292,6 +304,18 @@ void CGameWorld::Tick()
 		pChar->m_StrongWeakID = StrongWeakID;
 		StrongWeakID++;
 	}
+}
+
+void CGameWorld::SwapClients(int Client1, int Client2)
+{
+	// update all objects
+	for(auto *pEnt : m_apFirstEntityTypes)
+		for(; pEnt;)
+		{
+			m_pNextTraverseEntity = pEnt->m_pNextTypeEntity;
+			pEnt->SwapClients(Client1, Client2);
+			pEnt = m_pNextTraverseEntity;
+		}
 }
 
 // TODO: should be more general

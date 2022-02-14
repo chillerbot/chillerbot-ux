@@ -17,7 +17,7 @@ public:
 		CSkins *m_pSkins;
 
 	protected:
-		virtual int OnCompletion(int State);
+		virtual int OnCompletion(int State) override;
 
 	public:
 		CGetPngFile(CSkins *pSkins, IStorage *pStorage, const char *pUrl, const char *pDest, int StorageType = -2, CTimeout Timeout = CTimeout{4000, 500, 5}, HTTPLOG LogProgress = HTTPLOG::ALL);
@@ -27,7 +27,7 @@ public:
 	struct CDownloadSkin
 	{
 		std::shared_ptr<CSkins::CGetPngFile> m_pTask;
-		char m_aPath[MAX_PATH_LENGTH];
+		char m_aPath[IO_MAX_PATH_LENGTH];
 		char m_aName[24];
 
 		bool operator<(const CDownloadSkin &Other) const { return str_comp(m_aName, Other.m_aName) < 0; }
@@ -35,7 +35,8 @@ public:
 		bool operator==(const char *pOther) const { return !str_comp(m_aName, pOther); }
 	};
 
-	void OnInit();
+	virtual int Sizeof() const override { return sizeof(*this); }
+	void OnInit() override;
 
 	void Refresh();
 	int Num();

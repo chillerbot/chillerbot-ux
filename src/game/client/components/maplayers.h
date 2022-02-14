@@ -4,6 +4,8 @@
 #define GAME_CLIENT_COMPONENTS_MAPLAYERS_H
 #include <game/client/component.h>
 
+#include <base/color.h>
+
 #include <cstdint>
 #include <vector>
 
@@ -14,6 +16,10 @@
 typedef char *offset_ptr_size;
 typedef uintptr_t offset_ptr;
 typedef unsigned int offset_ptr32;
+
+struct CMapItemGroup;
+struct CMapItemLayerTilemap;
+struct CMapItemLayerQuads;
 
 class CMapLayers : public CComponent
 {
@@ -140,9 +146,10 @@ public:
 
 	CMapLayers(int Type, bool OnlineOnly = true);
 	virtual ~CMapLayers();
-	virtual void OnInit();
-	virtual void OnRender();
-	virtual void OnMapLoad();
+	virtual int Sizeof() const override { return sizeof(*this); }
+	virtual void OnInit() override;
+	virtual void OnRender() override;
+	virtual void OnMapLoad() override;
 
 	void RenderTileLayer(int LayerIndex, ColorRGBA *pColor, CMapItemLayerTilemap *pTileLayer, CMapItemGroup *pGroup);
 	void RenderTileBorder(int LayerIndex, ColorRGBA *pColor, CMapItemLayerTilemap *pTileLayer, CMapItemGroup *pGroup, int BorderX0, int BorderY0, int BorderX1, int BorderY1, int ScreenWidthTileCount, int ScreenHeightTileCount);

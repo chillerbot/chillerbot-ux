@@ -99,25 +99,24 @@ void IGameController::DoActivityCheck()
 	}
 }
 
-float IGameController::EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos)
+float IGameController::EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos, int DDTeam)
 {
 	float Score = 0.0f;
 	CCharacter *pC = static_cast<CCharacter *>(GameServer()->m_World.FindFirst(CGameWorld::ENTTYPE_CHARACTER));
 	for(; pC; pC = (CCharacter *)pC->TypeNext())
 	{
-		// team mates are not as dangerous as enemies
-		float Scoremod = 1.0f;
-		if(pEval->m_FriendlyTeam != -1 && pC->GetPlayer()->GetTeam() == pEval->m_FriendlyTeam)
-			Scoremod = 0.5f;
+		// ignore players in other teams
+		if(GameServer()->GetDDRaceTeam(pC->GetPlayer()->GetCID()) != DDTeam)
+			continue;
 
 		float d = distance(Pos, pC->m_Pos);
-		Score += Scoremod * (d == 0 ? 1000000000.0f : 1.0f / d);
+		Score += d == 0 ? 1000000000.0f : 1.0f / d;
 	}
 
 	return Score;
 }
 
-void IGameController::EvaluateSpawnType(CSpawnEval *pEval, int Type)
+void IGameController::EvaluateSpawnType(CSpawnEval *pEval, int Type, int DDTeam)
 {
 	// j == 0: Find an empty slot, j == 1: Take any slot if no empty one found
 	for(int j = 0; j < 2 && !pEval->m_Got; j++)
@@ -153,7 +152,7 @@ void IGameController::EvaluateSpawnType(CSpawnEval *pEval, int Type)
 				P += Positions[Result];
 			}
 
-			float S = EvaluateSpawnPos(pEval, P);
+			float S = EvaluateSpawnPos(pEval, P, DDTeam);
 			if(!pEval->m_Got || (j == 0 && pEval->m_Score > S))
 			{
 				pEval->m_Got = true;
@@ -164,7 +163,7 @@ void IGameController::EvaluateSpawnType(CSpawnEval *pEval, int Type)
 	}
 }
 
-bool IGameController::CanSpawn(int Team, vec2 *pOutPos)
+bool IGameController::CanSpawn(int Team, vec2 *pOutPos, int DDTeam)
 {
 	CSpawnEval Eval;
 
@@ -172,9 +171,9 @@ bool IGameController::CanSpawn(int Team, vec2 *pOutPos)
 	if(Team == TEAM_SPECTATORS)
 		return false;
 
-	EvaluateSpawnType(&Eval, 0);
-	EvaluateSpawnType(&Eval, 1);
-	EvaluateSpawnType(&Eval, 2);
+	EvaluateSpawnType(&Eval, 0, DDTeam);
+	EvaluateSpawnType(&Eval, 1, DDTeam);
+	EvaluateSpawnType(&Eval, 2, DDTeam);
 
 	*pOutPos = Eval.m_Pos;
 	return Eval.m_Got;
@@ -466,7 +465,7 @@ void IGameController::StartRound()
 
 void IGameController::ChangeMap(const char *pToMap)
 {
-	str_copy(g_Config.m_SvMap, pToMap, sizeof(g_Config.m_SvMap));
+	Server()->ChangeMap(pToMap);
 }
 
 void IGameController::OnReset()
@@ -627,6 +626,53 @@ void IGameController::Snap(int SnappingClient)
 		pRaceData->m_BestTime = round_to_int(m_CurrentRecord * 1000);
 		pRaceData->m_Precision = 0;
 		pRaceData->m_RaceFlags = protocol7::RACEFLAG_HIDE_KILLMSG | protocol7::RACEFLAG_KEEP_WANTED_WEAPON;
+	}
+
+	if(GameServer()->Collision()->m_pSwitchers)
+	{
+		int Team = pPlayer && pPlayer->GetCharacter() ? pPlayer->GetCharacter()->Team() : 0;
+
+		if(pPlayer && (pPlayer->GetTeam() == TEAM_SPECTATORS || pPlayer->IsPaused()) && pPlayer->m_SpectatorID != SPEC_FREEVIEW && GameServer()->m_apPlayers[pPlayer->m_SpectatorID] && GameServer()->m_apPlayers[pPlayer->m_SpectatorID]->GetCharacter())
+			Team = GameServer()->m_apPlayers[pPlayer->m_SpectatorID]->GetCharacter()->Team();
+
+		if(Team == TEAM_SUPER)
+			return;
+
+		CNetObj_SwitchState *pSwitchState = static_cast<CNetObj_SwitchState *>(Server()->SnapNewItem(NETOBJTYPE_SWITCHSTATE, Team, sizeof(CNetObj_SwitchState)));
+		if(!pSwitchState)
+			return;
+
+		pSwitchState->m_NumSwitchers = clamp(GameServer()->Collision()->m_NumSwitchers, 0, 255);
+		pSwitchState->m_Status1 = 0;
+		pSwitchState->m_Status2 = 0;
+		pSwitchState->m_Status3 = 0;
+		pSwitchState->m_Status4 = 0;
+		pSwitchState->m_Status5 = 0;
+		pSwitchState->m_Status6 = 0;
+		pSwitchState->m_Status7 = 0;
+		pSwitchState->m_Status8 = 0;
+
+		for(int i = 0; i < pSwitchState->m_NumSwitchers + 1; i++)
+		{
+			int Status = (int)GameServer()->Collision()->m_pSwitchers[i].m_Status[Team];
+
+			if(i < 32)
+				pSwitchState->m_Status1 |= Status << i;
+			else if(i < 64)
+				pSwitchState->m_Status2 |= Status << (i - 32);
+			else if(i < 96)
+				pSwitchState->m_Status3 |= Status << (i - 64);
+			else if(i < 128)
+				pSwitchState->m_Status4 |= Status << (i - 96);
+			else if(i < 160)
+				pSwitchState->m_Status5 |= Status << (i - 128);
+			else if(i < 192)
+				pSwitchState->m_Status6 |= Status << (i - 160);
+			else if(i < 224)
+				pSwitchState->m_Status7 |= Status << (i - 192);
+			else if(i < 256)
+				pSwitchState->m_Status8 |= Status << (i - 224);
+		}
 	}
 }
 

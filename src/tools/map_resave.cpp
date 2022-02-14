@@ -6,10 +6,11 @@
 
 int main(int argc, const char **argv)
 {
+	cmdline_fix(&argc, &argv);
 	IStorage *pStorage = CreateStorage("Teeworlds", IStorage::STORAGETYPE_BASIC, argc, argv);
 	int Index, ID = 0, Type = 0, Size;
 	void *pPtr;
-	char aFileName[1024];
+	char aFileName[IO_MAX_PATH_LENGTH];
 	CDataFileReader DataFile;
 	CDataFileWriter df;
 
@@ -48,5 +49,6 @@ int main(int argc, const char **argv)
 
 	DataFile.Close();
 	df.Finish();
+	cmdline_free(argc, argv);
 	return 0;
 }

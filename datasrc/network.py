@@ -10,7 +10,7 @@ GameStateFlags = ["GAMEOVER", "SUDDENDEATH", "PAUSED", "RACETIME"]
 CharacterFlags = ["SOLO", "JETPACK", "NO_COLLISION", "ENDLESS_HOOK", "ENDLESS_JUMP", "SUPER",
                   "NO_HAMMER_HIT", "NO_SHOTGUN_HIT", "NO_GRENADE_HIT", "NO_LASER_HIT", "NO_HOOK",
                   "TELEGUN_GUN", "TELEGUN_GRENADE", "TELEGUN_LASER",
-                  "WEAPON_HAMMER", "WEAPON_GUN", "WEAPON_SHOTGUN", "WEAPON_GRENADE", "WEAPON_LASER", "WEAPON_NINJA"]
+                  "WEAPON_HAMMER", "WEAPON_GUN", "WEAPON_SHOTGUN", "WEAPON_GRENADE", "WEAPON_LASER", "WEAPON_NINJA", "NO_MOVEMENTS"]
 GameInfoFlags = [
 	"TIMESCORE", "GAMETYPE_RACE", "GAMETYPE_FASTCAP", "GAMETYPE_FNG",
 	"GAMETYPE_DDRACE", "GAMETYPE_DDNET", "GAMETYPE_BLOCK_WORLDS",
@@ -36,6 +36,7 @@ Emoticons = ["OOP", "EXCLAMATION", "HEARTS", "DROP", "DOTDOT", "MUSIC", "SORRY",
 
 Powerups = ["HEALTH", "ARMOR", "WEAPON", "NINJA"]
 Authed = ["NO", "HELPER", "MOD", "ADMIN"]
+EntityClasses = ["PROJECTILE", "DOOR", "DRAGGER_WEAK", "DRAGGER_NORMAL", "DRAGGER_STRONG", "GUN_NORMAL", "GUN_EXPLOSIVE", "GUN_FREEZE", "GUN_UNFREEZE", "LIGHT", "PICKUP"]
 
 RawHeader = '''
 
@@ -77,6 +78,7 @@ Enums = [
 	Enum("POWERUP", Powerups),
 	Enum("EMOTICON", Emoticons),
 	Enum("AUTHED", Authed),
+	Enum("ENTITYCLASS", EntityClasses),
 ]
 
 Flags = [
@@ -236,7 +238,7 @@ Objects = [
 	NetObjectEx("DDNetCharacter", "character@netobj.ddnet.tw", [
 		NetIntAny("m_Flags"),
 		NetTick("m_FreezeEnd"),
-		NetIntRange("m_Jumps", 0, 255),
+		NetIntRange("m_Jumps", -1, 255),
 		NetIntAny("m_TeleCheckpoint"),
 		NetIntRange("m_StrongWeakID", 0, 'MAX_CLIENTS-1'),
 	]),
@@ -298,6 +300,27 @@ Objects = [
 	NetObjectEx("SpecChar", "spec-char@netobj.ddnet.tw", [
 		NetIntAny("m_X"),
 		NetIntAny("m_Y"),
+	]),
+
+	# Switch state for a player team.
+	NetObjectEx("SwitchState", "switch-state@netobj.ddnet.tw", [
+		NetIntRange("m_NumSwitchers", 0, 256),
+		# 256 switches / 32 bits = 8 int32
+		NetIntAny("m_Status1"),
+		NetIntAny("m_Status2"),
+		NetIntAny("m_Status3"),
+		NetIntAny("m_Status4"),
+		NetIntAny("m_Status5"),
+		NetIntAny("m_Status6"),
+		NetIntAny("m_Status7"),
+		NetIntAny("m_Status8"),
+	]),
+
+	# Switch info for map items
+	NetObjectEx("EntityEx", "entity-ex@netobj.ddnet.tw", [
+		NetIntAny("m_SwitchNumber"),
+		NetIntAny("m_Layer"),
+		NetIntAny("m_EntityClass"),
 	]),
 ]
 

@@ -42,16 +42,12 @@ extern "C" {
 		msg - Message that should be printed if the test fails.
 
 	Remarks:
-		Does nothing in release version
+		Also works in release mode.
 
 	See Also:
 		<dbg_break>
 */
-#ifdef CONF_DEBUG
 #define dbg_assert(test, msg) dbg_assert_imp(__FILE__, __LINE__, test, msg)
-#else
-#define dbg_assert(test, msg)
-#endif
 void dbg_assert_imp(const char *filename, int line, int test, const char *msg);
 
 #ifdef __clang_analyzer__
@@ -71,17 +67,12 @@ void dbg_assert_imp(const char *filename, int line, int test, const char *msg);
 		Breaks into the debugger.
 
 	Remarks:
-		Does nothing in release version
+		Also works in release mode.
 
 	See Also:
 		<dbg_assert>
 */
-#ifdef CONF_DEBUG
-#define dbg_break() dbg_break_imp()
-#else
-#define dbg_break()
-#endif
-void dbg_break_imp();
+void dbg_break();
 
 /*
 	Function: dbg_msg
@@ -93,7 +84,7 @@ void dbg_break_imp();
 		fmt - A printf styled format string.
 
 	Remarks:
-		Also works in release version
+		Also works in release mode.
 
 	See Also:
 		<dbg_assert>
@@ -170,12 +161,14 @@ enum
 {
 	IOFLAG_READ = 1,
 	IOFLAG_WRITE = 2,
-	IOFLAG_RANDOM = 4,
-	IOFLAG_APPEND = 8,
+	IOFLAG_APPEND = 4,
+	IOFLAG_SKIP_BOM = 8,
 
 	IOSEEK_START = 0,
 	IOSEEK_CUR = 1,
-	IOSEEK_END = 2
+	IOSEEK_END = 2,
+
+	IO_MAX_PATH_LENGTH = 512,
 };
 
 typedef struct IOINTERNAL *IOHANDLE;
@@ -186,7 +179,7 @@ typedef struct IOINTERNAL *IOHANDLE;
 
 	Parameters:
 		filename - File to open.
-		flags - A set of flags. IOFLAG_READ, IOFLAG_WRITE, IOFLAG_RANDOM, IOFLAG_APPEND.
+		flags - A set of flags. IOFLAG_READ, IOFLAG_WRITE, IOFLAG_APPEND, IOFLAG_SKIP_BOM.
 
 	Returns:
 		Returns a handle to the file on success and 0 on failure.
@@ -311,6 +304,18 @@ int io_close(IOHANDLE io);
 int io_flush(IOHANDLE io);
 
 /*
+	Function: io_sync
+		Synchronize file changes to disk.
+
+	Parameters:
+		io - Handle to the file.
+
+	Returns:
+		Returns 0 on success.
+*/
+int io_sync(IOHANDLE io);
+
+/*
 	Function: io_error
 		Checks whether an error occurred during I/O with the file.
 
@@ -339,6 +344,12 @@ IOHANDLE io_stdout();
 		Returns an <IOHANDLE> to the standard error.
 */
 IOHANDLE io_stderr();
+
+/*
+	Function: io_current_exe
+		Returns an <IOHANDLE> to the current executable.
+*/
+IOHANDLE io_current_exe();
 
 typedef struct ASYNCIO ASYNCIO;
 
@@ -1598,14 +1609,29 @@ void str_escape(char **dst, const char *src, const char *end);
 		cb - Callback function to call for each entry
 		type - Type of the directory
 		user - Pointer to give to the callback
-
-	Returns:
-		Always returns 0.
 */
 typedef int (*FS_LISTDIR_CALLBACK)(const char *name, int is_dir, int dir_type, void *user);
-typedef int (*FS_LISTDIR_INFO_CALLBACK)(const char *name, time_t date, int is_dir, int dir_type, void *user);
-int fs_listdir(const char *dir, FS_LISTDIR_CALLBACK cb, int type, void *user);
-int fs_listdir_info(const char *dir, FS_LISTDIR_INFO_CALLBACK cb, int type, void *user);
+void fs_listdir(const char *dir, FS_LISTDIR_CALLBACK cb, int type, void *user);
+
+typedef struct
+{
+	const char *m_pName;
+	time_t m_TimeCreated; // seconds since UNIX Epoch
+	time_t m_TimeModified; // seconds since UNIX Epoch
+} CFsFileInfo;
+
+/*
+	Function: fs_listdir_fileinfo
+		Lists the files in a directory and gets additional file information
+
+	Parameters:
+		dir - Directory to list
+		cb - Callback function to call for each entry
+		type - Type of the directory
+		user - Pointer to give to the callback
+*/
+typedef int (*FS_LISTDIR_CALLBACK_FILEINFO)(const CFsFileInfo *info, int is_dir, int dir_type, void *user);
+void fs_listdir_fileinfo(const char *dir, FS_LISTDIR_CALLBACK_FILEINFO cb, int type, void *user);
 
 /*
 	Function: fs_makedir
@@ -1674,12 +1700,6 @@ int fs_storage_path(const char *appname, char *path, int max);
 int fs_is_dir(const char *path);
 
 /*
-	Function: fs_getmtime
-		Gets the modification time of a file
-*/
-time_t fs_getmtime(const char *path);
-
-/*
 	Function: fs_chdir
 		Changes current working directory
 
@@ -1745,6 +1765,23 @@ int fs_remove(const char *filename);
 int fs_rename(const char *oldname, const char *newname);
 
 /*
+	Function: fs_file_time
+		Gets the creation and the last modification date of a file.
+
+	Parameters:
+		name - The filename.
+		created - Pointer to time_t
+		modified - Pointer to time_t
+
+	Returns:
+		0 on success non-zero on failure
+
+	Remarks:
+		- Returned time is in seconds since UNIX Epoch
+*/
+int fs_file_time(const char *name, time_t *created, time_t *modified);
+
+/*
 	Group: Undocumented
 */
 
@@ -1788,17 +1825,32 @@ int net_socket_read_wait(NETSOCKET sock, int time);
 /*
 	Function: open_link
 		Opens a link in the browser.
-	
+
 	Parameters:
 		link - The link to open in a browser.
-	
+
 	Returns:
 		Returns 1 on success, 0 on failure.
-	
+
 	Remarks:
-		This may not be called with untrusted input or it'll result in arbitrary code execution.
+		This may not be called with untrusted input or it'll result in arbitrary code execution, especially on Windows.
 */
 int open_link(const char *link);
+
+/*
+	Function: open_file
+		Opens a file or directory with default program.
+
+	Parameters:
+		path - The path to open.
+
+	Returns:
+		Returns 1 on success, 0 on failure.
+
+	Remarks:
+		This may not be called with untrusted input or it'll result in arbitrary code execution, especially on Windows.
+*/
+int open_file(const char *path);
 
 void swap_endian(void *data, unsigned elem_size, unsigned num);
 
@@ -1812,10 +1864,10 @@ void dbg_logger_file(const char *filename);
 
 typedef struct
 {
-	int sent_packets;
-	int sent_bytes;
-	int recv_packets;
-	int recv_bytes;
+	uint64_t sent_packets;
+	uint64_t sent_bytes;
+	uint64_t recv_packets;
+	uint64_t recv_bytes;
 } NETSTATS;
 
 void net_stats(NETSTATS *stats);
@@ -1839,14 +1891,14 @@ int str_utf8_to_skeleton(const char *str, int *buf, int buf_len);
 		Compares two strings for visual appearance.
 
 	Parameters:
-		a - String to compare.
-		b - String to compare.
+		str1 - String to compare.
+		str2 - String to compare.
 
 	Returns:
 		0 if the strings are confusable.
 		!=0 otherwise.
 */
-int str_utf8_comp_confusable(const char *a, const char *b);
+int str_utf8_comp_confusable(const char *str1, const char *str2);
 
 /*
 	Function: str_utf8_tolower
@@ -1944,13 +1996,13 @@ const char *str_utf8_skip_whitespaces(const char *str);
 		the string in-place.
 
 	Parameters:
-		str - Pointer to the string.
+		param - Pointer to the string.
 
 	Remarks:
 		- The strings are treated as zero-terminated strings.
 		- The string is modified in-place.
 */
-void str_utf8_trim_right(char *str);
+void str_utf8_trim_right(char *param);
 
 /*
 	Function: str_utf8_rewind
@@ -1967,6 +2019,19 @@ void str_utf8_trim_right(char *str);
 		- Won't move the cursor less then 0
 */
 int str_utf8_rewind(const char *str, int cursor);
+
+/*
+	Function: str_utf8_fix_truncation
+		Fixes truncation of a Unicode character at the end of a UTF-8
+		string.
+
+	Returns:
+		The new string length.
+
+	Parameters:
+		str - utf8 string
+*/
+int str_utf8_fix_truncation(char *str);
 
 /*
 	Function: str_utf8_forward
@@ -2047,31 +2112,35 @@ int str_utf16le_encode(char *ptr, int chr);
 int str_utf8_check(const char *str);
 
 /*
-	Function: str_utf8_copy
-		Copies a utf8 string to a buffer.
+	Function: str_utf8_stats
+		Determines the byte size and utf8 character count of a utf8 string.
 
 	Parameters:
-		dst - Pointer to a buffer that shall receive the string.
-		src - utf8 string to be copied.
-		dst_size - Size of the buffer dst.
+		str - Pointer to the string.
+		max_size - Maximum number of bytes to count.
+		max_count - Maximum number of utf8 characters to count.
+		size - Pointer to store size (number of non-zero bytes) of the string.
+		count - Pointer to store count of utf8 characters of the string.
 
 	Remarks:
-		- The strings are treated as zero-terminated strings.
-		- Guarantees that dst string will contain zero-termination.
-		- Guarantees that dst always contains a valid utf8 string.
+		- The string is treated as zero-terminated utf8 string.
+		- It's the user's responsibility to make sure the bounds are aligned.
 */
-void str_utf8_copy(char *dst, const char *src, int dst_size);
+void str_utf8_stats(const char *str, int max_size, int max_count, int *size, int *count);
 
 /*
 	Function: str_next_token
 		Writes the next token after str into buf, returns the rest of the string.
+
 	Parameters:
 		str - Pointer to string.
 		delim - Delimiter for tokenization.
 		buffer - Buffer to store token in.
 		buffer_size - Size of the buffer.
+
 	Returns:
 		Pointer to rest of the string.
+
 	Remarks:
 		- The token is always null-terminated.
 */
@@ -2093,6 +2162,52 @@ const char *str_next_token(const char *str, const char *delim, char *buffer, int
 int str_in_list(const char *list, const char *delim, const char *needle);
 
 /*
+	Function: bytes_be_to_int
+		Packs 4 big endian bytes into an int
+
+	Returns:
+		The packed int
+
+	Remarks:
+		- Assumes the passed array is 4 bytes
+		- Assumes int is 4 bytes
+*/
+int bytes_be_to_int(const unsigned char *bytes);
+
+/*
+	Function: int_to_bytes_be
+		Packs an int into 4 big endian bytes
+
+	Remarks:
+		- Assumes the passed array is 4 bytes
+		- Assumes int is 4 bytes
+*/
+void int_to_bytes_be(unsigned char *bytes, int value);
+
+/*
+	Function: bytes_be_to_uint
+		Packs 4 big endian bytes into an unsigned
+
+	Returns:
+		The packed unsigned
+
+	Remarks:
+		- Assumes the passed array is 4 bytes
+		- Assumes unsigned is 4 bytes
+*/
+unsigned bytes_be_to_uint(const unsigned char *bytes);
+
+/*
+	Function: uint_to_bytes_be
+		Packs an unsigned into 4 big endian bytes
+
+	Remarks:
+		- Assumes the passed array is 4 bytes
+		- Assumes unsigned is 4 bytes
+*/
+void uint_to_bytes_be(unsigned char *bytes, unsigned value);
+
+/*
 	Function: pid
 		Returns the pid of the current process.
 	
@@ -2100,6 +2215,32 @@ int str_in_list(const char *list, const char *delim, const char *needle);
 		pid of the current process
 */
 int pid();
+
+/*
+	Function: cmdline_fix
+		Fixes the command line arguments to be encoded in UTF-8 on all
+		systems.
+
+	Parameters:
+		argc - A pointer to the argc parameter that was passed to the main function.
+		argv - A pointer to the argv parameter that was passed to the main function.
+
+	Remarks:
+		- You need to call cmdline_free once you're no longer using the
+		results.
+*/
+void cmdline_fix(int *argc, const char ***argv);
+
+/*
+	Function: cmdline_free
+		Frees memory that was allocated by cmdline_fix.
+
+	Parameters:
+		argc - The argc obtained from cmdline_fix.
+		argv - The argv obtained from cmdline_fix.
+
+*/
+void cmdline_free(int argc, const char **argv);
 
 #if defined(CONF_FAMILY_WINDOWS)
 typedef void *PROCESS;
@@ -2130,16 +2271,6 @@ PROCESS shell_execute(const char *file);
 int kill_process(PROCESS process);
 
 /*
-	Function: os_is_winxp_or_lower
-		Checks whether the program runs on Windows XP or lower.
-
-	Returns:
-		1 - Windows XP or lower.
-		0 - Higher Windows version, Linux, macOS, etc.
-*/
-int os_is_winxp_or_lower();
-
-/*
 	Function: generate_password
 		Generates a null-terminated password of length `2 *
 		random_length`.
@@ -2162,6 +2293,16 @@ void generate_password(char *buffer, unsigned length, unsigned short *random, un
 		1 - Initialization failed.
 */
 int secure_random_init();
+
+/*
+	Function: secure_random_uninit
+		Uninitializes the secure random module.
+
+	Returns:
+		0 - Uninitialization succeeded.
+		1 - Uninitialization failed.
+*/
+int secure_random_uninit();
 
 /*
 	Function: secure_random_password
@@ -2203,6 +2344,34 @@ int secure_rand();
 		below - Upper limit (exclusive) of integers to return.
 */
 int secure_rand_below(int below);
+
+/*
+	Function: set_console_msg_color
+		Sets the console color.
+
+	Parameters:
+		rgb - If NULL it will reset the console color to default, else it will transform the rgb color to a console color
+*/
+void set_console_msg_color(const void *rgbvoid);
+
+/*
+	Function: os_version_str
+		Returns a human-readable version string of the operating system
+
+	Parameters:
+		version - Buffer to use for the output.
+		length - Length of the output buffer.
+
+	Returns:
+		0 - Success in getting the version.
+		1 - Failure in getting the version.
+*/
+int os_version_str(char *version, int length);
+
+#if defined(CONF_CURSES_CLIENT)
+void curses_logf(const char *sys, const char *fmt, ...);
+#define dbg_msg(sys, fmt, ...) curses_logf(sys, fmt, ##__VA_ARGS__)
+#endif
 
 #if defined(__cplusplus)
 }

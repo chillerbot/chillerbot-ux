@@ -1,3 +1,5 @@
+#include <game/client/gameclient.h>
+
 #include "unix.h"
 
 void CUnix::OnInit()
@@ -14,10 +16,14 @@ void CUnix::ConLs(IConsole::IResult *pResult, void *pUserData)
 	((CUnix *)pUserData)->ls();
 }
 
-int CUnix::listDirCallback(const char *pName, time_t Date, int IsDir, int StorageType, void *pUser)
+int CUnix::listDirCallback(const CFsFileInfo *pInfo, int IsDir, int StorageType, void *pUser)
 {
 	CUnix *pSelf = (CUnix *)pUser;
-	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "binds", pName);
+	char aBuf[IO_MAX_PATH_LENGTH + 128];
+	char aTimestamp[256];
+	str_timestamp_ex(pInfo->m_TimeModified, aTimestamp, sizeof(aTimestamp), FORMAT_SPACE);
+	str_format(aBuf, sizeof(aBuf), "%s %s", aTimestamp, pInfo->m_pName);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "unix", aBuf);
 	return 0;
 }
 

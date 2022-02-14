@@ -81,7 +81,7 @@ public:
 	void OnModified();
 	void NetObjBegin();
 	void NetCharAdd(int ObjID, CNetObj_Character *pChar, CNetObj_DDNetCharacter *pExtended, int GameTeam, bool IsLocal);
-	void NetObjAdd(int ObjID, int ObjType, const void *pObjData);
+	void NetObjAdd(int ObjID, int ObjType, const void *pObjData, const CNetObj_EntityEx *pDataEx);
 	void NetObjEnd(int LocalID);
 	void CopyWorld(CGameWorld *pFrom);
 	CEntity *FindMatch(int ObjID, int ObjType, const void *pObjData);
@@ -94,7 +94,7 @@ public:
 private:
 	void RemoveEntities();
 
-	CEntity *m_pNextTraverseEntity;
+	CEntity *m_pNextTraverseEntity = nullptr;
 	CEntity *m_apFirstEntityTypes[NUM_ENTTYPES];
 
 	class CCharacter *m_apCharacters[MAX_CLIENTS];

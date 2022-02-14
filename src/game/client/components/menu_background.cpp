@@ -10,6 +10,10 @@
 #include <game/client/components/mapimages.h>
 #include <game/client/components/maplayers.h>
 
+#include <game/layers.h>
+
+#include <game/client/render.h>
+
 #include "menu_background.h"
 
 CMenuBackground::CMenuBackground() :
@@ -144,7 +148,7 @@ int CMenuBackground::ThemeIconScan(const char *pName, int IsDir, int DirType, vo
 	{
 		if(str_comp(Theme.m_Name, aThemeName) == 0 || (!Theme.m_Name[0] && str_comp(aThemeName, "none") == 0))
 		{
-			char aBuf[MAX_PATH_LENGTH];
+			char aBuf[IO_MAX_PATH_LENGTH];
 			str_format(aBuf, sizeof(aBuf), "themes/%s", pName);
 			CImageInfo Info;
 			if(!pSelf->Graphics()->LoadPNG(&Info, aBuf, DirType))
@@ -251,7 +255,6 @@ void CMenuBackground::LoadMenuBackground(bool HasDayHint, bool HasNightHint)
 		if(m_Loaded)
 		{
 			m_pLayers->InitBackground(m_pMap);
-			RenderTools()->RenderTilemapGenerateSkip(m_pLayers);
 			NeedImageLoading = true;
 
 			CMapLayers::OnMapLoad();
@@ -295,12 +298,10 @@ void CMenuBackground::LoadMenuBackground(bool HasDayHint, bool HasNightHint)
 
 void CMenuBackground::OnMapLoad()
 {
-	return;
 }
 
 void CMenuBackground::OnRender()
 {
-	return;
 }
 
 bool CMenuBackground::Render()
@@ -386,7 +387,7 @@ void CMenuBackground::ChangePosition(int PositionNumber)
 
 std::vector<CTheme> &CMenuBackground::GetThemes()
 {
-	if(m_lThemes.size() == 0) // not loaded yet
+	if(m_lThemes.empty()) // not loaded yet
 	{
 		// when adding more here, make sure to change the value of PREDEFINED_THEMES_COUNT too
 		m_lThemes.push_back(CTheme("", true, true)); // no theme

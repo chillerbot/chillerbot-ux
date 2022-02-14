@@ -9,7 +9,9 @@
 #include <time.h>
 
 #include "system.h"
-
+#if !defined(CONF_PLATFORM_MACOS)
+#include <base/color.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -24,6 +26,7 @@
 #if defined(CONF_FAMILY_UNIX)
 #include <signal.h>
 #include <sys/time.h>
+#include <sys/utsname.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -47,7 +50,12 @@
 #define _task_user_
 
 #include <Carbon/Carbon.h>
+#include <mach-o/dyld.h>
 #include <mach/mach_time.h>
+#endif
+
+#ifdef CONF_PLATFORM_ANDROID
+#include <android/log.h>
 #endif
 
 #elif defined(CONF_FAMILY_WINDOWS)
@@ -61,7 +69,9 @@
 #include <direct.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
+#include <share.h>
 #include <shellapi.h>
 #include <wincrypt.h>
 #else
@@ -81,6 +91,47 @@ IOHANDLE io_stdin()
 IOHANDLE io_stdout() { return (IOHANDLE)stdout; }
 IOHANDLE io_stderr() { return (IOHANDLE)stderr; }
 
+IOHANDLE io_current_exe()
+{
+	// From https://stackoverflow.com/a/1024937.
+#if defined(CONF_FAMILY_WINDOWS)
+	wchar_t wpath[IO_MAX_PATH_LENGTH];
+	char path[IO_MAX_PATH_LENGTH];
+	if(!GetModuleFileNameW(NULL, wpath, sizeof(wpath) / sizeof(wpath[0])))
+	{
+		return 0;
+	}
+	if(!WideCharToMultiByte(CP_UTF8, 0, wpath, -1, path, sizeof(path), NULL, NULL))
+	{
+		return 0;
+	}
+	return io_open(path, IOFLAG_READ);
+#elif defined(CONF_PLATFORM_MACOS)
+	char path[IO_MAX_PATH_LENGTH];
+	uint32_t path_size = sizeof(path);
+	if(_NSGetExecutablePath(path, &path_size))
+	{
+		return 0;
+	}
+	return io_open(path, IOFLAG_READ);
+#else
+	static const char *NAMES[] = {
+		"/proc/self/exe", // Linux, Android
+		"/proc/curproc/exe", // NetBSD
+		"/proc/curproc/file", // DragonFly
+	};
+	for(auto &name : NAMES)
+	{
+		IOHANDLE result = io_open(name, IOFLAG_READ);
+		if(result)
+		{
+			return result;
+		}
+	}
+	return 0;
+#endif
+}
+
 typedef struct
 {
 	DBG_LOGGER logger;
@@ -89,7 +140,12 @@ typedef struct
 } DBG_LOGGER_DATA;
 
 static DBG_LOGGER_DATA loggers[16];
+static int has_stdout_logger = 0;
 static int num_loggers = 0;
+
+#ifndef CONF_FAMILY_WINDOWS
+static DBG_LOGGER_DATA stdout_nonewline_logger;
+#endif
 
 static NETSTATS network_stats = {0};
 
@@ -102,21 +158,27 @@ void dbg_assert_imp(const char *filename, int line, int test, const char *msg)
 	if(!test)
 	{
 		dbg_msg("assert", "%s(%d): %s", filename, line, msg);
-		dbg_break_imp();
+		dbg_break();
 	}
 }
 
-void dbg_break_imp()
+void dbg_break()
 {
 #ifdef __GNUC__
 	__builtin_trap();
 #else
-	*((volatile unsigned *)0) = 0x0;
+	abort();
 #endif
 }
 
+#undef dbg_msg
 void dbg_msg(const char *sys, const char *fmt, ...)
 {
+#if defined(CONF_CURSES_CLIENT)
+	puts("DBG_MSG SHOULD NOT BE CALLED");
+	dbg_break();
+#endif
+
 	va_list args;
 	char *msg;
 	int len;
@@ -135,21 +197,29 @@ void dbg_msg(const char *sys, const char *fmt, ...)
 	va_start(args, fmt);
 #if defined(CONF_FAMILY_WINDOWS)
 	_vsnprintf(msg, sizeof(str) - len, fmt, args);
+#elif defined(CONF_PLATFORM_ANDROID)
+	__android_log_vprint(ANDROID_LOG_DEBUG, sys, fmt, args);
 #else
 	vsnprintf(msg, sizeof(str) - len, fmt, args);
 #endif
+
 	va_end(args);
 
 	for(i = 0; i < num_loggers; i++)
 		loggers[i].logger(str, loggers[i].user);
 }
+#if defined(CONF_CURSES_CLIENT)
+#define dbg_msg(sys, fmt, ...) curses_logf(sys, fmt, ##__VA_ARGS__)
+#endif
 
 #if defined(CONF_FAMILY_WINDOWS)
-static void logger_debugger(const char *line, void *user)
+static void logger_win_debugger(const char *line, void *user)
 {
 	(void)user;
-	OutputDebugString(line);
-	OutputDebugString("\n");
+	WCHAR wBuffer[512];
+	MultiByteToWideChar(CP_UTF8, 0, line, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
+	OutputDebugStringW(wBuffer);
+	OutputDebugStringW(L"\n");
 }
 #endif
 
@@ -159,6 +229,14 @@ static void logger_file(const char *line, void *user)
 	aio_lock(logfile);
 	aio_write_unlocked(logfile, line, str_length(line));
 	aio_write_newline_unlocked(logfile);
+	aio_unlock(logfile);
+}
+
+static void logger_file_no_newline(const char *line, void *user)
+{
+	ASYNCIO *logfile = (ASYNCIO *)user;
+	aio_lock(logfile);
+	aio_write_unlocked(logfile, line, str_length(line));
 	aio_unlock(logfile);
 }
 
@@ -245,14 +323,19 @@ void dbg_logger_stdout()
 #if defined(CONF_FAMILY_WINDOWS)
 	dbg_logger(logger_stdout_sync, 0, 0);
 #else
-	dbg_logger(logger_file, logger_stdout_finish, aio_new(io_stdout()));
+	ASYNCIO *logger_obj = aio_new(io_stdout());
+	dbg_logger(logger_file, logger_stdout_finish, logger_obj);
+	dbg_logger(logger_file_no_newline, 0, logger_obj);
+	stdout_nonewline_logger = loggers[num_loggers - 1];
+	--num_loggers;
 #endif
+	has_stdout_logger = 1;
 }
 
 void dbg_logger_debugger()
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	dbg_logger(logger_debugger, 0, 0);
+	dbg_logger(logger_win_debugger, 0, 0);
 #endif
 }
 
@@ -281,15 +364,43 @@ void mem_zero(void *block, unsigned size)
 	memset(block, 0, size);
 }
 
-IOHANDLE io_open(const char *filename, int flags)
+IOHANDLE io_open_impl(const char *filename, int flags)
 {
-	if(flags == IOFLAG_READ)
+	dbg_assert(flags == (IOFLAG_READ | IOFLAG_SKIP_BOM) || flags == IOFLAG_READ || flags == IOFLAG_WRITE || flags == IOFLAG_APPEND, "flags must be read, read+skipbom, write or append");
+#if defined(CONF_FAMILY_WINDOWS)
+	WCHAR wBuffer[IO_MAX_PATH_LENGTH];
+	MultiByteToWideChar(CP_UTF8, 0, filename, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
+	if((flags & IOFLAG_READ) != 0)
+		return (IOHANDLE)_wfsopen(wBuffer, L"rb", _SH_DENYNO);
+	if(flags == IOFLAG_WRITE)
+		return (IOHANDLE)_wfsopen(wBuffer, L"wb", _SH_DENYNO);
+	if(flags == IOFLAG_APPEND)
+		return (IOHANDLE)_wfsopen(wBuffer, L"ab", _SH_DENYNO);
+	return 0x0;
+#else
+	if((flags & IOFLAG_READ) != 0)
 		return (IOHANDLE)fopen(filename, "rb");
 	if(flags == IOFLAG_WRITE)
 		return (IOHANDLE)fopen(filename, "wb");
 	if(flags == IOFLAG_APPEND)
 		return (IOHANDLE)fopen(filename, "ab");
 	return 0x0;
+#endif
+}
+
+IOHANDLE io_open(const char *filename, int flags)
+{
+	IOHANDLE result = io_open_impl(filename, flags);
+	unsigned char buf[3];
+	if((flags & IOFLAG_SKIP_BOM) == 0 || !result)
+	{
+		return result;
+	}
+	if(io_read(result, buf, sizeof(buf)) != 3 || buf[0] != 0xef || buf[1] != 0xbb || buf[2] != 0xbf)
+	{
+		io_seek(result, 0, IOSEEK_START);
+	}
+	return result;
 }
 
 unsigned io_read(IOHANDLE io, void *buffer, unsigned size)
@@ -366,6 +477,19 @@ int io_close(IOHANDLE io)
 int io_flush(IOHANDLE io)
 {
 	return fflush((FILE *)io);
+}
+
+int io_sync(IOHANDLE io)
+{
+	if(io_flush(io))
+	{
+		return 1;
+	}
+#if defined(CONF_FAMILY_WINDOWS)
+	return FlushFileBuffers((HANDLE)_get_osfhandle(_fileno((FILE *)io))) == 0;
+#else
+	return fsync(fileno((FILE *)io)) != 0;
+#endif
 }
 
 #define ASYNC_BUFSIZE 8 * 1024
@@ -714,7 +838,12 @@ void *thread_init(void (*threadfunc)(void *), void *u, const char *name)
 #if defined(CONF_FAMILY_UNIX)
 	{
 		pthread_t id;
-		int result = pthread_create(&id, NULL, thread_run, data);
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+#if defined(CONF_PLATFORM_MACOS)
+		pthread_attr_set_qos_class_np(&attr, QOS_CLASS_USER_INTERACTIVE, 0);
+#endif
+		int result = pthread_create(&id, &attr, thread_run, data);
 		if(result != 0)
 		{
 			dbg_msg("thread", "creating %s thread failed: %d", name, result);
@@ -1293,7 +1422,7 @@ int net_addr_from_str(NETADDR *addr, const char *string)
 			int size;
 			sa6.sin6_family = AF_INET6;
 			size = (int)sizeof(sa6);
-			if(WSAStringToAddress(buf, AF_INET6, NULL, (struct sockaddr *)&sa6, &size) != 0)
+			if(WSAStringToAddressA(buf, AF_INET6, NULL, (struct sockaddr *)&sa6, &size) != 0)
 				return -1;
 		}
 #else
@@ -1346,6 +1475,8 @@ int net_addr_from_str(NETADDR *addr, const char *string)
 			if(parse_uint16(&addr->port, &str))
 				return -1;
 		}
+		if(*str != '\0')
+			return -1;
 
 		addr->type = NETTYPE_IPV4;
 	}
@@ -1403,9 +1534,11 @@ static int priv_net_create_socket(int domain, int type, struct sockaddr *addr, i
 	{
 #if defined(CONF_FAMILY_WINDOWS)
 		char buf[128];
+		WCHAR wBuffer[128];
 		int error = WSAGetLastError();
-		if(FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, error, 0, buf, sizeof(buf), 0) == 0)
-			buf[0] = 0;
+		if(FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, error, 0, wBuffer, sizeof(wBuffer) / sizeof(WCHAR), 0) == 0)
+			wBuffer[0] = 0;
+		WideCharToMultiByte(CP_UTF8, 0, wBuffer, -1, buf, sizeof(buf), NULL, NULL);
 		dbg_msg("net", "failed to create socket with domain %d and type %d (%d '%s')", domain, type, error, buf);
 #else
 		dbg_msg("net", "failed to create socket with domain %d and type %d (%d '%s')", domain, type, errno, strerror(errno));
@@ -1440,9 +1573,11 @@ static int priv_net_create_socket(int domain, int type, struct sockaddr *addr, i
 	{
 #if defined(CONF_FAMILY_WINDOWS)
 		char buf[128];
+		WCHAR wBuffer[128];
 		int error = WSAGetLastError();
-		if(FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, error, 0, buf, sizeof(buf), 0) == 0)
-			buf[0] = 0;
+		if(FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, error, 0, wBuffer, sizeof(wBuffer) / sizeof(WCHAR), 0) == 0)
+			wBuffer[0] = 0;
+		WideCharToMultiByte(CP_UTF8, 0, wBuffer, -1, buf, sizeof(buf), NULL, NULL);
 		dbg_msg("net", "failed to bind socket with domain %d and type %d (%d '%s')", domain, type, error, buf);
 #else
 		dbg_msg("net", "failed to bind socket with domain %d and type %d (%d '%s')", domain, type, errno, strerror(errno));
@@ -1984,19 +2119,38 @@ void net_unix_close(UNIXSOCKET sock)
 }
 #endif
 
-int fs_listdir_info(const char *dir, FS_LISTDIR_INFO_CALLBACK cb, int type, void *user)
+#if defined(CONF_FAMILY_WINDOWS)
+static inline time_t filetime_to_unixtime(LPFILETIME filetime)
+{
+	time_t t;
+	ULARGE_INTEGER li;
+	li.LowPart = filetime->dwLowDateTime;
+	li.HighPart = filetime->dwHighDateTime;
+
+	li.QuadPart /= 10000000; // 100ns to 1s
+	li.QuadPart -= 11644473600LL; // Windows epoch is in the past
+
+	t = li.QuadPart;
+	return t == li.QuadPart ? t : (time_t)-1;
+}
+#endif
+
+void fs_listdir(const char *dir, FS_LISTDIR_CALLBACK cb, int type, void *user)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	WIN32_FIND_DATA finddata;
+	WIN32_FIND_DATAW finddata;
 	HANDLE handle;
-	char buffer[1024 * 2];
+	char buffer[IO_MAX_PATH_LENGTH];
+	char buffer2[IO_MAX_PATH_LENGTH];
+	WCHAR wBuffer[IO_MAX_PATH_LENGTH];
 	int length;
+
 	str_format(buffer, sizeof(buffer), "%s/*", dir);
+	MultiByteToWideChar(CP_UTF8, 0, buffer, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
 
-	handle = FindFirstFileA(buffer, &finddata);
-
+	handle = FindFirstFileW(wBuffer, &finddata);
 	if(handle == INVALID_HANDLE_VALUE)
-		return 0;
+		return;
 
 	str_format(buffer, sizeof(buffer), "%s/", dir);
 	length = str_length(buffer);
@@ -2004,21 +2158,21 @@ int fs_listdir_info(const char *dir, FS_LISTDIR_INFO_CALLBACK cb, int type, void
 	/* add all the entries */
 	do
 	{
-		str_copy(buffer + length, finddata.cFileName, (int)sizeof(buffer) - length);
-		if(cb(finddata.cFileName, fs_getmtime(buffer), fs_is_dir(buffer), type, user))
+		WideCharToMultiByte(CP_UTF8, 0, finddata.cFileName, -1, buffer2, sizeof(buffer2), NULL, NULL);
+		str_copy(buffer + length, buffer2, (int)sizeof(buffer) - length);
+		if(cb(buffer2, (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0, type, user))
 			break;
-	} while(FindNextFileA(handle, &finddata));
+	} while(FindNextFileW(handle, &finddata));
 
 	FindClose(handle);
-	return 0;
 #else
 	struct dirent *entry;
-	char buffer[1024 * 2];
+	char buffer[IO_MAX_PATH_LENGTH];
 	int length;
 	DIR *d = opendir(dir);
 
 	if(!d)
-		return 0;
+		return;
 
 	str_format(buffer, sizeof(buffer), "%s/", dir);
 	length = str_length(buffer);
@@ -2026,29 +2180,31 @@ int fs_listdir_info(const char *dir, FS_LISTDIR_INFO_CALLBACK cb, int type, void
 	while((entry = readdir(d)) != NULL)
 	{
 		str_copy(buffer + length, entry->d_name, (int)sizeof(buffer) - length);
-		if(cb(entry->d_name, fs_getmtime(buffer), fs_is_dir(buffer), type, user))
+		if(cb(entry->d_name, entry->d_type == DT_UNKNOWN ? fs_is_dir(buffer) : entry->d_type == DT_DIR, type, user))
 			break;
 	}
 
 	/* close the directory and return */
 	closedir(d);
-	return 0;
 #endif
 }
 
-int fs_listdir(const char *dir, FS_LISTDIR_CALLBACK cb, int type, void *user)
+void fs_listdir_fileinfo(const char *dir, FS_LISTDIR_CALLBACK_FILEINFO cb, int type, void *user)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	WIN32_FIND_DATA finddata;
+	WIN32_FIND_DATAW finddata;
 	HANDLE handle;
-	char buffer[1024 * 2];
+	char buffer[IO_MAX_PATH_LENGTH];
+	char buffer2[IO_MAX_PATH_LENGTH];
+	WCHAR wBuffer[IO_MAX_PATH_LENGTH];
 	int length;
+
 	str_format(buffer, sizeof(buffer), "%s/*", dir);
+	MultiByteToWideChar(CP_UTF8, 0, buffer, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
 
-	handle = FindFirstFileA(buffer, &finddata);
-
+	handle = FindFirstFileW(wBuffer, &finddata);
 	if(handle == INVALID_HANDLE_VALUE)
-		return 0;
+		return;
 
 	str_format(buffer, sizeof(buffer), "%s/", dir);
 	length = str_length(buffer);
@@ -2056,51 +2212,67 @@ int fs_listdir(const char *dir, FS_LISTDIR_CALLBACK cb, int type, void *user)
 	/* add all the entries */
 	do
 	{
-		str_copy(buffer + length, finddata.cFileName, (int)sizeof(buffer) - length);
-		if(cb(finddata.cFileName, fs_is_dir(buffer), type, user))
+		WideCharToMultiByte(CP_UTF8, 0, finddata.cFileName, -1, buffer2, sizeof(buffer2), NULL, NULL);
+		str_copy(buffer + length, buffer2, (int)sizeof(buffer) - length);
+
+		CFsFileInfo info;
+		info.m_pName = buffer2;
+		info.m_TimeCreated = filetime_to_unixtime(&finddata.ftCreationTime);
+		info.m_TimeModified = filetime_to_unixtime(&finddata.ftLastWriteTime);
+
+		if(cb(&info, (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0, type, user))
 			break;
-	} while(FindNextFileA(handle, &finddata));
+	} while(FindNextFileW(handle, &finddata));
 
 	FindClose(handle);
-	return 0;
 #else
 	struct dirent *entry;
-	char buffer[1024 * 2];
+	time_t created = -1, modified = -1;
+	char buffer[IO_MAX_PATH_LENGTH];
 	int length;
 	DIR *d = opendir(dir);
 
 	if(!d)
-		return 0;
+		return;
 
 	str_format(buffer, sizeof(buffer), "%s/", dir);
 	length = str_length(buffer);
 
 	while((entry = readdir(d)) != NULL)
 	{
+		CFsFileInfo info;
+
 		str_copy(buffer + length, entry->d_name, (int)sizeof(buffer) - length);
-		if(cb(entry->d_name, fs_is_dir(buffer), type, user))
+		fs_file_time(buffer, &created, &modified);
+
+		info.m_pName = entry->d_name;
+		info.m_TimeCreated = created;
+		info.m_TimeModified = modified;
+
+		if(cb(&info, entry->d_type == DT_UNKNOWN ? fs_is_dir(buffer) : entry->d_type == DT_DIR, type, user))
 			break;
 	}
 
 	/* close the directory and return */
 	closedir(d);
-	return 0;
 #endif
 }
 
 int fs_storage_path(const char *appname, char *path, int max)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	char *home = getenv("APPDATA");
+	WCHAR *home = _wgetenv(L"APPDATA");
 	if(!home)
 		return -1;
-	_snprintf(path, max, "%s/%s", home, appname);
+	char buffer[IO_MAX_PATH_LENGTH];
+	WideCharToMultiByte(CP_UTF8, 0, home, -1, buffer, sizeof(buffer), NULL, NULL);
+	str_format(path, max, "%s/%s", buffer, appname);
 	return 0;
+#elif defined(CONF_PLATFORM_ANDROID)
+	// just use the data directory
+	return -1;
 #else
 	char *home = getenv("HOME");
-#if !defined(CONF_PLATFORM_MACOS)
-	int i;
-#endif
 	if(!home)
 		return -1;
 
@@ -2110,10 +2282,10 @@ int fs_storage_path(const char *appname, char *path, int max)
 #endif
 
 #if defined(CONF_PLATFORM_MACOS)
-	snprintf(path, max, "%s/Library/Application Support/%s", home, appname);
+	str_format(path, max, "%s/Library/Application Support/%s", home, appname);
 #else
-	snprintf(path, max, "%s/.%s", home, appname);
-	for(i = str_length(home) + 2; path[i]; i++)
+	str_format(path, max, "%s/.%s", home, appname);
+	for(int i = str_length(home) + 2; path[i]; i++)
 		path[i] = tolower((unsigned char)path[i]);
 #endif
 
@@ -2142,7 +2314,9 @@ int fs_makedir_rec_for(const char *path)
 int fs_makedir(const char *path)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	if(_mkdir(path) == 0)
+	WCHAR wBuffer[IO_MAX_PATH_LENGTH];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
+	if(_wmkdir(wBuffer) == 0)
 		return 0;
 	if(errno == EEXIST)
 		return 0;
@@ -2164,7 +2338,9 @@ int fs_makedir(const char *path)
 int fs_removedir(const char *path)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	if(_rmdir(path) == 0)
+	WCHAR wPath[IO_MAX_PATH_LENGTH];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wPath, sizeof(wPath) / sizeof(WCHAR));
+	if(RemoveDirectoryW(wPath) != 0)
 		return 0;
 	return -1;
 #else
@@ -2177,46 +2353,35 @@ int fs_removedir(const char *path)
 int fs_is_dir(const char *path)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	/* TODO: do this smarter */
-	WIN32_FIND_DATA finddata;
-	HANDLE handle;
-	char buffer[1024 * 2];
-	str_format(buffer, sizeof(buffer), "%s/*", path);
-
-	if((handle = FindFirstFileA(buffer, &finddata)) == INVALID_HANDLE_VALUE)
-		return 0;
-
-	FindClose(handle);
-	return 1;
+	WCHAR wPath[IO_MAX_PATH_LENGTH];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wPath, sizeof(wPath) / sizeof(WCHAR));
+	DWORD attributes = GetFileAttributesW(wPath);
+	return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
 #else
 	struct stat sb;
 	if(stat(path, &sb) == -1)
 		return 0;
-
-	if(S_ISDIR(sb.st_mode))
-		return 1;
-	else
-		return 0;
+	return S_ISDIR(sb.st_mode) ? 1 : 0;
 #endif
-}
-
-time_t fs_getmtime(const char *path)
-{
-	struct stat sb;
-	if(stat(path, &sb) == -1)
-		return 0;
-
-	return sb.st_mtime;
 }
 
 int fs_chdir(const char *path)
 {
 	if(fs_is_dir(path))
 	{
+#if defined(CONF_FAMILY_WINDOWS)
+		WCHAR wBuffer[IO_MAX_PATH_LENGTH];
+		MultiByteToWideChar(CP_UTF8, 0, path, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
+		if(_wchdir(wBuffer))
+			return 1;
+		else
+			return 0;
+#else
 		if(chdir(path))
 			return 1;
 		else
 			return 0;
+#endif
 	}
 	else
 		return 1;
@@ -2227,7 +2392,11 @@ char *fs_getcwd(char *buffer, int buffer_size)
 	if(buffer == 0)
 		return 0;
 #if defined(CONF_FAMILY_WINDOWS)
-	return _getcwd(buffer, buffer_size);
+	WCHAR wBuffer[IO_MAX_PATH_LENGTH];
+	if(_wgetcwd(wBuffer, buffer_size) == 0)
+		return 0;
+	WideCharToMultiByte(CP_UTF8, 0, wBuffer, -1, buffer, buffer_size, NULL, NULL);
+	return buffer;
 #else
 	return getcwd(buffer, buffer_size);
 #endif
@@ -2253,7 +2422,9 @@ int fs_parent_dir(char *path)
 int fs_remove(const char *filename)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	return _unlink(filename) != 0;
+	WCHAR wFilename[IO_MAX_PATH_LENGTH];
+	MultiByteToWideChar(CP_UTF8, 0, filename, -1, wFilename, sizeof(wFilename) / sizeof(WCHAR));
+	return DeleteFileW(wFilename) == 0;
 #else
 	return unlink(filename) != 0;
 #endif
@@ -2262,12 +2433,45 @@ int fs_remove(const char *filename)
 int fs_rename(const char *oldname, const char *newname)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	if(MoveFileEx(oldname, newname, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED) == 0)
+	WCHAR wOldname[IO_MAX_PATH_LENGTH];
+	WCHAR wNewname[IO_MAX_PATH_LENGTH];
+	MultiByteToWideChar(CP_UTF8, 0, oldname, -1, wOldname, sizeof(wOldname) / sizeof(WCHAR));
+	MultiByteToWideChar(CP_UTF8, 0, newname, -1, wNewname, sizeof(wNewname) / sizeof(WCHAR));
+	if(MoveFileExW(wOldname, wNewname, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED) == 0)
 		return 1;
 #else
 	if(rename(oldname, newname) != 0)
 		return 1;
 #endif
+	return 0;
+}
+
+int fs_file_time(const char *name, time_t *created, time_t *modified)
+{
+#if defined(CONF_FAMILY_WINDOWS)
+	WIN32_FIND_DATAW finddata;
+	HANDLE handle;
+	WCHAR wBuffer[IO_MAX_PATH_LENGTH];
+
+	MultiByteToWideChar(CP_UTF8, 0, name, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
+	handle = FindFirstFileW(wBuffer, &finddata);
+	if(handle == INVALID_HANDLE_VALUE)
+		return 1;
+
+	*created = filetime_to_unixtime(&finddata.ftCreationTime);
+	*modified = filetime_to_unixtime(&finddata.ftLastWriteTime);
+	FindClose(handle);
+#elif defined(CONF_FAMILY_UNIX)
+	struct stat sb;
+	if(stat(name, &sb))
+		return 1;
+
+	*created = sb.st_ctime;
+	*modified = sb.st_mtime;
+#else
+#error not implemented
+#endif
+
 	return 0;
 }
 
@@ -2307,7 +2511,7 @@ int net_socket_read_wait(NETSOCKET sock, int time)
 	tv.tv_usec = time % 1000000;
 	sockid = 0;
 
-	FD_ZERO(&readfds);
+	FD_ZERO(&readfds); // NOLINT(clang-analyzer-security.insecureAPI.bzero)
 	if(sock.ipv4sock >= 0)
 	{
 		FD_SET(sock.ipv4sock, &readfds);
@@ -2413,23 +2617,28 @@ void str_append(char *dst, const char *src, int dst_size)
 	}
 
 	dst[dst_size - 1] = 0; /* assure null termination */
+	str_utf8_fix_truncation(dst);
 }
 
 void str_copy(char *dst, const char *src, int dst_size)
 {
 	strncpy(dst, src, dst_size - 1);
 	dst[dst_size - 1] = 0; /* assure null termination */
+	str_utf8_fix_truncation(dst);
 }
 
 void str_utf8_truncate(char *dst, int dst_size, const char *src, int truncation_len)
 {
 	int size = -1;
-	int cursor = 0;
+	const char *cursor = src;
 	int pos = 0;
-	while(pos <= truncation_len && cursor < dst_size && size != cursor)
+	while(pos <= truncation_len && cursor - src < dst_size && size != cursor - src)
 	{
-		size = cursor;
-		cursor = str_utf8_forward(src, cursor);
+		size = cursor - src;
+		if(str_utf8_decode(&cursor) == 0)
+		{
+			break;
+		}
 		pos++;
 	}
 	str_copy(dst, src, size + 1);
@@ -2452,33 +2661,22 @@ int str_length(const char *str)
 
 int str_format(char *buffer, int buffer_size, const char *format, ...)
 {
-	int ret;
 #if defined(CONF_FAMILY_WINDOWS)
 	va_list ap;
 	va_start(ap, format);
-	ret = _vsnprintf(buffer, buffer_size, format, ap);
+	_vsnprintf(buffer, buffer_size, format, ap);
 	va_end(ap);
 
 	buffer[buffer_size - 1] = 0; /* assure null termination */
-
-	/* _vsnprintf is documented to return negative values on truncation, but
-	 * in practice we didn't see that. let's handle it anyway just in case. */
-	if(ret < 0)
-		ret = buffer_size - 1;
 #else
 	va_list ap;
 	va_start(ap, format);
-	ret = vsnprintf(buffer, buffer_size, format, ap);
+	vsnprintf(buffer, buffer_size, format, ap);
 	va_end(ap);
 
 	/* null termination is assured by definition of vsnprintf */
 #endif
-
-	/* a return value of buffer_size or more indicates truncated output */
-	if(ret >= buffer_size)
-		ret = buffer_size - 1;
-
-	return ret;
+	return str_utf8_fix_truncation(buffer);
 }
 
 char *str_trim_words(char *str, int words)
@@ -3144,41 +3342,31 @@ int str_utf8_rewind(const char *str, int cursor)
 	return cursor;
 }
 
+int str_utf8_fix_truncation(char *str)
+{
+	int len = str_length(str);
+	if(len > 0)
+	{
+		int last_char_index = str_utf8_rewind(str, len);
+		const char *last_char = str + last_char_index;
+		// Fix truncated UTF-8.
+		if(str_utf8_decode(&last_char) == -1)
+		{
+			str[last_char_index] = 0;
+			return last_char_index;
+		}
+	}
+	return len;
+}
+
 int str_utf8_forward(const char *str, int cursor)
 {
-	const char *buf = str + cursor;
-	if(!buf[0])
+	const char *ptr = str + cursor;
+	if(str_utf8_decode(&ptr) == 0)
+	{
 		return cursor;
-
-	if((*buf & 0x80) == 0x0) /* 0xxxxxxx */
-		return cursor + 1;
-	else if((*buf & 0xE0) == 0xC0) /* 110xxxxx */
-	{
-		if(!buf[1])
-			return cursor + 1;
-		return cursor + 2;
 	}
-	else if((*buf & 0xF0) == 0xE0) /* 1110xxxx */
-	{
-		if(!buf[1])
-			return cursor + 1;
-		if(!buf[2])
-			return cursor + 2;
-		return cursor + 3;
-	}
-	else if((*buf & 0xF8) == 0xF0) /* 11110xxx */
-	{
-		if(!buf[1])
-			return cursor + 1;
-		if(!buf[2])
-			return cursor + 2;
-		if(!buf[3])
-			return cursor + 3;
-		return cursor + 4;
-	}
-
-	/* invalid */
-	return cursor + 1;
+	return ptr - str;
 }
 
 int str_utf8_encode(char *ptr, int chr)
@@ -3332,9 +3520,24 @@ int str_utf8_check(const char *str)
 	return 1;
 }
 
-void str_utf8_copy(char *dst, const char *src, int dst_size)
+void str_utf8_stats(const char *str, int max_size, int max_count, int *size, int *count)
 {
-	str_utf8_truncate(dst, dst_size, src, dst_size);
+	const char *cursor = str;
+	*size = 0;
+	*count = 0;
+	while(*size < max_size && *count < max_count)
+	{
+		if(str_utf8_decode(&cursor) == 0)
+		{
+			break;
+		}
+		if(cursor - str >= max_size)
+		{
+			break;
+		}
+		*size = cursor - str;
+		++(*count);
+	}
 }
 
 unsigned str_quickhash(const char *str)
@@ -3390,6 +3593,47 @@ const char *str_next_token(const char *str, const char *delim, char *buffer, int
 	return tok + len;
 }
 
+int bytes_be_to_int(const unsigned char *bytes)
+{
+	int Result;
+	unsigned char *pResult = (unsigned char *)&Result;
+	for(unsigned i = 0; i < sizeof(int); i++)
+	{
+#if defined(CONF_ARCH_ENDIAN_BIG)
+		pResult[i] = bytes[i];
+#else
+		pResult[i] = bytes[sizeof(int) - i - 1];
+#endif
+	}
+	return Result;
+}
+
+void int_to_bytes_be(unsigned char *bytes, int value)
+{
+	const unsigned char *pValue = (const unsigned char *)&value;
+	for(unsigned i = 0; i < sizeof(int); i++)
+	{
+#if defined(CONF_ARCH_ENDIAN_BIG)
+		bytes[i] = pValue[i];
+#else
+		bytes[sizeof(int) - i - 1] = pValue[i];
+#endif
+	}
+}
+
+unsigned bytes_be_to_uint(const unsigned char *bytes)
+{
+	return ((bytes[0] & 0xffu) << 24u) | ((bytes[1] & 0xffu) << 16u) | ((bytes[2] & 0xffu) << 8u) | (bytes[3] & 0xffu);
+}
+
+void uint_to_bytes_be(unsigned char *bytes, unsigned value)
+{
+	bytes[0] = (value >> 24u) & 0xffu;
+	bytes[1] = (value >> 16u) & 0xffu;
+	bytes[2] = (value >> 8u) & 0xffu;
+	bytes[3] = value & 0xffu;
+}
+
 int pid()
 {
 #if defined(CONF_FAMILY_WINDOWS)
@@ -3399,17 +3643,63 @@ int pid()
 #endif
 }
 
+void cmdline_fix(int *argc, const char ***argv)
+{
+#if defined(CONF_FAMILY_WINDOWS)
+	int wide_argc = 0;
+	WCHAR **wide_argv = CommandLineToArgvW(GetCommandLineW(), &wide_argc);
+	dbg_assert(wide_argv != NULL, "CommandLineToArgvW failure");
+
+	int total_size = 0;
+
+	for(int i = 0; i < wide_argc; i++)
+	{
+		int size = WideCharToMultiByte(CP_UTF8, 0, wide_argv[i], -1, NULL, 0, NULL, NULL);
+		dbg_assert(size != 0, "WideCharToMultiByte failure");
+		total_size += size;
+	}
+
+	char **new_argv = (char **)malloc((wide_argc + 1) * sizeof(*new_argv));
+	new_argv[0] = (char *)malloc(total_size);
+	mem_zero(new_argv[0], total_size);
+
+	int remaining_size = total_size;
+	for(int i = 0; i < wide_argc; i++)
+	{
+		int size = WideCharToMultiByte(CP_UTF8, 0, wide_argv[i], -1, new_argv[i], remaining_size, NULL, NULL);
+		dbg_assert(size != 0, "WideCharToMultiByte failure");
+
+		remaining_size -= size;
+		new_argv[i + 1] = new_argv[i] + size;
+	}
+
+	new_argv[wide_argc] = 0;
+	*argc = wide_argc;
+	*argv = (const char **)new_argv;
+#endif
+}
+
+void cmdline_free(int argc, const char **argv)
+{
+#if defined(CONF_FAMILY_WINDOWS)
+	free((void *)*argv);
+	free((char **)argv);
+#endif
+}
+
 PROCESS shell_execute(const char *file)
 {
 #if defined(CONF_FAMILY_WINDOWS)
-	SHELLEXECUTEINFOA info;
-	mem_zero(&info, sizeof(SHELLEXECUTEINFOA));
-	info.cbSize = sizeof(SHELLEXECUTEINFOA);
-	info.lpVerb = "open";
-	info.lpFile = file;
+	WCHAR wBuffer[512];
+	MultiByteToWideChar(CP_UTF8, 0, file, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
+	SHELLEXECUTEINFOW info;
+	mem_zero(&info, sizeof(SHELLEXECUTEINFOW));
+	info.cbSize = sizeof(SHELLEXECUTEINFOW);
+	info.lpVerb = L"open";
+	info.lpFile = wBuffer;
 	info.nShow = SW_SHOWMINNOACTIVE;
 	info.fMask = SEE_MASK_NOCLOSEPROCESS;
-	ShellExecuteEx(&info);
+	ShellExecuteExW(&info);
 	return info.hProcess;
 #elif defined(CONF_FAMILY_UNIX)
 	char *argv[2];
@@ -3443,32 +3733,31 @@ int kill_process(PROCESS process)
 
 int open_link(const char *link)
 {
-	char aBuf[512];
 #if defined(CONF_FAMILY_WINDOWS)
-	str_format(aBuf, sizeof(aBuf), "start %s", link);
-	return (uintptr_t)ShellExecuteA(NULL, "open", link, NULL, NULL, SW_SHOWDEFAULT) > 32;
+	WCHAR wBuffer[512];
+	MultiByteToWideChar(CP_UTF8, 0, link, -1, wBuffer, sizeof(wBuffer) / sizeof(WCHAR));
+	return (uintptr_t)ShellExecuteW(NULL, L"open", wBuffer, NULL, NULL, SW_SHOWDEFAULT) > 32;
 #elif defined(CONF_PLATFORM_LINUX)
-	str_format(aBuf, sizeof(aBuf), "xdg-open %s >/dev/null 2>&1 &", link);
-	return system(aBuf) == 0;
+	const int pid = fork();
+	if(pid == 0)
+		execlp("xdg-open", "xdg-open", link, nullptr);
+	return pid > 0;
 #elif defined(CONF_FAMILY_UNIX)
-	str_format(aBuf, sizeof(aBuf), "open %s &", link);
-	return system(aBuf) == 0;
+	const int pid = fork();
+	if(pid == 0)
+		execlp("open", "open", link, nullptr);
+	return pid > 0;
 #endif
 }
 
-int os_is_winxp_or_lower()
+int open_file(const char *path)
 {
-#if defined(CONF_FAMILY_WINDOWS)
-	static const DWORD WINXP_MAJOR = 5;
-	static const DWORD WINXP_MINOR = 1;
-	OSVERSIONINFO ver;
-	mem_zero(&ver, sizeof(OSVERSIONINFO));
-	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&ver);
-	return ver.dwMajorVersion < WINXP_MAJOR ||
-	       (ver.dwMajorVersion == WINXP_MAJOR && ver.dwMinorVersion <= WINXP_MINOR);
+#if defined(CONF_PLATFORM_MACOS)
+	return open_link(path);
 #else
-	return 0;
+	char buf[512];
+	str_format(buf, sizeof(buf), "file://%s", path);
+	return open_link(buf);
 #endif
 }
 
@@ -3505,6 +3794,35 @@ int secure_random_init()
 	if(secure_random_data.urandom)
 	{
 		secure_random_data.initialized = 1;
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+#endif
+}
+
+int secure_random_uninit()
+{
+	if(!secure_random_data.initialized)
+	{
+		return 0;
+	}
+#if defined(CONF_FAMILY_WINDOWS)
+	if(CryptReleaseContext(secure_random_data.provider, 0))
+	{
+		secure_random_data.initialized = 0;
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+#else
+	if(!io_close(secure_random_data.urandom))
+	{
+		secure_random_data.initialized = 0;
 		return 0;
 	}
 	else
@@ -3605,5 +3923,150 @@ int secure_rand_below(int below)
 			return n;
 		}
 	}
+}
+
+#if defined(CONF_FAMILY_WINDOWS)
+static int color_hsv_to_windows_console_color(const ColorHSVA *hsv)
+{
+	int h = hsv->h * 255.0f;
+	int s = hsv->s * 255.0f;
+	int v = hsv->v * 255.0f;
+	if(s >= 0 && s <= 10)
+	{
+		if(v <= 150)
+			return 8;
+		return 15;
+	}
+	else if(h >= 0 && h < 15)
+		return 12;
+	else if(h >= 15 && h < 30)
+		return 6;
+	else if(h >= 30 && h < 60)
+		return 14;
+	else if(h >= 60 && h < 110)
+		return 10;
+	else if(h >= 110 && h < 140)
+		return 11;
+	else if(h >= 140 && h < 170)
+		return 9;
+	else if(h >= 170 && h < 195)
+		return 5;
+	else if(h >= 195 && h < 240)
+		return 13;
+	else if(h >= 240)
+		return 12;
+	else
+		return 15;
+}
+#endif
+
+void set_console_msg_color(const void *rgbvoid)
+{
+#if defined(CONF_FAMILY_WINDOWS)
+	const ColorRGBA *rgb = (const ColorRGBA *)rgbvoid;
+	int color = 15;
+	if(rgb)
+	{
+		ColorHSVA hsv = color_cast<ColorHSVA>(*rgb);
+		color = color_hsv_to_windows_console_color(&hsv);
+	}
+	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(console, color);
+#elif CONF_PLATFORM_LINUX
+	const ColorRGBA *rgb = (const ColorRGBA *)rgbvoid;
+	// set true color terminal escape codes refering
+	// https://en.wikipedia.org/wiki/ANSI_escape_code#24-bit
+	int esc_seq = 0x1B;
+	char buff[32];
+	if(rgb == NULL)
+		// reset foreground color
+		str_format(buff, sizeof(buff), "%c[39m", esc_seq);
+	else
+		// set rgb foreground color
+		// if not used by a true color terminal it is still converted refering
+		// https://wiki.archlinux.org/title/Color_output_in_console#True_color_support
+		str_format(buff, sizeof(buff), "%c[38;2;%d;%d;%dm", esc_seq, (int)uint8_t(rgb->r * 255.0f), (int)uint8_t(rgb->g * 255.0f), (int)uint8_t(rgb->b * 255.0f));
+	if(has_stdout_logger)
+		stdout_nonewline_logger.logger(buff, stdout_nonewline_logger.user);
+#endif
+}
+
+int os_version_str(char *version, int length)
+{
+#if defined(CONF_FAMILY_WINDOWS)
+	const char *DLL = "C:\\Windows\\System32\\user32.dll";
+	DWORD handle;
+	DWORD size = GetFileVersionInfoSizeA(DLL, &handle);
+	if(!size)
+	{
+		return 1;
+	}
+	void *data = malloc(size);
+	if(!GetFileVersionInfoA(DLL, handle, size, data))
+	{
+		free(data);
+		return 1;
+	}
+	VS_FIXEDFILEINFO *fileinfo;
+	UINT unused;
+	if(!VerQueryValueA(data, "\\", (void **)&fileinfo, &unused))
+	{
+		free(data);
+		return 1;
+	}
+	str_format(version, length, "Windows %d.%d.%d.%d",
+		HIWORD(fileinfo->dwProductVersionMS),
+		LOWORD(fileinfo->dwProductVersionMS),
+		HIWORD(fileinfo->dwProductVersionLS),
+		LOWORD(fileinfo->dwProductVersionLS));
+	free(data);
+	return 0;
+#else
+	struct utsname u;
+	if(uname(&u))
+	{
+		return 1;
+	}
+	char extra[128];
+	extra[0] = 0;
+
+	do
+	{
+		IOHANDLE os_release = io_open("/etc/os-release", IOFLAG_READ);
+		char buf[4096];
+		int read;
+		int offset;
+		char *newline;
+		if(!os_release)
+		{
+			break;
+		}
+		read = io_read(os_release, buf, sizeof(buf) - 1);
+		io_close(os_release);
+		buf[read] = 0;
+		if(str_startswith(buf, "PRETTY_NAME="))
+		{
+			offset = 0;
+		}
+		else
+		{
+			const char *found = str_find(buf, "\nPRETTY_NAME=");
+			if(!found)
+			{
+				break;
+			}
+			offset = found - buf + 1;
+		}
+		newline = (char *)str_find(buf + offset, "\n");
+		if(newline)
+		{
+			*newline = 0;
+		}
+		str_format(extra, sizeof(extra), "; %s", buf + offset + 12);
+	} while(0);
+
+	str_format(version, length, "%s %s (%s, %s)%s", u.sysname, u.release, u.machine, u.version, extra);
+	return 0;
+#endif
 }
 }

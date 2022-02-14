@@ -1,4 +1,4 @@
-FROM debian:8
+FROM debian:11
 
 RUN apt-get update && apt-get install -y mingw-w64 \
         wget \
@@ -14,18 +14,8 @@ RUN apt-get update && apt-get install -y mingw-w64 \
         libpnglite-dev \
         libwavpack-dev \
         libopusfile-dev \
-        libsdl2-dev
-
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
-        update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-
-RUN wget https://cmake.org/files/v3.11/cmake-3.11.0-rc2-Linux-x86_64.sh && \
-        chmod +x cmake-3.11.0-rc2-Linux-x86_64.sh && \
-        ./cmake-3.11.0-rc2-Linux-x86_64.sh --skip-license --prefix=/usr/local
-
-RUN echo 'deb http://apt.llvm.org/jessie/ llvm-toolchain-jessie main\ndeb-src http://apt.llvm.org/jessie/ llvm-toolchain-jessie main' >> /etc/apt/sources.list
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN apt-get update
+        libsdl2-dev \
+        cmake
 
 RUN git clone --depth=1 https://github.com/tpoechtrager/osxcross.git /osxcross
 RUN /osxcross/tools/get_dependencies.sh
@@ -51,8 +41,8 @@ RUN printf '#!/bin/bash\n \
         cd /build/win32\n \
         pwd\n \
         cmake -DCMAKE_TOOLCHAIN_FILE=/ddnet/cmake/toolchains/mingw32.toolchain /ddnet && make\n \
-        mkdir /build/osx\n \
-        cd /build/osx\n \
+        mkdir /build/macos\n \
+        cd /build/macos\n \
         pwd\n \
         cmake -DCMAKE_TOOLCHAIN_FILE=/ddnet/cmake/toolchains/darwin.toolchain -DCMAKE_OSX_SYSROOT=/osxcross/target/SDK/MacOSX10.11.sdk/ /ddnet && make' \
         >> build-all.sh

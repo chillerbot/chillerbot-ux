@@ -6,6 +6,8 @@
 #include <game/client/component.h>
 #include <game/client/lineinput.h>
 
+#include <engine/console.h>
+
 enum
 {
 	CONSOLE_CLOSED,
@@ -25,7 +27,7 @@ class CGameConsole : public CComponent
 			ColorRGBA m_PrintColor;
 			char m_aText[1];
 		};
-		CStaticRingBuffer<CBacklogEntry, 64 * 1024, CRingBufferBase::FLAG_RECYCLE> m_Backlog;
+		CStaticRingBuffer<CBacklogEntry, 1024 * 1024, CRingBufferBase::FLAG_RECYCLE> m_Backlog;
 		CStaticRingBuffer<char, 64 * 1024, CRingBufferBase::FLAG_RECYCLE> m_History;
 		char *m_pHistoryEntry;
 
@@ -34,10 +36,10 @@ class CGameConsole : public CComponent
 		int m_CompletionEnumerationCount;
 		int m_BacklogActPage;
 
-	public:
 		CGameConsole *m_pGameConsole;
 
 		char m_aCompletionBuffer[128];
+		bool m_CompletionUsed;
 		int m_CompletionChosen;
 		int m_CompletionFlagmask;
 		float m_CompletionRenderOffset;
@@ -56,6 +58,7 @@ class CGameConsole : public CComponent
 		void Init(CGameConsole *pGameConsole);
 
 		void ClearBacklog();
+		void ClearBacklogYOffsets();
 		void ClearHistory();
 
 		void ExecuteLine(const char *pLine);
@@ -81,6 +84,18 @@ class CGameConsole : public CComponent
 	float m_StateChangeEnd;
 	float m_StateChangeDuration;
 
+	bool m_MouseIsPress = false;
+	int m_MousePressX = 0;
+	int m_MousePressY = 0;
+	int m_MouseCurX = 0;
+	int m_MouseCurY = 0;
+	int m_CurSelStart = 0;
+	int m_CurSelEnd = 0;
+	bool m_HasSelection = false;
+	int m_NewLineCounter = 0;
+
+	int m_LastInputLineCount = 0;
+
 	void Toggle(int Type);
 	void Dump(int Type);
 
@@ -104,16 +119,18 @@ public:
 	};
 
 	CGameConsole();
+	virtual int Sizeof() const override { return sizeof(*this); }
 
 	void PrintLine(int Type, const char *pLine);
 	void RequireUsername(bool UsernameReq);
 
-	virtual void OnStateChange(int NewState, int OldState);
-	virtual void OnConsoleInit();
-	virtual void OnReset();
-	virtual void OnRender();
-	virtual void OnMessage(int MsgType, void *pRawMsg);
-	virtual bool OnInput(IInput::CEvent Events);
+	virtual void OnStateChange(int NewState, int OldState) override;
+	virtual void OnConsoleInit() override;
+	virtual void OnInit() override;
+	virtual void OnReset() override;
+	virtual void OnRender() override;
+	virtual void OnMessage(int MsgType, void *pRawMsg) override;
+	virtual bool OnInput(IInput::CEvent Events) override;
 
 	bool IsClosed() { return m_ConsoleState == CONSOLE_CLOSED; }
 };

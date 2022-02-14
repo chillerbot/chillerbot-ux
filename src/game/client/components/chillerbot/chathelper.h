@@ -5,7 +5,8 @@
 #include <game/client/lineinput.h>
 
 #define MAX_CHAT_BUFFER_LEN 8
-
+#define MAX_CHAT_FILTERS 8
+#define MAX_CHAT_FILTER_LEN 128
 class CChatHelper : public CComponent
 {
 	class CChillerBotUX *m_pChillerBot;
@@ -28,27 +29,47 @@ class CChatHelper : public CComponent
 
 	char m_aGreetName[32];
 	char m_aLastPingName[32];
+	char m_aLastPingClan[32];
 	char m_aLastAfkPing[2048];
 	char m_aLastPingMessage[2048];
 	char m_aSendBuffer[MAX_CHAT_BUFFER_LEN][2048];
+	char m_aaChatFilter[MAX_CHAT_FILTERS][MAX_CHAT_FILTER_LEN];
 
 	bool LineShouldHighlight(const char *pLine, const char *pName);
 	bool IsGreeting(const char *pMsg);
+	bool IsBye(const char *pMsg);
+	bool IsInsult(int ClientID, const char *pMsg, int MsgLen, int NameLen);
+	bool IsQuestionWhy(const char *pMsg);
 	void DoGreet();
+	bool ReplyToLastPing(const char *pMessageAuthor, const char *pMessage);
 	void SayFormat(const char *pMsg);
+	void AddChatFilter(const char *pFilter);
+	void ListChatFilter();
+	enum
+	{
+		SPAM_NONE,
+		SPAM_OTHER,
+		SPAM_INSULT
+	};
+	int IsSpam(int ClientID, int Team, const char *pMsg);
 
 	void OnChatMessage(int ClientID, int Team, const char *pMsg);
 
-	virtual void OnRender();
-	virtual void OnMessage(int MsgType, void *pRawMsg);
-	virtual void OnConsoleInit();
-	virtual void OnInit();
+	virtual void OnRender() override;
+	virtual void OnMessage(int MsgType, void *pRawMsg) override;
+	virtual void OnConsoleInit() override;
+	virtual void OnInit() override;
 
+	static void ConReplyToLastPing(IConsole::IResult *pResult, void *pUserData);
 	static void ConSayHi(IConsole::IResult *pResult, void *pUserData);
 	static void ConSayFormat(IConsole::IResult *pResult, void *pUserData);
+	static void ConAddChatFilter(IConsole::IResult *pResult, void *pUserData);
+	static void ConListChatFilter(IConsole::IResult *pResult, void *pUserData);
+	static void ConDeleteChatFilter(IConsole::IResult *pResult, void *pUserData);
 
 public:
 	CChatHelper();
+	virtual int Sizeof() const override { return sizeof(*this); }
 	void RegisterCommand(const char *pName, const char *pParams, int flags, const char *pHelp);
 	void Get128Name(const char *pMsg, char *pName);
 	const char *GetGreetName() { return m_aGreetName; }
@@ -63,6 +84,7 @@ public:
 			StayAfk - Do not deactivate afk mode.
 	*/
 	void SayBuffer(const char *pMsg, bool StayAfk = false);
+	bool FilterChat(int ClientID, int Team, const char *pLine);
 	bool OnAutocomplete(CLineInput *pInput, const char *pCompletionBuffer, int PlaceholderOffset, int PlaceholderLength, int *pOldChatStringLength, int *pCompletionChosen, bool ReverseTAB);
 };
 

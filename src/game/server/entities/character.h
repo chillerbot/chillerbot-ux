@@ -41,6 +41,8 @@ public:
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);
 
+	bool CanSnapCharacter(int SnappingClient);
+
 	bool IsGrounded();
 
 	void SetWeapon(int W);
@@ -80,6 +82,7 @@ public:
 	bool IsAlive() const { return m_Alive; }
 	bool IsPaused() const { return m_Paused; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
+	int64_t TeamMask();
 
 private:
 	// player controlling this character
@@ -183,7 +186,7 @@ public:
 
 	void FillAntibot(CAntibotCharacterData *pData);
 	void Pause(bool Pause);
-	bool Freeze(int Time);
+	bool Freeze(int Seconds);
 	bool Freeze();
 	bool UnFreeze();
 	void GiveAllWeapons();
@@ -201,6 +204,7 @@ public:
 	int m_FreezeTick;
 	bool m_FrozenLastTick;
 	bool m_DeepFreeze;
+	bool m_LiveFreeze;
 	bool m_EndlessHook;
 	bool m_FreezeHammer;
 	enum
@@ -243,30 +247,32 @@ public:
 	int m_WeaponChangeTick;
 
 	// Setters/Getters because i don't want to modify vanilla vars access modifiers
-	int GetLastWeapon() { return m_LastWeapon; };
-	void SetLastWeapon(int LastWeap) { m_LastWeapon = LastWeap; };
-	int GetActiveWeapon() { return m_Core.m_ActiveWeapon; };
-	void SetActiveWeapon(int ActiveWeap) { m_Core.m_ActiveWeapon = ActiveWeap; };
-	void SetLastAction(int LastAction) { m_LastAction = LastAction; };
-	int GetArmor() { return m_Armor; };
-	void SetArmor(int Armor) { m_Armor = Armor; };
-	CCharacterCore GetCore() { return m_Core; };
-	void SetCore(CCharacterCore Core) { m_Core = Core; };
-	CCharacterCore *Core() { return &m_Core; };
-	bool GetWeaponGot(int Type) { return m_aWeapons[Type].m_Got; };
-	void SetWeaponGot(int Type, bool Value) { m_aWeapons[Type].m_Got = Value; };
-	int GetWeaponAmmo(int Type) { return m_aWeapons[Type].m_Ammo; };
-	void SetWeaponAmmo(int Type, int Value) { m_aWeapons[Type].m_Ammo = Value; };
-	bool IsAlive() { return m_Alive; };
-	void SetNinjaActivationDir(vec2 ActivationDir) { m_Ninja.m_ActivationDir = ActivationDir; };
-	void SetNinjaActivationTick(int ActivationTick) { m_Ninja.m_ActivationTick = ActivationTick; };
-	void SetNinjaCurrentMoveTime(int CurrentMoveTime) { m_Ninja.m_CurrentMoveTime = CurrentMoveTime; };
+	int GetLastWeapon() { return m_LastWeapon; }
+	void SetLastWeapon(int LastWeap) { m_LastWeapon = LastWeap; }
+	int GetActiveWeapon() { return m_Core.m_ActiveWeapon; }
+	void SetActiveWeapon(int ActiveWeap) { m_Core.m_ActiveWeapon = ActiveWeap; }
+	void SetLastAction(int LastAction) { m_LastAction = LastAction; }
+	int GetArmor() { return m_Armor; }
+	void SetArmor(int Armor) { m_Armor = Armor; }
+	CCharacterCore GetCore() { return m_Core; }
+	void SetCore(CCharacterCore Core) { m_Core = Core; }
+	CCharacterCore *Core() { return &m_Core; }
+	bool GetWeaponGot(int Type) { return m_aWeapons[Type].m_Got; }
+	void SetWeaponGot(int Type, bool Value) { m_aWeapons[Type].m_Got = Value; }
+	int GetWeaponAmmo(int Type) { return m_aWeapons[Type].m_Ammo; }
+	void SetWeaponAmmo(int Type, int Value) { m_aWeapons[Type].m_Ammo = Value; }
+	bool IsAlive() { return m_Alive; }
+	void SetNinjaActivationDir(vec2 ActivationDir) { m_Ninja.m_ActivationDir = ActivationDir; }
+	void SetNinjaActivationTick(int ActivationTick) { m_Ninja.m_ActivationTick = ActivationTick; }
+	void SetNinjaCurrentMoveTime(int CurrentMoveTime) { m_Ninja.m_CurrentMoveTime = CurrentMoveTime; }
 
 	int GetLastAction() const { return m_LastAction; }
 
-	bool HasTelegunGun() { return m_Core.m_HasTelegunGun; };
-	bool HasTelegunGrenade() { return m_Core.m_HasTelegunGrenade; };
-	bool HasTelegunLaser() { return m_Core.m_HasTelegunLaser; };
+	bool HasTelegunGun() { return m_Core.m_HasTelegunGun; }
+	bool HasTelegunGrenade() { return m_Core.m_HasTelegunGrenade; }
+	bool HasTelegunLaser() { return m_Core.m_HasTelegunLaser; }
+
+	CSaveTee &GetRescueTeeRef() { return m_RescueTee; }
 };
 
 enum

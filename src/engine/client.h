@@ -23,6 +23,7 @@ enum
 };
 
 typedef bool (*CLIENTFUNC_FILTER)(const void *pData, int DataSize, void *pUser);
+struct CChecksumData;
 
 class IClient : public IInterface
 {
@@ -36,6 +37,7 @@ protected:
 	int m_CurGameTick[NUM_DUMMIES];
 	float m_GameIntraTick[NUM_DUMMIES];
 	float m_GameTickTime[NUM_DUMMIES];
+	float m_GameIntraTickSincePrev[NUM_DUMMIES];
 
 	int m_PredTick[NUM_DUMMIES];
 	float m_PredIntraTick[NUM_DUMMIES];
@@ -59,6 +61,14 @@ public:
 		int m_Type;
 		int m_ID;
 		int m_DataSize;
+	};
+
+	enum
+	{
+		CONN_MAIN = 0,
+		CONN_DUMMY,
+		CONN_CONTACT,
+		NUM_CONNS,
 	};
 
 	/* Constants: Client States
@@ -85,12 +95,13 @@ public:
 	inline int State() const { return m_State; }
 
 	// tick time access
-	inline int PrevGameTick(int Dummy) const { return m_PrevGameTick[Dummy]; }
-	inline int GameTick(int Dummy) const { return m_CurGameTick[Dummy]; }
-	inline int PredGameTick(int Dummy) const { return m_PredTick[Dummy]; }
-	inline float IntraGameTick(int Dummy) const { return m_GameIntraTick[Dummy]; }
-	inline float PredIntraGameTick(int Dummy) const { return m_PredIntraTick[Dummy]; }
-	inline float GameTickTime(int Dummy) const { return m_GameTickTime[Dummy]; }
+	inline int PrevGameTick(int Conn) const { return m_PrevGameTick[Conn]; }
+	inline int GameTick(int Conn) const { return m_CurGameTick[Conn]; }
+	inline int PredGameTick(int Conn) const { return m_PredTick[Conn]; }
+	inline float IntraGameTick(int Conn) const { return m_GameIntraTick[Conn]; }
+	inline float PredIntraGameTick(int Conn) const { return m_PredIntraTick[Conn]; }
+	inline float IntraGameTickSincePrev(int Conn) const { return m_GameIntraTickSincePrev[Conn]; }
+	inline float GameTickTime(int Conn) const { return m_GameTickTime[Conn]; }
 	inline int GameTickSpeed() const { return m_GameTickSpeed; }
 
 	// other time access
@@ -107,6 +118,7 @@ public:
 	virtual void DummyConnect() = 0;
 	virtual bool DummyConnected() = 0;
 	virtual bool DummyConnecting() = 0;
+	virtual bool DummyAllowed() = 0;
 
 	virtual void Restart() = 0;
 	virtual void Quit() = 0;
@@ -125,13 +137,13 @@ public:
 
 	// gfx
 	virtual void SwitchWindowScreen(int Index) = 0;
-	virtual void SetWindowParams(int FullscreenMode, bool IsBorderless) = 0;
+	virtual void SetWindowParams(int FullscreenMode, bool IsBorderless, bool AllowResizing) = 0;
 	virtual void ToggleWindowVSync() = 0;
 	virtual void LoadFont() = 0;
 	virtual void Notify(const char *pTitle, const char *pMessage) = 0;
 
 	// networking
-	virtual void EnterGame() = 0;
+	virtual void EnterGame(int Conn) = 0;
 
 	//
 	virtual const char *MapDownloadName() const = 0;
@@ -170,16 +182,16 @@ public:
 
 	virtual void SnapSetStaticsize(int ItemType, int Size) = 0;
 
-	virtual int SendMsg(CMsgPacker *pMsg, int Flags) = 0;
-	virtual int SendMsgY(CMsgPacker *pMsg, int Flags, int NetClient = 1) = 0;
+	virtual int SendMsg(int Conn, CMsgPacker *pMsg, int Flags) = 0;
+	virtual int SendMsgActive(CMsgPacker *pMsg, int Flags) = 0;
 
 	template<class T>
-	int SendPackMsg(T *pMsg, int Flags)
+	int SendPackMsgActive(T *pMsg, int Flags)
 	{
 		CMsgPacker Packer(pMsg->MsgID(), false);
 		if(pMsg->Pack(&Packer))
 			return -1;
-		return SendMsg(&Packer, Flags);
+		return SendMsgActive(&Packer, Flags);
 	}
 
 	//
@@ -221,6 +233,8 @@ public:
 
 	virtual SWarning *GetCurWarning() = 0;
 
+	virtual CChecksumData *ChecksumData() = 0;
+
 	// chillerbot
 
 	virtual void ChillerBotLoadMap(const char *pMap) = 0;
@@ -244,7 +258,7 @@ public:
 	virtual void OnUpdate() = 0;
 	virtual void OnStateChange(int NewState, int OldState) = 0;
 	virtual void OnConnected() = 0;
-	virtual void OnMessage(int MsgID, CUnpacker *pUnpacker, bool IsDummy = 0) = 0;
+	virtual void OnMessage(int MsgID, CUnpacker *pUnpacker, int Conn, bool Dummy) = 0;
 	virtual void OnPredict() = 0;
 	virtual void OnActivateEditor() = 0;
 

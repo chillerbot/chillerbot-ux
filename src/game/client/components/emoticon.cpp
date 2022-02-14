@@ -13,6 +13,8 @@
 #include <game/client/ui.h>
 #include <game/gamecore.h> // get_angle
 
+#include <game/client/gameclient.h>
+
 CEmoticon::CEmoticon()
 {
 	OnReset();
@@ -101,7 +103,7 @@ void CEmoticon::OnRender()
 
 	CUIRect Screen = *UI()->Screen();
 
-	Graphics()->MapScreen(Screen.x, Screen.y, Screen.w, Screen.h);
+	UI()->MapScreen();
 
 	Graphics()->BlendNormal();
 
@@ -183,13 +185,13 @@ void CEmoticon::Emote(int Emoticon)
 {
 	CNetMsg_Cl_Emoticon Msg;
 	Msg.m_Emoticon = Emoticon;
-	Client()->SendPackMsg(&Msg, MSGFLAG_VITAL);
+	Client()->SendPackMsgActive(&Msg, MSGFLAG_VITAL);
 
 	if(g_Config.m_ClDummyCopyMoves)
 	{
 		CMsgPacker Msg(NETMSGTYPE_CL_EMOTICON, false);
 		Msg.AddInt(Emoticon);
-		Client()->SendMsgY(&Msg, MSGFLAG_VITAL, !g_Config.m_ClDummy);
+		Client()->SendMsg(!g_Config.m_ClDummy, &Msg, MSGFLAG_VITAL);
 	}
 }
 
@@ -217,5 +219,5 @@ void CEmoticon::EyeEmote(int Emote)
 		str_format(aBuf, sizeof(aBuf), "/emote blink %d", g_Config.m_ClEyeDuration);
 		break;
 	}
-	GameClient()->m_pChat->Say(0, aBuf);
+	GameClient()->m_Chat.Say(0, aBuf);
 }

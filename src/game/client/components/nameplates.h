@@ -3,6 +3,11 @@
 #ifndef GAME_CLIENT_COMPONENTS_NAMEPLATES_H
 #define GAME_CLIENT_COMPONENTS_NAMEPLATES_H
 #include <game/client/component.h>
+
+struct CNetObj_Character;
+struct CNetObj_PlayerInfo;
+struct CMapItemGroup;
+
 struct SPlayerNamePlate
 {
 	SPlayerNamePlate()
@@ -38,7 +43,7 @@ class CNamePlates : public CComponent
 		const CNetObj_Character *pPrevChar,
 		const CNetObj_Character *pPlayerChar,
 		const CNetObj_PlayerInfo *pPlayerInfo);
-	void RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pPlayerInfo, float Alpha);
+	void RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pPlayerInfo, float Alpha, bool ForceAlpha = false);
 
 	SPlayerNamePlate m_aNamePlates[MAX_CLIENTS];
 	class CPlayers *m_pPlayers;
@@ -46,9 +51,10 @@ class CNamePlates : public CComponent
 	void ResetNamePlates();
 
 public:
-	virtual void OnWindowResize();
-	virtual void OnInit();
-	virtual void OnRender();
+	virtual int Sizeof() const override { return sizeof(*this); }
+	virtual void OnWindowResize() override;
+	virtual void OnInit() override;
+	virtual void OnRender() override;
 
 	void SetPlayers(class CPlayers *pPlayers);
 };

@@ -6,6 +6,10 @@
 #include <game/client/component.h>
 #include <game/client/components/menus.h>
 
+#include <game/client/render.h>
+
+struct CNetObj_Character;
+
 enum
 {
 	GHOSTDATA_TYPE_SKIN = 0,
@@ -145,12 +149,14 @@ public:
 	bool m_AllowRestart;
 
 	CGhost();
+	virtual int Sizeof() const override { return sizeof(*this); }
 
-	virtual void OnRender();
-	virtual void OnConsoleInit();
-	virtual void OnReset();
-	virtual void OnMessage(int MsgType, void *pRawMsg);
-	virtual void OnMapLoad();
+	virtual void OnRender() override;
+	virtual void OnConsoleInit() override;
+	virtual void OnReset() override;
+	virtual void OnMessage(int MsgType, void *pRawMsg) override;
+	virtual void OnMapLoad() override;
+	virtual void OnShutdown() override;
 
 	void OnNewSnapshot();
 	void OnNewPredictedSnapshot();

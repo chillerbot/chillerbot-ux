@@ -3,6 +3,7 @@
 
 #include <limits>
 
+#include <engine/client/checksum.h>
 #include <engine/demo.h>
 #include <engine/editor.h>
 #include <engine/engine.h>
@@ -67,65 +68,17 @@
 #include "components/chillerbot/chillconsole.h"
 #include "components/chillerbot/chillerbotux.h"
 #include "components/chillerbot/chillpw.h"
+#include "components/chillerbot/city.h"
 #include "components/chillerbot/playerpics.h"
 #include "components/chillerbot/remotecontrol.h"
+#include "components/chillerbot/terminalui.h"
 #include "components/chillerbot/unix.h"
+#include "components/chillerbot/vibebot.h"
 #include "components/chillerbot/warlist.h"
 
 #include "components/ghost.h"
 #include "components/race_demo.h"
 #include <base/system.h>
-
-CGameClient g_GameClient;
-
-// instantiate all systems
-static CKillMessages gs_KillMessages;
-static CCamera gs_Camera;
-static CChat gs_Chat;
-static CMotd gs_Motd;
-static CBroadcast gs_Broadcast;
-static CGameConsole gs_GameConsole;
-static CBinds gs_Binds;
-static CParticles gs_Particles;
-static CMenus gs_Menus;
-static CSkins gs_Skins;
-static CCountryFlags gs_CountryFlags;
-static CFlow gs_Flow;
-static CHud gs_Hud;
-static CDebugHud gs_DebugHud;
-static CControls gs_Controls;
-static CEffects gs_Effects;
-static CScoreboard gs_Scoreboard;
-static CStatboard gs_Statboard;
-static CSounds gs_Sounds;
-static CEmoticon gs_Emoticon;
-static CDamageInd gsDamageInd;
-static CVoting gs_Voting;
-static CSpectator gs_Spectator;
-
-static CPlayers gs_Players;
-static CNamePlates gs_NamePlates;
-static CItems gs_Items;
-static CMapImages gs_MapImages;
-
-static CMapLayers gs_MapLayersBackGround(CMapLayers::TYPE_BACKGROUND);
-static CMapLayers gs_MapLayersForeGround(CMapLayers::TYPE_FOREGROUND);
-static CBackground gs_BackGround;
-static CMenuBackground gs_MenuBackground;
-
-static CMapSounds gs_MapSounds;
-
-static CRaceDemo gs_RaceDemo;
-static CGhost gs_Ghost;
-
-static CChillerBotUX gs_ChillerBotUX;
-static CChatHelper gs_ChatHelper;
-static CChillPw gs_ChillPw;
-static CPlayerPics gs_PlayerPics;
-static CRemoteControl gs_RemoteControl;
-static CWarList gs_WarList;
-static CChillConsole gs_ChillConsole;
-static CUnix gs_Unix;
 
 CGameClient::CStack::CStack() { m_Num = 0; }
 void CGameClient::CStack::Add(class CComponent *pComponent) { m_paComponents[m_Num++] = pComponent; }
@@ -142,6 +95,7 @@ void CGameClient::OnConsoleInit()
 	m_pClient = Kernel()->RequestInterface<IClient>();
 	m_pTextRender = Kernel()->RequestInterface<ITextRender>();
 	m_pSound = Kernel()->RequestInterface<ISound>();
+	m_pConfig = Kernel()->RequestInterface<IConfigManager>()->Values();
 	m_pInput = Kernel()->RequestInterface<IInput>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_pStorage = Kernel()->RequestInterface<IStorage>();
@@ -154,111 +108,78 @@ void CGameClient::OnConsoleInit()
 	m_pUpdater = Kernel()->RequestInterface<IUpdater>();
 #endif
 
-	// setup pointers
-	m_pMenuBackground = &::gs_MenuBackground;
-	m_pBinds = &::gs_Binds;
-	m_pGameConsole = &::gs_GameConsole;
-	m_pParticles = &::gs_Particles;
-	m_pMenus = &::gs_Menus;
-	m_pSkins = &::gs_Skins;
-	m_pCountryFlags = &::gs_CountryFlags;
-	m_pChat = &::gs_Chat;
-	m_pFlow = &::gs_Flow;
-	m_pCamera = &::gs_Camera;
-	m_pControls = &::gs_Controls;
-	m_pEffects = &::gs_Effects;
-	m_pSounds = &::gs_Sounds;
-	m_pMotd = &::gs_Motd;
-	m_pDamageind = &::gsDamageInd;
-	m_pMapimages = &::gs_MapImages;
-	m_pVoting = &::gs_Voting;
-	m_pScoreboard = &::gs_Scoreboard;
-	m_pStatboard = &::gs_Statboard;
-	m_pItems = &::gs_Items;
-	m_pMapLayersBackGround = &::gs_MapLayersBackGround;
-	m_pMapLayersForeGround = &::gs_MapLayersForeGround;
-	m_pBackGround = &::gs_BackGround;
+	m_Menus.SetMenuBackground(&m_MenuBackground);
 
-	m_pMapSounds = &::gs_MapSounds;
-	m_pPlayers = &::gs_Players;
-
-	m_pRaceDemo = &::gs_RaceDemo;
-	m_pGhost = &::gs_Ghost;
-
-	m_pChillerBotUX = &::gs_ChillerBotUX;
-	m_pChatHelper = &::gs_ChatHelper;
-	m_pWarList = &::gs_WarList;
-	m_pChillConsole = &::gs_ChillConsole;
-
-	m_pMenus->SetMenuBackground(m_pMenuBackground);
-
-	gs_NamePlates.SetPlayers(m_pPlayers);
+	m_NamePlates.SetPlayers(&m_Players);
 
 	// make a list of all the systems, make sure to add them in the correct render order
-	m_All.Add(m_pSkins);
-	m_All.Add(m_pCountryFlags);
-	m_All.Add(m_pMapimages);
-	m_All.Add(m_pEffects); // doesn't render anything, just updates effects
-	m_All.Add(m_pBinds);
-	m_All.Add(&m_pBinds->m_SpecialBinds);
-	m_All.Add(m_pControls);
-	m_All.Add(m_pCamera);
-	m_All.Add(m_pSounds);
-	m_All.Add(m_pVoting);
-	m_All.Add(m_pParticles); // doesn't render anything, just updates all the particles
-	m_All.Add(m_pRaceDemo);
-	m_All.Add(m_pMapSounds);
+	m_All.Add(&m_Skins);
+	m_All.Add(&m_CountryFlags);
+	m_All.Add(&m_MapImages);
+	m_All.Add(&m_Effects); // doesn't render anything, just updates effects
+	m_All.Add(&m_Binds);
+	m_All.Add(&m_Binds.m_SpecialBinds);
+	m_All.Add(&m_Controls);
+	m_All.Add(&m_Camera);
+	m_All.Add(&m_Sounds);
+	m_All.Add(&m_Voting);
+	m_All.Add(&m_Particles); // doesn't render anything, just updates all the particles
+	m_All.Add(&m_RaceDemo);
+	m_All.Add(&m_MapSounds);
 
-	m_All.Add(&gs_BackGround); //render instead of gs_MapLayersBackGround when g_Config.m_ClOverlayEntities == 100
-	m_All.Add(&gs_MapLayersBackGround); // first to render
-	m_All.Add(&m_pParticles->m_RenderTrail);
-	m_All.Add(m_pItems);
-	m_All.Add(&gs_PlayerPics);
-	m_All.Add(m_pPlayers);
-	m_All.Add(m_pGhost);
-	m_All.Add(&gs_MapLayersForeGround);
-	m_All.Add(&m_pParticles->m_RenderExplosions);
-	m_All.Add(&gs_NamePlates);
-	m_All.Add(&m_pParticles->m_RenderGeneral);
-	m_All.Add(m_pDamageind);
-	m_All.Add(&gs_Hud);
-	m_All.Add(&gs_Spectator);
-	m_All.Add(&gs_Emoticon);
-	m_All.Add(&gs_KillMessages);
-	m_All.Add(m_pChat);
-	m_All.Add(&gs_Broadcast);
-	m_All.Add(&gs_DebugHud);
-	m_All.Add(&gs_Scoreboard);
-	m_All.Add(&gs_Statboard);
-	m_All.Add(m_pMotd);
-	m_All.Add(m_pMenus);
-	m_All.Add(&m_pMenus->m_Binder);
-	m_All.Add(m_pGameConsole);
+	m_All.Add(&m_BackGround); //render instead of m_MapLayersBackGround when g_Config.m_ClOverlayEntities == 100
+	m_All.Add(&m_MapLayersBackGround); // first to render
+	m_All.Add(&m_Particles.m_RenderTrail);
+	m_All.Add(&m_Items);
+	m_All.Add(&m_Players);
+	m_All.Add(&m_Ghost);
+	m_All.Add(&m_MapLayersForeGround);
+	m_All.Add(&m_Particles.m_RenderExplosions);
+	m_All.Add(&m_NamePlates);
+	m_All.Add(&m_PlayerPics); // chillerbot-ux
+	m_All.Add(&m_Particles.m_RenderGeneral);
+	m_All.Add(&m_DamageInd);
+	m_All.Add(&m_Hud);
+	m_All.Add(&m_Spectator);
+	m_All.Add(&m_Emoticon);
+	m_All.Add(&m_KillMessages);
+	m_All.Add(&m_Chat);
+	m_All.Add(&m_Broadcast);
+	m_All.Add(&m_DebugHud);
+	m_All.Add(&m_Scoreboard);
+	m_All.Add(&m_Statboard);
+	m_All.Add(&m_Motd);
+	m_All.Add(&m_Menus);
+	m_All.Add(&CMenus::m_Binder);
+	m_All.Add(&m_GameConsole);
 
-	m_All.Add(m_pChillerBotUX);
-	m_All.Add(m_pChatHelper);
-	m_All.Add(&gs_ChillPw);
-	m_All.Add(&gs_RemoteControl);
-	m_All.Add(m_pWarList);
-	m_All.Add(m_pChillConsole);
-	m_All.Add(&gs_Unix);
+	m_All.Add(&m_ChillerBotUX);
+	m_All.Add(&m_ChatHelper);
+	m_All.Add(&m_ChillPw);
+	m_All.Add(&m_RemoteControl);
+	m_All.Add(&m_WarList);
+	m_All.Add(&m_VibeBot);
+	m_All.Add(&m_CityHelper);
+	m_All.Add(&m_TerminalUI);
+	m_All.Add(&m_ChillConsole);
+	m_All.Add(&m_Unix);
 
-	m_All.Add(m_pMenuBackground);
+	m_All.Add(&m_MenuBackground);
 
-	m_Input.Add(m_pChillerBotUX);
-	m_Input.Add(m_pChillConsole);
+	m_Input.Add(&m_ChillerBotUX);
+	m_Input.Add(&m_ChillConsole);
 
 	// build the input stack
-	m_Input.Add(&m_pMenus->m_Binder); // this will take over all input when we want to bind a key
-	m_Input.Add(&m_pBinds->m_SpecialBinds);
-	m_Input.Add(m_pGameConsole);
-	m_Input.Add(m_pChat); // chat has higher prio due to tha you can quit it by pressing esc
-	m_Input.Add(m_pMotd); // for pressing esc to remove it
-	m_Input.Add(m_pMenus);
-	m_Input.Add(&gs_Spectator);
-	m_Input.Add(&gs_Emoticon);
-	m_Input.Add(m_pControls);
-	m_Input.Add(m_pBinds);
+	m_Input.Add(&CMenus::m_Binder); // this will take over all input when we want to bind a key
+	m_Input.Add(&m_Binds.m_SpecialBinds);
+	m_Input.Add(&m_GameConsole);
+	m_Input.Add(&m_Chat); // chat has higher prio due to tha you can quit it by pressing esc
+	m_Input.Add(&m_Motd); // for pressing esc to remove it
+	m_Input.Add(&m_Menus);
+	m_Input.Add(&m_Spectator);
+	m_Input.Add(&m_Emoticon);
+	m_Input.Add(&m_Controls);
+	m_Input.Add(&m_Binds);
 
 	// add the some console commands
 	Console()->Register("team", "i[team-id]", CFGFLAG_CLIENT, ConTeam, this, "Switch team");
@@ -326,7 +247,7 @@ void CGameClient::OnInit()
 	m_pGraphics->AddWindowResizeListener(OnWindowResizeCB, this);
 
 	// propagate pointers
-	m_UI.SetGraphics(Graphics(), TextRender());
+	m_UI.Init(Graphics(), TextRender());
 
 	m_RenderTools.Init(Graphics(), UI(), this);
 
@@ -372,7 +293,7 @@ void CGameClient::OnInit()
 			LoadParticlesSkin(g_Config.m_ClAssetParticles);
 		else
 			g_pData->m_aImages[i].m_Id = Graphics()->LoadTexture(g_pData->m_aImages[i].m_pFilename, IStorage::TYPE_ALL, CImageInfo::FORMAT_AUTO, 0);
-		g_GameClient.m_pMenus->RenderLoading();
+		m_Menus.RenderLoading();
 	}
 
 	for(int i = 0; i < m_All.m_Num; i++)
@@ -384,13 +305,15 @@ void CGameClient::OnInit()
 	m_DDRaceMsgSent[1] = false;
 	m_ShowOthers[0] = -1;
 	m_ShowOthers[1] = -1;
+	m_SwitchStateTeam[0] = -1;
+	m_SwitchStateTeam[1] = -1;
 
 	m_LastZoom = .0;
 	m_LastScreenAspect = .0;
 	m_LastDummyConnected = false;
 
 	// Set free binds to DDRace binds if it's active
-	gs_Binds.SetDDRaceBinds(true);
+	m_Binds.SetDDRaceBinds(true);
 
 	if(g_Config.m_ClTimeoutCode[0] == '\0' || str_comp(g_Config.m_ClTimeoutCode, "hGuEYnfxicsXGwFq") == 0)
 	{
@@ -422,11 +345,24 @@ void CGameClient::OnInit()
 	m_GameWorld.m_pCollision = Collision();
 	m_GameWorld.m_pTuningList = m_aTuningList;
 
-	m_pMapimages->SetTextureScale(g_Config.m_ClTextEntitiesSize);
+	m_MapImages.SetTextureScale(g_Config.m_ClTextEntitiesSize);
 
 	// Agressively try to grab window again since some Windows users report
 	// window not being focussed after starting client.
 	Graphics()->SetWindowGrab(true);
+
+	CChecksumData *pChecksum = Client()->ChecksumData();
+	pChecksum->m_SizeofGameClient = sizeof(*this);
+	pChecksum->m_NumComponents = m_All.m_Num;
+	for(int i = 0; i < m_All.m_Num; i++)
+	{
+		if(i >= (int)(sizeof(pChecksum->m_aComponentsChecksum) / sizeof(pChecksum->m_aComponentsChecksum[0])))
+		{
+			break;
+		}
+		int Size = m_All.m_paComponents[i]->Sizeof();
+		pChecksum->m_aComponentsChecksum[i] = Size;
+	}
 }
 
 void CGameClient::OnUpdate()
@@ -463,20 +399,26 @@ void CGameClient::OnDummySwap()
 	if(g_Config.m_ClDummyResetOnSwitch)
 	{
 		int PlayerOrDummy = (g_Config.m_ClDummyResetOnSwitch == 2) ? g_Config.m_ClDummy : (!g_Config.m_ClDummy);
-		m_pControls->ResetInput(PlayerOrDummy);
-		m_pControls->m_InputData[PlayerOrDummy].m_Hook = 0;
+		m_Controls.ResetInput(PlayerOrDummy);
+		m_Controls.m_InputData[PlayerOrDummy].m_Hook = 0;
 	}
 	int tmp = m_DummyInput.m_Fire;
-	m_DummyInput = m_pControls->m_InputData[!g_Config.m_ClDummy];
-	m_pControls->m_InputData[g_Config.m_ClDummy].m_Fire = tmp;
+	m_DummyInput = m_Controls.m_InputData[!g_Config.m_ClDummy];
+	m_Controls.m_InputData[g_Config.m_ClDummy].m_Fire = tmp;
 	m_IsDummySwapping = 1;
 }
 
 int CGameClient::OnSnapInput(int *pData, bool Dummy, bool Force)
 {
+	int CurrentTee = g_Config.m_ClDummy ? !Dummy : Dummy;
+	if(m_VibeBot.m_SendData[CurrentTee])
+	{
+		mem_copy(pData, &m_VibeBot.m_InputData[CurrentTee], sizeof(m_VibeBot.m_InputData[CurrentTee]));
+		return sizeof(m_VibeBot.m_InputData[CurrentTee]);
+	}
 	if(!Dummy)
 	{
-		return m_pControls->SnapInput(pData);
+		return m_Controls.SnapInput(pData);
 	}
 
 	if(!g_Config.m_ClDummyHammer)
@@ -527,8 +469,6 @@ void CGameClient::OnConnected()
 	m_Layers.Init(Kernel());
 	m_Collision.Init(Layers());
 
-	RenderTools()->RenderTilemapGenerateSkip(Layers());
-
 	CRaceHelper::ms_aFlagIndex[0] = -1;
 	CRaceHelper::ms_aFlagIndex[1] = -1;
 
@@ -561,6 +501,7 @@ void CGameClient::OnConnected()
 
 	m_GameWorld.Clear();
 	m_GameWorld.m_WorldConfig.m_InfiniteAmmo = true;
+	mem_zero(&m_GameInfo, sizeof(m_GameInfo));
 	m_PredictedDummyID = -1;
 	for(auto &LastWorldCharacter : m_aLastWorldCharacters)
 		LastWorldCharacter.m_Alive = false;
@@ -670,28 +611,6 @@ void CGameClient::UpdatePositions()
 	UpdateRenderedCharacters();
 }
 
-static void Evolve(CNetObj_Character *pCharacter, int Tick)
-{
-	CWorldCore TempWorld;
-	CCharacterCore TempCore;
-	CTeamsCore TempTeams;
-	mem_zero(&TempCore, sizeof(TempCore));
-	mem_zero(&TempTeams, sizeof(TempTeams));
-	TempCore.Init(&TempWorld, g_GameClient.Collision(), &TempTeams);
-	TempCore.Read(pCharacter);
-	TempCore.m_ActiveWeapon = pCharacter->m_Weapon;
-
-	while(pCharacter->m_Tick < Tick)
-	{
-		pCharacter->m_Tick++;
-		TempCore.Tick(false);
-		TempCore.Move();
-		TempCore.Quantize();
-	}
-
-	TempCore.Write(pCharacter);
-}
-
 void CGameClient::OnRender()
 {
 	// update the local character and spectate position
@@ -700,9 +619,9 @@ void CGameClient::OnRender()
 	// display gfx & client warnings
 	for(SWarning *pWarning : {Graphics()->GetCurWarning(), Client()->GetCurWarning()})
 	{
-		if(pWarning != NULL && m_pMenus->CanDisplayWarning())
+		if(pWarning != NULL && m_Menus.CanDisplayWarning())
 		{
-			m_pMenus->PopupWarning(Localize("Warning"), pWarning->m_aWarningMsg, "Ok", 10000000);
+			m_Menus.PopupWarning(Localize("Warning"), pWarning->m_aWarningMsg, "Ok", 10000000);
 			pWarning->m_WasShown = true;
 		}
 	}
@@ -722,7 +641,7 @@ void CGameClient::OnRender()
 		g_Config.m_ClDummy = 0;
 
 	// resend player and dummy info if it was filtered by server
-	if(Client()->State() == IClient::STATE_ONLINE && !m_pMenus->IsActive())
+	if(Client()->State() == IClient::STATE_ONLINE && !m_Menus.IsActive())
 	{
 		if(m_CheckInfo[0] == 0)
 		{
@@ -775,7 +694,7 @@ void CGameClient::OnDummyDisconnect()
 
 int CGameClient::GetLastRaceTick()
 {
-	return m_pGhost->GetLastRaceTick();
+	return m_Ghost.GetLastRaceTick();
 }
 
 void CGameClient::OnRelease()
@@ -785,28 +704,10 @@ void CGameClient::OnRelease()
 		m_All.m_paComponents[i]->OnRelease();
 }
 
-void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
+void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dummy)
 {
 	// special messages
-	if(MsgId == NETMSGTYPE_SV_EXTRAPROJECTILE && !IsDummy)
-	{
-		int Num = pUnpacker->GetInt();
-
-		for(int k = 0; k < Num; k++)
-		{
-			CNetObj_Projectile Proj;
-			for(unsigned i = 0; i < sizeof(CNetObj_Projectile) / sizeof(int); i++)
-				((int *)&Proj)[i] = pUnpacker->GetInt();
-
-			if(pUnpacker->Error())
-				return;
-
-			g_GameClient.m_pItems->AddExtraProjectile(&Proj);
-		}
-
-		return;
-	}
-	else if(MsgId == NETMSGTYPE_SV_TUNEPARAMS)
+	if(MsgId == NETMSGTYPE_SV_TUNEPARAMS)
 	{
 		// unpack the new tuning
 		CTuningParams NewTuning;
@@ -826,9 +727,9 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 
 		m_ServerMode = SERVERMODE_PURE;
 
-		m_ReceivedTuning[IsDummy ? !g_Config.m_ClDummy : g_Config.m_ClDummy] = true;
+		m_ReceivedTuning[Conn] = true;
 		// apply new tuning
-		m_Tuning[IsDummy ? !g_Config.m_ClDummy : g_Config.m_ClDummy] = NewTuning;
+		m_Tuning[Conn] = NewTuning;
 		return;
 	}
 
@@ -841,7 +742,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 		return;
 	}
 
-	if(IsDummy)
+	if(Dummy)
 	{
 		if(MsgId == NETMSGTYPE_SV_CHAT && m_LocalIDs[0] >= 0 && m_LocalIDs[1] >= 0)
 		{
@@ -849,7 +750,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 
 			if((pMsg->m_Team == 1 && (m_aClients[m_LocalIDs[0]].m_Team != m_aClients[m_LocalIDs[1]].m_Team || m_Teams.Team(m_LocalIDs[0]) != m_Teams.Team(m_LocalIDs[1]))) || pMsg->m_Team > 1)
 			{
-				m_pChat->OnMessage(MsgId, pRawMsg);
+				m_Chat.OnMessage(MsgId, pRawMsg);
 			}
 		}
 		return; // no need of all that stuff for the dummy
@@ -861,7 +762,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 
 	if(MsgId == NETMSGTYPE_SV_READYTOENTER)
 	{
-		Client()->EnterGame();
+		Client()->EnterGame(Conn);
 	}
 	else if(MsgId == NETMSGTYPE_SV_EMOTICON)
 	{
@@ -869,7 +770,8 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 
 		// apply
 		m_aClients[pMsg->m_ClientID].m_Emoticon = pMsg->m_Emoticon;
-		m_aClients[pMsg->m_ClientID].m_EmoticonStart = Client()->GameTick(g_Config.m_ClDummy);
+		m_aClients[pMsg->m_ClientID].m_EmoticonStartTick = Client()->GameTick(Conn);
+		m_aClients[pMsg->m_ClientID].m_EmoticonStartFraction = Client()->IntraGameTickSincePrev(Conn);
 	}
 	else if(MsgId == NETMSGTYPE_SV_SOUNDGLOBAL)
 	{
@@ -883,12 +785,12 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 			pMsg->m_SoundID == SOUND_CTF_GRAB_PL)
 		{
 			if(g_Config.m_SndGame)
-				g_GameClient.m_pSounds->Enqueue(CSounds::CHN_GLOBAL, pMsg->m_SoundID);
+				m_Sounds.Enqueue(CSounds::CHN_GLOBAL, pMsg->m_SoundID);
 		}
 		else
 		{
 			if(g_Config.m_SndGame)
-				g_GameClient.m_pSounds->Play(CSounds::CHN_GLOBAL, pMsg->m_SoundID, 1.0f);
+				m_Sounds.Play(CSounds::CHN_GLOBAL, pMsg->m_SoundID, 1.0f);
 		}
 	}
 	else if(MsgId == NETMSGTYPE_SV_TEAMSSTATE || MsgId == NETMSGTYPE_SV_TEAMSSTATELEGACY)
@@ -903,9 +805,9 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 			if(pUnpacker->Error())
 				WentWrong = true;
 
-			if(!WentWrong && Team >= 0 && Team < MAX_CLIENTS)
+			if(!WentWrong && Team >= TEAM_FLOCK && Team <= TEAM_SUPER)
 				m_Teams.Team(i, Team);
-			else if(Team != MAX_CLIENTS)
+			else
 				WentWrong = true;
 
 			if(WentWrong)
@@ -918,8 +820,8 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, bool IsDummy)
 		if(i <= 16)
 			m_Teams.m_IsDDRace16 = true;
 
-		m_pGhost->m_AllowRestart = true;
-		m_pRaceDemo->m_AllowRestart = true;
+		m_Ghost.m_AllowRestart = true;
+		m_RaceDemo.m_AllowRestart = true;
 	}
 	else if(MsgId == NETMSGTYPE_SV_KILLMSG)
 	{
@@ -949,14 +851,13 @@ void CGameClient::OnStateChange(int NewState, int OldState)
 
 void CGameClient::OnShutdown()
 {
-	m_pMenus->KillServer();
-	m_pRaceDemo->OnReset();
-	m_pGhost->OnReset();
+	for(int i = 0; i < m_All.m_Num; i++)
+		m_All.m_paComponents[i]->OnShutdown();
 }
 
 void CGameClient::OnEnterGame()
 {
-	g_GameClient.m_pEffects->ResetDamageIndicator();
+	m_Effects.ResetDamageIndicator();
 }
 
 void CGameClient::OnGameOver()
@@ -969,7 +870,7 @@ void CGameClient::OnStartGame()
 {
 	if(Client()->State() != IClient::STATE_DEMOPLAYBACK && !g_Config.m_ClAutoDemoOnConnect)
 		Client()->DemoRecorder_HandleAutoStart();
-	m_pStatboard->OnReset();
+	m_Statboard.OnReset();
 }
 
 void CGameClient::OnFlagGrab(int TeamID)
@@ -1002,14 +903,19 @@ void CGameClient::OnLanguageChange()
 
 void CGameClient::OnRconType(bool UsernameReq)
 {
-	m_pGameConsole->RequireUsername(UsernameReq);
-	m_pChillConsole->RequireUsername(UsernameReq);
+	m_ChillConsole.RequireUsername(UsernameReq);
+	m_GameConsole.RequireUsername(UsernameReq);
 }
+
+#include <base/terminalui.h>
 
 void CGameClient::OnRconLine(const char *pLine)
 {
-	m_pGameConsole->PrintLine(CGameConsole::CONSOLETYPE_REMOTE, pLine);
-	m_pChillConsole->PrintLine(CGameConsole::CONSOLETYPE_REMOTE, pLine);
+#if defined(CONF_CURSES_CLIENT)
+	curses_log_push(pLine);
+#endif
+	m_ChillConsole.PrintLine(CGameConsole::CONSOLETYPE_REMOTE, pLine);
+	m_GameConsole.PrintLine(CGameConsole::CONSOLETYPE_REMOTE, pLine);
 }
 
 void CGameClient::ProcessEvents()
@@ -1027,27 +933,27 @@ void CGameClient::ProcessEvents()
 		if(Item.m_Type == NETEVENTTYPE_DAMAGEIND)
 		{
 			CNetEvent_DamageInd *ev = (CNetEvent_DamageInd *)pData;
-			g_GameClient.m_pEffects->DamageIndicator(vec2(ev->m_X, ev->m_Y), direction(ev->m_Angle / 256.0f));
+			m_Effects.DamageIndicator(vec2(ev->m_X, ev->m_Y), direction(ev->m_Angle / 256.0f));
 		}
 		else if(Item.m_Type == NETEVENTTYPE_EXPLOSION)
 		{
 			CNetEvent_Explosion *ev = (CNetEvent_Explosion *)pData;
-			g_GameClient.m_pEffects->Explosion(vec2(ev->m_X, ev->m_Y));
+			m_Effects.Explosion(vec2(ev->m_X, ev->m_Y));
 		}
 		else if(Item.m_Type == NETEVENTTYPE_HAMMERHIT)
 		{
 			CNetEvent_HammerHit *ev = (CNetEvent_HammerHit *)pData;
-			g_GameClient.m_pEffects->HammerHit(vec2(ev->m_X, ev->m_Y));
+			m_Effects.HammerHit(vec2(ev->m_X, ev->m_Y));
 		}
 		else if(Item.m_Type == NETEVENTTYPE_SPAWN)
 		{
 			CNetEvent_Spawn *ev = (CNetEvent_Spawn *)pData;
-			g_GameClient.m_pEffects->PlayerSpawn(vec2(ev->m_X, ev->m_Y));
+			m_Effects.PlayerSpawn(vec2(ev->m_X, ev->m_Y));
 		}
 		else if(Item.m_Type == NETEVENTTYPE_DEATH)
 		{
 			CNetEvent_Death *ev = (CNetEvent_Death *)pData;
-			g_GameClient.m_pEffects->PlayerDeath(vec2(ev->m_X, ev->m_Y), ev->m_ClientID);
+			m_Effects.PlayerDeath(vec2(ev->m_X, ev->m_Y), ev->m_ClientID);
 		}
 		else if(Item.m_Type == NETEVENTTYPE_SOUNDWORLD)
 		{
@@ -1055,9 +961,8 @@ void CGameClient::ProcessEvents()
 			if(!g_Config.m_SndLongPain)
 				if(ev->m_SoundID == SOUND_PLAYER_PAIN_LONG)
 					ev->m_SoundID = SOUND_PICKUP_HEALTH;
-
-			if(g_Config.m_SndGame && (ev->m_SoundID != SOUND_GUN_FIRE || g_Config.m_SndGun))
-				g_GameClient.m_pSounds->PlayAt(CSounds::CHN_WORLD, ev->m_SoundID, 1.0f, vec2(ev->m_X, ev->m_Y));
+			if(g_Config.m_SndGame && (ev->m_SoundID != SOUND_GUN_FIRE || g_Config.m_SndGun) && (ev->m_SoundID != SOUND_PLAYER_PAIN_LONG || g_Config.m_SndLongPain))
+				m_Sounds.PlayAt(CSounds::CHN_WORLD, ev->m_SoundID, 1.0f, vec2(ev->m_X, ev->m_Y));
 		}
 	}
 }
@@ -1206,12 +1111,37 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 void CGameClient::InvalidateSnapshot()
 {
 	// clear all pointers
-	mem_zero(&g_GameClient.m_Snap, sizeof(g_GameClient.m_Snap));
+	mem_zero(&m_Snap, sizeof(m_Snap));
 	m_Snap.m_LocalClientID = -1;
 }
 
 void CGameClient::OnNewSnapshot()
 {
+	auto &&Evolve = [=](CNetObj_Character *pCharacter, int Tick) {
+		CWorldCore TempWorld;
+		CCharacterCore TempCore;
+		CTeamsCore TempTeams;
+		mem_zero(&TempCore, sizeof(TempCore));
+		mem_zero(&TempTeams, sizeof(TempTeams));
+		TempCore.Init(&TempWorld, Collision(), &TempTeams);
+		TempCore.Read(pCharacter);
+		TempCore.m_ActiveWeapon = pCharacter->m_Weapon;
+
+		// anti F-DDrace crash code
+		int TickDiff = Tick - pCharacter->m_Tick;
+		if(TickDiff > 120)
+			Tick = 120;
+		while(pCharacter->m_Tick < Tick)
+		{
+			pCharacter->m_Tick++;
+			TempCore.Tick(false);
+			TempCore.Move();
+			TempCore.Quantize();
+		}
+
+		TempCore.Write(pCharacter);
+	};
+
 	InvalidateSnapshot();
 
 	m_NewTick = true;
@@ -1252,12 +1182,14 @@ void CGameClient::OnNewSnapshot()
 			CNetMsg_Cl_Say Msg;
 			Msg.m_Team = rand() & 1;
 			Msg.m_pMessage = aMessage;
-			Client()->SendPackMsg(&Msg, MSGFLAG_VITAL);
+			Client()->SendPackMsgActive(&Msg, MSGFLAG_VITAL);
 		}
 	}
 #endif
 
 	bool FoundGameInfoEx = false;
+	bool GotSwitchStateTeam = false;
+	m_SwitchStateTeam[g_Config.m_ClDummy] = -1;
 
 	for(auto &Client : m_aClients)
 	{
@@ -1300,7 +1232,7 @@ void CGameClient::OnNewSnapshot()
 					pClient->m_SkinInfo.m_Size = 64;
 
 					// find new skin
-					const CSkin *pSkin = m_pSkins->Get(m_pSkins->Find(pClient->m_aSkinName));
+					const CSkin *pSkin = m_Skins.Get(m_Skins.Find(pClient->m_aSkinName));
 					pClient->m_SkinInfo.m_OriginalRenderSkin = pSkin->m_OriginalSkin;
 					pClient->m_SkinInfo.m_ColorableRenderSkin = pSkin->m_ColorableSkin;
 					pClient->m_SkinInfo.m_SkinMetrics = pSkin->m_Metrics;
@@ -1313,7 +1245,7 @@ void CGameClient::OnNewSnapshot()
 						pClient->m_SkinInfo.m_ColorFeet = ColorRGBA(1, 1, 1);
 					}
 
-					pClient->UpdateRenderInfo();
+					pClient->UpdateRenderInfo(IsTeamPlay());
 				}
 			}
 			else if(Item.m_Type == NETOBJTYPE_PLAYERINFO)
@@ -1373,8 +1305,12 @@ void CGameClient::OnNewSnapshot()
 						m_Snap.m_aCharacters[Item.m_ID].m_Active = true;
 						m_Snap.m_aCharacters[Item.m_ID].m_Prev = *((const CNetObj_Character *)pOld);
 
+						// limit evolving to 3 seconds
+						bool EvolvePrev = Client()->PrevGameTick(g_Config.m_ClDummy) - m_Snap.m_aCharacters[Item.m_ID].m_Prev.m_Tick <= 3 * Client()->GameTickSpeed();
+						bool EvolveCur = Client()->GameTick(g_Config.m_ClDummy) - m_Snap.m_aCharacters[Item.m_ID].m_Cur.m_Tick <= 3 * Client()->GameTickSpeed();
+
 						// reuse the result from the previous evolve if the snapped character didn't change since the previous snapshot
-						if(m_aClients[Item.m_ID].m_Evolved.m_Tick == Client()->PrevGameTick(g_Config.m_ClDummy))
+						if(EvolveCur && m_aClients[Item.m_ID].m_Evolved.m_Tick == Client()->PrevGameTick(g_Config.m_ClDummy))
 						{
 							if(mem_comp(&m_Snap.m_aCharacters[Item.m_ID].m_Prev, &m_aClients[Item.m_ID].m_Snapped, sizeof(CNetObj_Character)) == 0)
 								m_Snap.m_aCharacters[Item.m_ID].m_Prev = m_aClients[Item.m_ID].m_Evolved;
@@ -1382,9 +1318,9 @@ void CGameClient::OnNewSnapshot()
 								m_Snap.m_aCharacters[Item.m_ID].m_Cur = m_aClients[Item.m_ID].m_Evolved;
 						}
 
-						if(m_Snap.m_aCharacters[Item.m_ID].m_Prev.m_Tick)
+						if(EvolvePrev && m_Snap.m_aCharacters[Item.m_ID].m_Prev.m_Tick)
 							Evolve(&m_Snap.m_aCharacters[Item.m_ID].m_Prev, Client()->PrevGameTick(g_Config.m_ClDummy));
-						if(m_Snap.m_aCharacters[Item.m_ID].m_Cur.m_Tick)
+						if(EvolveCur && m_Snap.m_aCharacters[Item.m_ID].m_Cur.m_Tick)
 							Evolve(&m_Snap.m_aCharacters[Item.m_ID].m_Cur, Client()->GameTick(g_Config.m_ClDummy));
 
 						m_aClients[Item.m_ID].m_Snapped = *((const CNetObj_Character *)pData);
@@ -1408,6 +1344,7 @@ void CGameClient::OnNewSnapshot()
 					CClientData *pClient = &m_aClients[Item.m_ID];
 					// Collision
 					pClient->m_Solo = pCharacterData->m_Flags & CHARACTERFLAG_SOLO;
+					pClient->m_Jetpack = pCharacterData->m_Flags & CHARACTERFLAG_JETPACK;
 					pClient->m_NoCollision = pCharacterData->m_Flags & CHARACTERFLAG_NO_COLLISION;
 					pClient->m_NoHammerHit = pCharacterData->m_Flags & CHARACTERFLAG_NO_HAMMER_HIT;
 					pClient->m_NoGrenadeHit = pCharacterData->m_Flags & CHARACTERFLAG_NO_GRENADE_HIT;
@@ -1423,6 +1360,7 @@ void CGameClient::OnNewSnapshot()
 					// Freeze
 					pClient->m_FreezeEnd = pCharacterData->m_FreezeEnd;
 					pClient->m_DeepFrozen = pCharacterData->m_FreezeEnd == -1;
+					pClient->m_LiveFrozen = (pCharacterData->m_Flags & CHARACTERFLAG_NO_MOVEMENTS) != 0;
 
 					// Telegun
 					pClient->m_HasTelegunGrenade = pCharacterData->m_Flags & CHARACTERFLAG_TELEGUN_GRENADE;
@@ -1468,7 +1406,7 @@ void CGameClient::OnNewSnapshot()
 					// hence no need to reset stats until player leaves GameOver
 					// and it would be a mistake to reset stats after or during the pause
 					&& !(CurrentTickGameOver || m_Snap.m_pGameInfoObj->m_GameStateFlags & GAMESTATEFLAG_PAUSED || s_GamePaused))
-					m_pStatboard->OnReset();
+					m_Statboard.OnReset();
 				m_LastRoundStartTick = m_Snap.m_pGameInfoObj->m_RoundStartTick;
 				s_GameOver = CurrentTickGameOver;
 				s_GamePaused = (bool)(m_Snap.m_pGameInfoObj->m_GameStateFlags & GAMESTATEFLAG_PAUSED);
@@ -1512,6 +1450,52 @@ void CGameClient::OnNewSnapshot()
 			}
 			else if(Item.m_Type == NETOBJTYPE_FLAG)
 				m_Snap.m_paFlags[Item.m_ID % 2] = (const CNetObj_Flag *)pData;
+			else if(Item.m_Type == NETOBJTYPE_SWITCHSTATE)
+			{
+				const CNetObj_SwitchState *pSwitchStateData = (const CNetObj_SwitchState *)pData;
+				int Team = clamp(Item.m_ID, (int)TEAM_FLOCK, (int)TEAM_SUPER - 1);
+
+				int NumSwitchers = clamp(pSwitchStateData->m_NumSwitchers, 0, 255);
+				if(!Collision()->m_pSwitchers || NumSwitchers != Collision()->m_NumSwitchers)
+				{
+					delete[] Collision()->m_pSwitchers;
+					Collision()->m_pSwitchers = new CCollision::SSwitchers[NumSwitchers + 1];
+					Collision()->m_NumSwitchers = NumSwitchers;
+				}
+
+				for(int i = 0; i < NumSwitchers + 1; i++)
+				{
+					if(i < 32)
+						Collision()->m_pSwitchers[i].m_Status[Team] = pSwitchStateData->m_Status1 & (1 << i);
+					else if(i < 64)
+						Collision()->m_pSwitchers[i].m_Status[Team] = pSwitchStateData->m_Status2 & (1 << (i - 32));
+					else if(i < 96)
+						Collision()->m_pSwitchers[i].m_Status[Team] = pSwitchStateData->m_Status3 & (1 << (i - 64));
+					else if(i < 128)
+						Collision()->m_pSwitchers[i].m_Status[Team] = pSwitchStateData->m_Status4 & (1 << (i - 96));
+					else if(i < 160)
+						Collision()->m_pSwitchers[i].m_Status[Team] = pSwitchStateData->m_Status5 & (1 << (i - 128));
+					else if(i < 192)
+						Collision()->m_pSwitchers[i].m_Status[Team] = pSwitchStateData->m_Status6 & (1 << (i - 160));
+					else if(i < 224)
+						Collision()->m_pSwitchers[i].m_Status[Team] = pSwitchStateData->m_Status7 & (1 << (i - 192));
+					else if(i < 256)
+						Collision()->m_pSwitchers[i].m_Status[Team] = pSwitchStateData->m_Status8 & (1 << (i - 224));
+
+					// update
+					if(Collision()->m_pSwitchers[i].m_Status[Team])
+						Collision()->m_pSwitchers[i].m_Type[Team] = TILE_SWITCHOPEN;
+					else
+						Collision()->m_pSwitchers[i].m_Type[Team] = TILE_SWITCHCLOSE;
+					Collision()->m_pSwitchers[i].m_EndTick[Team] = 0;
+				}
+
+				if(!GotSwitchStateTeam)
+					m_SwitchStateTeam[g_Config.m_ClDummy] = Team;
+				else
+					m_SwitchStateTeam[g_Config.m_ClDummy] = -1;
+				GotSwitchStateTeam = true;
+			}
 		}
 	}
 
@@ -1540,7 +1524,7 @@ void CGameClient::OnNewSnapshot()
 		else if(Client()->SnapFindItem(IClient::SNAP_PREV, NETOBJTYPE_CHARACTER, m_Snap.m_LocalClientID))
 		{
 			// player died
-			m_pControls->OnPlayerDeath();
+			m_Controls.OnPlayerDeath();
 		}
 	}
 	if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
@@ -1602,7 +1586,7 @@ void CGameClient::OnNewSnapshot()
 
 	// sort player infos by DDRace Team (and score between)
 	int Index = 0;
-	for(int Team = 0; Team <= MAX_CLIENTS; ++Team)
+	for(int Team = TEAM_FLOCK; Team <= TEAM_SUPER; ++Team)
 	{
 		for(int i = 0; i < MAX_CLIENTS && Index < MAX_CLIENTS; ++i)
 		{
@@ -1613,7 +1597,7 @@ void CGameClient::OnNewSnapshot()
 
 	// sort player infos by DDRace Team (and name between)
 	Index = 0;
-	for(int Team = 0; Team <= MAX_CLIENTS; ++Team)
+	for(int Team = TEAM_FLOCK; Team <= TEAM_SUPER; ++Team)
 	{
 		for(int i = 0; i < MAX_CLIENTS && Index < MAX_CLIENTS; ++i)
 		{
@@ -1649,23 +1633,23 @@ void CGameClient::OnNewSnapshot()
 		int *pParams = (int *)&m_Tuning[g_Config.m_ClDummy];
 		for(unsigned i = 0; i < sizeof(m_Tuning[0]) / sizeof(int); i++)
 			Msg.AddInt(pParams[i]);
-		Client()->SendMsg(&Msg, MSGFLAG_RECORD | MSGFLAG_NOSEND);
+		Client()->SendMsgActive(&Msg, MSGFLAG_RECORD | MSGFLAG_NOSEND);
 	}
 
-	if(!m_DDRaceMsgSent[0] && m_Snap.m_pLocalInfo)
+	for(int i = 0; i < 2; i++)
 	{
+		if(m_DDRaceMsgSent[i] || !m_Snap.m_pLocalInfo)
+		{
+			continue;
+		}
+		if(i == IClient::CONN_DUMMY && !Client()->DummyConnected())
+		{
+			continue;
+		}
 		CMsgPacker Msg(NETMSGTYPE_CL_ISDDNETLEGACY, false);
 		Msg.AddInt(CLIENT_VERSIONNR);
-		Client()->SendMsgY(&Msg, MSGFLAG_VITAL, 0);
-		m_DDRaceMsgSent[0] = true;
-	}
-
-	if(!m_DDRaceMsgSent[1] && m_Snap.m_pLocalInfo && Client()->DummyConnected())
-	{
-		CMsgPacker Msg(NETMSGTYPE_CL_ISDDNETLEGACY, false);
-		Msg.AddInt(CLIENT_VERSIONNR);
-		Client()->SendMsgY(&Msg, MSGFLAG_VITAL, 1);
-		m_DDRaceMsgSent[1] = true;
+		Client()->SendMsg(i, &Msg, MSGFLAG_VITAL);
+		m_DDRaceMsgSent[i] = true;
 	}
 
 	if(m_ShowOthers[g_Config.m_ClDummy] == -1 || (m_ShowOthers[g_Config.m_ClDummy] != -1 && m_ShowOthers[g_Config.m_ClDummy] != g_Config.m_ClShowOthers))
@@ -1673,19 +1657,19 @@ void CGameClient::OnNewSnapshot()
 		{
 			CNetMsg_Cl_ShowOthers Msg;
 			Msg.m_Show = g_Config.m_ClShowOthers;
-			Client()->SendPackMsg(&Msg, MSGFLAG_VITAL);
+			Client()->SendPackMsgActive(&Msg, MSGFLAG_VITAL);
 		}
 
 		// update state
 		m_ShowOthers[g_Config.m_ClDummy] = g_Config.m_ClShowOthers;
 	}
 
-	float ZoomToSend = m_pCamera->m_Zoom;
-	if(m_pCamera->m_ZoomSmoothingTarget != .0)
+	float ZoomToSend = m_Camera.m_Zoom;
+	if(m_Camera.m_Zooming)
 	{
-		if(m_pCamera->m_ZoomSmoothingTarget > m_pCamera->m_Zoom) // Zooming out
-			ZoomToSend = m_pCamera->m_ZoomSmoothingTarget;
-		else if(m_pCamera->m_ZoomSmoothingTarget < m_pCamera->m_Zoom && m_LastZoom > 0) // Zooming in
+		if(m_Camera.m_ZoomSmoothingTarget > m_Camera.m_Zoom) // Zooming out
+			ZoomToSend = m_Camera.m_ZoomSmoothingTarget;
+		else if(m_Camera.m_ZoomSmoothingTarget < m_Camera.m_Zoom && m_LastZoom > 0) // Zooming in
 			ZoomToSend = m_LastZoom;
 	}
 
@@ -1696,19 +1680,20 @@ void CGameClient::OnNewSnapshot()
 		RenderTools()->CalcScreenParams(Graphics()->ScreenAspect(), ZoomToSend, &x, &y);
 		Msg.m_X = x;
 		Msg.m_Y = y;
+		Client()->ChecksumData()->m_Zoom = ZoomToSend;
 		CMsgPacker Packer(Msg.MsgID(), false);
 		Msg.Pack(&Packer);
 		if(ZoomToSend != m_LastZoom)
-			Client()->SendMsgY(&Packer, MSGFLAG_VITAL, 0);
+			Client()->SendMsg(IClient::CONN_MAIN, &Packer, MSGFLAG_VITAL);
 		if(Client()->DummyConnected())
-			Client()->SendMsgY(&Packer, MSGFLAG_VITAL, 1);
+			Client()->SendMsg(IClient::CONN_DUMMY, &Packer, MSGFLAG_VITAL);
 		m_LastZoom = ZoomToSend;
 		m_LastScreenAspect = Graphics()->ScreenAspect();
 	}
 	m_LastDummyConnected = Client()->DummyConnected();
 
-	m_pGhost->OnNewSnapshot();
-	m_pRaceDemo->OnNewSnapshot();
+	m_Ghost.OnNewSnapshot();
+	m_RaceDemo.OnNewSnapshot();
 
 	// detect air jump for other players
 	for(int i = 0; i < MAX_CLIENTS; i++)
@@ -1718,7 +1703,7 @@ void CGameClient::OnNewSnapshot()
 				vec2 Pos = mix(vec2(m_Snap.m_aCharacters[i].m_Prev.m_X, m_Snap.m_aCharacters[i].m_Prev.m_Y),
 					vec2(m_Snap.m_aCharacters[i].m_Cur.m_X, m_Snap.m_aCharacters[i].m_Cur.m_Y),
 					Client()->IntraGameTick(g_Config.m_ClDummy));
-				m_pEffects->AirJump(Pos);
+				m_Effects.AirJump(Pos);
 			}
 
 	static int PrevLocalID = -1;
@@ -1726,6 +1711,8 @@ void CGameClient::OnNewSnapshot()
 		m_PredictedDummyID = PrevLocalID;
 	PrevLocalID = m_Snap.m_LocalClientID;
 	m_IsDummySwapping = 0;
+
+	SnapCollectEntities(); // creates a collection that associates EntityEx snap items with the entities they belong to
 
 	// update prediction data
 	if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
@@ -1847,15 +1834,15 @@ void CGameClient::OnPredict()
 			int Events = pLocalChar->Core()->m_TriggeredEvents;
 			if(g_Config.m_ClPredict)
 				if(Events & COREEVENT_AIR_JUMP)
-					m_pEffects->AirJump(Pos);
+					m_Effects.AirJump(Pos);
 			if(g_Config.m_SndGame)
 			{
 				if(Events & COREEVENT_GROUND_JUMP)
-					m_pSounds->PlayAndRecord(CSounds::CHN_WORLD, SOUND_PLAYER_JUMP, 1.0f, Pos);
+					m_Sounds.PlayAndRecord(CSounds::CHN_WORLD, SOUND_PLAYER_JUMP, 1.0f, Pos);
 				if(Events & COREEVENT_HOOK_ATTACH_GROUND)
-					m_pSounds->PlayAndRecord(CSounds::CHN_WORLD, SOUND_HOOK_ATTACH_GROUND, 1.0f, Pos);
+					m_Sounds.PlayAndRecord(CSounds::CHN_WORLD, SOUND_HOOK_ATTACH_GROUND, 1.0f, Pos);
 				if(Events & COREEVENT_HOOK_HIT_NOHOOK)
-					m_pSounds->PlayAndRecord(CSounds::CHN_WORLD, SOUND_HOOK_NOATTACH, 1.0f, Pos);
+					m_Sounds.PlayAndRecord(CSounds::CHN_WORLD, SOUND_HOOK_NOATTACH, 1.0f, Pos);
 			}
 		}
 
@@ -1867,7 +1854,7 @@ void CGameClient::OnPredict()
 			int Events = pDummyChar->Core()->m_TriggeredEvents;
 			if(g_Config.m_ClPredict)
 				if(Events & COREEVENT_AIR_JUMP)
-					m_pEffects->AirJump(Pos);
+					m_Effects.AirJump(Pos);
 		}
 	}
 
@@ -1966,7 +1953,7 @@ void CGameClient::OnPredict()
 	m_PredictedTick = Client()->PredGameTick(g_Config.m_ClDummy);
 
 	if(m_NewPredictedTick)
-		m_pGhost->OnNewPredictedSnapshot();
+		m_Ghost.OnNewPredictedSnapshot();
 }
 
 void CGameClient::OnActivateEditor()
@@ -1998,12 +1985,12 @@ void CGameClient::CClientStats::Reset()
 	m_FlagCaptures = 0;
 }
 
-void CGameClient::CClientData::UpdateRenderInfo()
+void CGameClient::CClientData::UpdateRenderInfo(bool IsTeamPlay)
 {
 	m_RenderInfo = m_SkinInfo;
 
 	// force team colors
-	if(g_GameClient.m_Snap.m_pGameInfoObj && g_GameClient.m_Snap.m_pGameInfoObj->m_GameFlags & GAMEFLAG_TEAMS)
+	if(IsTeamPlay)
 	{
 		m_RenderInfo.m_CustomColoredSkin = true;
 		const int TeamColors[2] = {65461, 10223541};
@@ -2028,7 +2015,8 @@ void CGameClient::CClientData::Reset()
 	m_Team = 0;
 	m_Angle = 0;
 	m_Emoticon = 0;
-	m_EmoticonStart = -1;
+	m_EmoticonStartTick = -1;
+	m_EmoticonStartFraction = 0;
 	m_Active = false;
 	m_ChatIgnore = false;
 	m_EmoticonIgnore = false;
@@ -2062,23 +2050,26 @@ void CGameClient::CClientData::Reset()
 	m_HasTelegunLaser = false;
 	m_FreezeEnd = 0;
 	m_DeepFrozen = false;
+	m_LiveFrozen = false;
 
 	m_Evolved.m_Tick = -1;
 
 	m_SpecChar = vec2(0, 0);
 	m_SpecCharPresent = false;
 
-	UpdateRenderInfo();
+	mem_zero(m_SwitchStates, sizeof(m_SwitchStates));
+
+	UpdateRenderInfo(false);
 }
 
 void CGameClient::SendSwitchTeam(int Team)
 {
 	CNetMsg_Cl_SetTeam Msg;
 	Msg.m_Team = Team;
-	Client()->SendPackMsg(&Msg, MSGFLAG_VITAL);
+	Client()->SendPackMsgActive(&Msg, MSGFLAG_VITAL);
 
 	if(Team != TEAM_SPECTATORS)
-		m_pCamera->OnReset();
+		m_Camera.OnReset();
 }
 
 void CGameClient::SendFinishName()
@@ -2093,7 +2084,7 @@ void CGameClient::SendFinishName()
 	Msg.m_ColorFeet = g_Config.m_ClPlayerColorFeet;
 	CMsgPacker Packer(Msg.MsgID(), false);
 	Msg.Pack(&Packer);
-	Client()->SendMsgY(&Packer, MSGFLAG_VITAL, 0);
+	Client()->SendMsg(0, &Packer, MSGFLAG_VITAL);
 	m_CheckInfo[0] = Client()->GameTickSpeed();
 }
 
@@ -2111,7 +2102,7 @@ void CGameClient::SendInfo(bool Start)
 		Msg.m_ColorFeet = g_Config.m_ClPlayerColorFeet;
 		CMsgPacker Packer(Msg.MsgID(), false);
 		Msg.Pack(&Packer);
-		Client()->SendMsgY(&Packer, MSGFLAG_VITAL, 0);
+		Client()->SendMsg(IClient::CONN_MAIN, &Packer, MSGFLAG_VITAL);
 		m_CheckInfo[0] = -1;
 	}
 	else
@@ -2126,7 +2117,7 @@ void CGameClient::SendInfo(bool Start)
 		Msg.m_ColorFeet = g_Config.m_ClPlayerColorFeet;
 		CMsgPacker Packer(Msg.MsgID(), false);
 		Msg.Pack(&Packer);
-		Client()->SendMsgY(&Packer, MSGFLAG_VITAL, 0);
+		Client()->SendMsg(IClient::CONN_MAIN, &Packer, MSGFLAG_VITAL);
 		m_CheckInfo[0] = Client()->GameTickSpeed();
 	}
 }
@@ -2145,7 +2136,7 @@ void CGameClient::SendDummyInfo(bool Start)
 		Msg.m_ColorFeet = g_Config.m_ClDummyColorFeet;
 		CMsgPacker Packer(Msg.MsgID(), false);
 		Msg.Pack(&Packer);
-		Client()->SendMsgY(&Packer, MSGFLAG_VITAL, 1);
+		Client()->SendMsg(IClient::CONN_DUMMY, &Packer, MSGFLAG_VITAL);
 		m_CheckInfo[1] = -1;
 	}
 	else
@@ -2160,7 +2151,7 @@ void CGameClient::SendDummyInfo(bool Start)
 		Msg.m_ColorFeet = g_Config.m_ClDummyColorFeet;
 		CMsgPacker Packer(Msg.MsgID(), false);
 		Msg.Pack(&Packer);
-		Client()->SendMsgY(&Packer, MSGFLAG_VITAL, 1);
+		Client()->SendMsg(IClient::CONN_DUMMY, &Packer, MSGFLAG_VITAL);
 		m_CheckInfo[1] = Client()->GameTickSpeed();
 	}
 }
@@ -2168,12 +2159,12 @@ void CGameClient::SendDummyInfo(bool Start)
 void CGameClient::SendKill(int ClientID)
 {
 	CNetMsg_Cl_Kill Msg;
-	Client()->SendPackMsg(&Msg, MSGFLAG_VITAL);
+	Client()->SendPackMsgActive(&Msg, MSGFLAG_VITAL);
 
 	if(g_Config.m_ClDummyCopyMoves)
 	{
 		CMsgPacker Msg(NETMSGTYPE_CL_KILL, false);
-		Client()->SendMsgY(&Msg, MSGFLAG_VITAL, !g_Config.m_ClDummy);
+		Client()->SendMsg(!g_Config.m_ClDummy, &Msg, MSGFLAG_VITAL);
 	}
 }
 
@@ -2216,13 +2207,13 @@ void CGameClient::ConchainClTextEntitiesSize(IConsole::IResult *pResult, void *p
 	if(pResult->NumArguments())
 	{
 		CGameClient *pGameClient = (CGameClient *)pUserData;
-		pGameClient->m_pMapimages->SetTextureScale(g_Config.m_ClTextEntitiesSize);
+		pGameClient->m_MapImages.SetTextureScale(g_Config.m_ClTextEntitiesSize);
 	}
 }
 
 IGameClient *CreateGameClient()
 {
-	return &g_GameClient;
+	return new CGameClient();
 }
 
 int CGameClient::IntersectCharacter(vec2 HookPos, vec2 NewPos, vec2 &NewPos2, int ownID)
@@ -2279,7 +2270,18 @@ ColorRGBA CalculateNameColor(ColorHSLA TextColorHSL)
 
 void CGameClient::UpdatePrediction()
 {
+	m_GameWorld.m_WorldConfig.m_IsVanilla = m_GameInfo.m_PredictVanilla;
+	m_GameWorld.m_WorldConfig.m_IsDDRace = m_GameInfo.m_PredictDDRace;
+	m_GameWorld.m_WorldConfig.m_IsFNG = m_GameInfo.m_PredictFNG;
+	m_GameWorld.m_WorldConfig.m_PredictDDRace = g_Config.m_ClPredictDDRace;
+	m_GameWorld.m_WorldConfig.m_PredictTiles = g_Config.m_ClPredictDDRace && m_GameInfo.m_PredictDDRaceTiles;
 	m_GameWorld.m_WorldConfig.m_UseTuneZones = m_GameInfo.m_PredictDDRaceTiles;
+	m_GameWorld.m_WorldConfig.m_PredictFreeze = g_Config.m_ClPredictFreeze;
+	m_GameWorld.m_WorldConfig.m_PredictWeapons = AntiPingWeapons();
+
+	// always update default tune zone, even without character
+	if(!m_GameWorld.m_WorldConfig.m_UseTuneZones)
+		m_GameWorld.TuningList()[0] = m_Tuning[g_Config.m_ClDummy];
 
 	if(!m_Snap.m_pLocalCharacter)
 	{
@@ -2288,13 +2290,6 @@ void CGameClient::UpdatePrediction()
 		return;
 	}
 
-	m_GameWorld.m_WorldConfig.m_IsVanilla = m_GameInfo.m_PredictVanilla;
-	m_GameWorld.m_WorldConfig.m_IsDDRace = m_GameInfo.m_PredictDDRace;
-	m_GameWorld.m_WorldConfig.m_IsFNG = m_GameInfo.m_PredictFNG;
-	m_GameWorld.m_WorldConfig.m_PredictDDRace = g_Config.m_ClPredictDDRace;
-	m_GameWorld.m_WorldConfig.m_PredictTiles = g_Config.m_ClPredictDDRace && m_GameInfo.m_PredictDDRaceTiles;
-	m_GameWorld.m_WorldConfig.m_PredictFreeze = g_Config.m_ClPredictFreeze;
-	m_GameWorld.m_WorldConfig.m_PredictWeapons = AntiPingWeapons();
 	if(m_Snap.m_pLocalCharacter->m_AmmoCount > 0 && m_Snap.m_pLocalCharacter->m_Weapon != WEAPON_NINJA)
 		m_GameWorld.m_WorldConfig.m_InfiniteAmmo = false;
 	m_GameWorld.m_WorldConfig.m_IsSolo = !m_Snap.m_aCharacters[m_Snap.m_LocalClientID].m_HasExtendedData && !m_Tuning[g_Config.m_ClDummy].m_PlayerCollision && !m_Tuning[g_Config.m_ClDummy].m_PlayerHooking;
@@ -2352,10 +2347,6 @@ void CGameClient::UpdatePrediction()
 			m_ReceivedTuning[g_Config.m_ClDummy] = false;
 		}
 	}
-	else
-	{
-		m_GameWorld.TuningList()[0] = m_Tuning[g_Config.m_ClDummy];
-	}
 
 	// if ddnetcharacter is available, ignore server-wide tunings for hook and collision
 	if(m_Snap.m_aCharacters[m_Snap.m_LocalClientID].m_HasExtendedData)
@@ -2385,7 +2376,7 @@ void CGameClient::UpdatePrediction()
 		pDummyChar = m_GameWorld.GetCharacterByID(m_PredictedDummyID);
 
 	// update strong and weak hook
-	if(pLocalChar && AntiPingPlayers())
+	if(pLocalChar && !m_Snap.m_SpecInfo.m_Active && Client()->State() != IClient::STATE_DEMOPLAYBACK && (m_Tuning[g_Config.m_ClDummy].m_PlayerCollision || m_Tuning[g_Config.m_ClDummy].m_PlayerHooking))
 	{
 		if(m_Snap.m_aCharacters[m_Snap.m_LocalClientID].m_HasExtendedData)
 		{
@@ -2465,7 +2456,6 @@ void CGameClient::UpdatePrediction()
 	m_GameWorld.m_Teams = m_Teams;
 
 	m_GameWorld.NetObjBegin();
-	int Num = Client()->SnapNumItems(IClient::SNAP_CURRENT);
 	for(int i = 0; i < MAX_CLIENTS; i++)
 		if(m_Snap.m_aCharacters[i].m_Active)
 		{
@@ -2476,12 +2466,9 @@ void CGameClient::UpdatePrediction()
 				GameTeam, IsLocal);
 		}
 
-	for(int Index = 0; Index < Num; Index++)
-	{
-		IClient::CSnapItem Item;
-		const void *pData = Client()->SnapGetItem(IClient::SNAP_CURRENT, Index, &Item);
-		m_GameWorld.NetObjAdd(Item.m_ID, Item.m_Type, pData);
-	}
+	for(const CSnapEntities &EntData : SnapEntities())
+		m_GameWorld.NetObjAdd(EntData.m_Item.m_ID, EntData.m_Item.m_Type, EntData.m_pData, EntData.m_pDataEx);
+
 	m_GameWorld.NetObjEnd(m_Snap.m_LocalClientID);
 
 	// save the characters that are currently active
@@ -2658,7 +2645,7 @@ vec2 CGameClient::GetSmoothPos(int ClientID)
 
 void CGameClient::Echo(const char *pString)
 {
-	m_pChat->Echo(pString);
+	m_Chat.Echo(pString);
 }
 
 bool CGameClient::IsOtherTeam(int ClientID)
@@ -2670,42 +2657,67 @@ bool CGameClient::IsOtherTeam(int ClientID)
 	else if((m_aClients[m_Snap.m_LocalClientID].m_Team == TEAM_SPECTATORS && m_Snap.m_SpecInfo.m_SpectatorID == SPEC_FREEVIEW) || ClientID < 0)
 		return false;
 	else if(m_Snap.m_SpecInfo.m_Active && m_Snap.m_SpecInfo.m_SpectatorID != SPEC_FREEVIEW)
+	{
+		if(m_Teams.Team(ClientID) == TEAM_SUPER || m_Teams.Team(m_Snap.m_SpecInfo.m_SpectatorID) == TEAM_SUPER)
+			return false;
 		return m_Teams.Team(ClientID) != m_Teams.Team(m_Snap.m_SpecInfo.m_SpectatorID);
+	}
 	else if((m_aClients[m_Snap.m_LocalClientID].m_Solo || m_aClients[ClientID].m_Solo) && !Local)
 		return true;
 
+	if(m_Teams.Team(ClientID) == TEAM_SUPER || m_Teams.Team(m_Snap.m_LocalClientID) == TEAM_SUPER)
+		return false;
+
 	return m_Teams.Team(ClientID) != m_Teams.Team(m_Snap.m_LocalClientID);
+}
+
+int CGameClient::SwitchStateTeam()
+{
+	if(m_SwitchStateTeam[g_Config.m_ClDummy] >= 0)
+		return m_SwitchStateTeam[g_Config.m_ClDummy];
+	else if(m_Snap.m_LocalClientID < 0)
+		return 0;
+	else if(m_Snap.m_SpecInfo.m_Active && m_Snap.m_SpecInfo.m_SpectatorID != SPEC_FREEVIEW)
+		return m_Teams.Team(m_Snap.m_SpecInfo.m_SpectatorID);
+	return m_Teams.Team(m_Snap.m_LocalClientID);
+}
+
+bool CGameClient::IsLocalCharSuper()
+{
+	if(m_Snap.m_LocalClientID < 0)
+		return 0;
+	return m_aClients[m_Snap.m_LocalClientID].m_Super;
 }
 
 void CGameClient::LoadGameSkin(const char *pPath, bool AsDir)
 {
 	if(m_GameSkinLoaded)
 	{
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteHealthFull);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteHealthEmpty);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteArmorFull);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteArmorEmpty);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteHealthFull);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteHealthEmpty);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteArmorFull);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteArmorEmpty);
 
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponHammerCursor);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponGunCursor);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponShotgunCursor);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponGrenadeCursor);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponNinjaCursor);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponLaserCursor);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponHammerCursor);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponGunCursor);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponShotgunCursor);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponGrenadeCursor);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponNinjaCursor);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponLaserCursor);
 
 		for(auto &SpriteWeaponCursor : m_GameSkin.m_SpriteWeaponCursors)
 		{
 			SpriteWeaponCursor = IGraphics::CTextureHandle();
 		}
 
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteHookChain);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteHookHead);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponHammer);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponGun);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponShotgun);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponGrenade);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponNinja);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponLaser);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteHookChain);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteHookHead);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponHammer);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponGun);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponShotgun);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponGrenade);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponNinja);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponLaser);
 
 		for(auto &SpriteWeapon : m_GameSkin.m_SpriteWeapons)
 		{
@@ -2714,20 +2726,20 @@ void CGameClient::LoadGameSkin(const char *pPath, bool AsDir)
 
 		for(auto &SpriteParticle : m_GameSkin.m_SpriteParticles)
 		{
-			Graphics()->UnloadTextureNew(SpriteParticle);
+			Graphics()->UnloadTexture(&SpriteParticle);
 		}
 
 		for(auto &SpriteStar : m_GameSkin.m_SpriteStars)
 		{
-			Graphics()->UnloadTextureNew(SpriteStar);
+			Graphics()->UnloadTexture(&SpriteStar);
 		}
 
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponGunProjectile);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponShotgunProjectile);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponGrenadeProjectile);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponHammerProjectile);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponNinjaProjectile);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponLaserProjectile);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponGunProjectile);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponShotgunProjectile);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponGrenadeProjectile);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponHammerProjectile);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponNinjaProjectile);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponLaserProjectile);
 
 		for(auto &SpriteWeaponProjectile : m_GameSkin.m_SpriteWeaponProjectiles)
 		{
@@ -2736,9 +2748,9 @@ void CGameClient::LoadGameSkin(const char *pPath, bool AsDir)
 
 		for(int i = 0; i < 3; ++i)
 		{
-			Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponGunMuzzles[i]);
-			Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponShotgunMuzzles[i]);
-			Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteWeaponNinjaMuzzles[i]);
+			Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponGunMuzzles[i]);
+			Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponShotgunMuzzles[i]);
+			Graphics()->UnloadTexture(&m_GameSkin.m_SpriteWeaponNinjaMuzzles[i]);
 
 			for(auto &SpriteWeaponsMuzzle : m_GameSkin.m_SpriteWeaponsMuzzles)
 			{
@@ -2746,35 +2758,35 @@ void CGameClient::LoadGameSkin(const char *pPath, bool AsDir)
 			}
 		}
 
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpritePickupHealth);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpritePickupArmor);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpritePickupGrenade);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpritePickupShotgun);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpritePickupLaser);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpritePickupNinja);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpritePickupGun);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpritePickupHammer);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpritePickupHealth);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpritePickupArmor);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpritePickupGrenade);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpritePickupShotgun);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpritePickupLaser);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpritePickupNinja);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpritePickupGun);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpritePickupHammer);
 
 		for(auto &SpritePickupWeapon : m_GameSkin.m_SpritePickupWeapons)
 		{
 			SpritePickupWeapon = IGraphics::CTextureHandle();
 		}
 
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteFlagBlue);
-		Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteFlagRed);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteFlagBlue);
+		Graphics()->UnloadTexture(&m_GameSkin.m_SpriteFlagRed);
 
 		if(m_GameSkin.IsSixup())
 		{
-			Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteNinjaBarFullLeft);
-			Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteNinjaBarFull);
-			Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteNinjaBarEmpty);
-			Graphics()->UnloadTextureNew(m_GameSkin.m_SpriteNinjaBarEmptyRight);
+			Graphics()->UnloadTexture(&m_GameSkin.m_SpriteNinjaBarFullLeft);
+			Graphics()->UnloadTexture(&m_GameSkin.m_SpriteNinjaBarFull);
+			Graphics()->UnloadTexture(&m_GameSkin.m_SpriteNinjaBarEmpty);
+			Graphics()->UnloadTexture(&m_GameSkin.m_SpriteNinjaBarEmptyRight);
 		}
 
 		m_GameSkinLoaded = false;
 	}
 
-	char aPath[MAX_PATH_LENGTH];
+	char aPath[IO_MAX_PATH_LENGTH];
 	bool IsDefault = false;
 	if(str_comp(pPath, "default") == 0)
 	{
@@ -2922,12 +2934,12 @@ void CGameClient::LoadEmoticonsSkin(const char *pPath, bool AsDir)
 	if(m_EmoticonsSkinLoaded)
 	{
 		for(auto &SpriteEmoticon : m_EmoticonsSkin.m_SpriteEmoticons)
-			Graphics()->UnloadTextureNew(SpriteEmoticon);
+			Graphics()->UnloadTexture(&SpriteEmoticon);
 
 		m_EmoticonsSkinLoaded = false;
 	}
 
-	char aPath[MAX_PATH_LENGTH];
+	char aPath[IO_MAX_PATH_LENGTH];
 	bool IsDefault = false;
 	if(str_comp(pPath, "default") == 0)
 	{
@@ -2965,15 +2977,15 @@ void CGameClient::LoadParticlesSkin(const char *pPath, bool AsDir)
 {
 	if(m_ParticlesSkinLoaded)
 	{
-		Graphics()->UnloadTextureNew(m_ParticlesSkin.m_SpriteParticleSlice);
-		Graphics()->UnloadTextureNew(m_ParticlesSkin.m_SpriteParticleBall);
+		Graphics()->UnloadTexture(&m_ParticlesSkin.m_SpriteParticleSlice);
+		Graphics()->UnloadTexture(&m_ParticlesSkin.m_SpriteParticleBall);
 		for(auto &SpriteParticleSplat : m_ParticlesSkin.m_SpriteParticleSplat)
-			Graphics()->UnloadTextureNew(SpriteParticleSplat);
-		Graphics()->UnloadTextureNew(m_ParticlesSkin.m_SpriteParticleSmoke);
-		Graphics()->UnloadTextureNew(m_ParticlesSkin.m_SpriteParticleShell);
-		Graphics()->UnloadTextureNew(m_ParticlesSkin.m_SpriteParticleExpl);
-		Graphics()->UnloadTextureNew(m_ParticlesSkin.m_SpriteParticleAirJump);
-		Graphics()->UnloadTextureNew(m_ParticlesSkin.m_SpriteParticleHit);
+			Graphics()->UnloadTexture(&SpriteParticleSplat);
+		Graphics()->UnloadTexture(&m_ParticlesSkin.m_SpriteParticleSmoke);
+		Graphics()->UnloadTexture(&m_ParticlesSkin.m_SpriteParticleShell);
+		Graphics()->UnloadTexture(&m_ParticlesSkin.m_SpriteParticleExpl);
+		Graphics()->UnloadTexture(&m_ParticlesSkin.m_SpriteParticleAirJump);
+		Graphics()->UnloadTexture(&m_ParticlesSkin.m_SpriteParticleHit);
 
 		for(auto &SpriteParticle : m_ParticlesSkin.m_SpriteParticles)
 			SpriteParticle = IGraphics::CTextureHandle();
@@ -2981,7 +2993,7 @@ void CGameClient::LoadParticlesSkin(const char *pPath, bool AsDir)
 		m_ParticlesSkinLoaded = false;
 	}
 
-	char aPath[MAX_PATH_LENGTH];
+	char aPath[IO_MAX_PATH_LENGTH];
 	bool IsDefault = false;
 	if(str_comp(pPath, "default") == 0)
 	{
@@ -3040,15 +3052,15 @@ void CGameClient::RefindSkins()
 		Client.m_SkinInfo.m_ColorableRenderSkin.Reset();
 		if(Client.m_aSkinName[0] != '\0')
 		{
-			const CSkin *pSkin = m_pSkins->Get(m_pSkins->Find(Client.m_aSkinName));
+			const CSkin *pSkin = m_Skins.Get(m_Skins.Find(Client.m_aSkinName));
 			Client.m_SkinInfo.m_OriginalRenderSkin = pSkin->m_OriginalSkin;
 			Client.m_SkinInfo.m_ColorableRenderSkin = pSkin->m_ColorableSkin;
-			Client.UpdateRenderInfo();
+			Client.UpdateRenderInfo(IsTeamPlay());
 		}
 	}
-	m_pGhost->RefindSkin();
-	m_pChat->RefindSkins();
-	gs_KillMessages.RefindSkins();
+	m_Ghost.RefindSkin();
+	m_Chat.RefindSkins();
+	m_KillMessages.RefindSkins();
 }
 
 void CGameClient::LoadMapSettings()
@@ -3116,7 +3128,7 @@ void CGameClient::ConchainMenuMap(IConsole::IResult *pResult, void *pUserData, I
 		if(str_comp(g_Config.m_ClMenuMap, pResult->GetString(0)) != 0)
 		{
 			str_format(g_Config.m_ClMenuMap, sizeof(g_Config.m_ClMenuMap), "%s", pResult->GetString(0));
-			pSelf->m_pMenuBackground->LoadMenuBackground();
+			pSelf->m_MenuBackground.LoadMenuBackground();
 		}
 	}
 	else
@@ -3131,19 +3143,65 @@ void CGameClient::DummyResetInput()
 	if((m_DummyInput.m_Fire & 1) != 0)
 		m_DummyInput.m_Fire++;
 
-	m_pControls->ResetInput(!g_Config.m_ClDummy);
-	m_pControls->m_InputData[!g_Config.m_ClDummy].m_Hook = 0;
-	m_pControls->m_InputData[!g_Config.m_ClDummy].m_Fire = m_DummyInput.m_Fire;
+	m_Controls.ResetInput(!g_Config.m_ClDummy);
+	m_Controls.m_InputData[!g_Config.m_ClDummy].m_Hook = 0;
+	m_Controls.m_InputData[!g_Config.m_ClDummy].m_Fire = m_DummyInput.m_Fire;
 
-	m_DummyInput = m_pControls->m_InputData[!g_Config.m_ClDummy];
+	m_DummyInput = m_Controls.m_InputData[!g_Config.m_ClDummy];
 }
 
 bool CGameClient::CanDisplayWarning()
 {
-	return m_pMenus->CanDisplayWarning();
+	return m_Menus.CanDisplayWarning();
 }
 
 bool CGameClient::IsDisplayingWarning()
 {
-	return m_pMenus->GetCurPopup() == CMenus::POPUP_WARNING;
+	return m_Menus.GetCurPopup() == CMenus::POPUP_WARNING;
+}
+
+void CGameClient::SnapCollectEntities()
+{
+	int NumSnapItems = Client()->SnapNumItems(IClient::SNAP_CURRENT);
+
+	std::vector<CSnapEntities> aItemData;
+	std::vector<CSnapEntities> aItemEx;
+
+	for(int Index = 0; Index < NumSnapItems; Index++)
+	{
+		IClient::CSnapItem Item;
+		const void *pData = Client()->SnapGetItem(IClient::SNAP_CURRENT, Index, &Item);
+		if(Item.m_Type == NETOBJTYPE_ENTITYEX)
+			aItemEx.push_back({Item, pData, 0});
+		else if(Item.m_Type == NETOBJTYPE_PICKUP || Item.m_Type == NETOBJTYPE_LASER || Item.m_Type == NETOBJTYPE_PROJECTILE || Item.m_Type == NETOBJTYPE_DDNETPROJECTILE)
+			aItemData.push_back({Item, pData, 0});
+	}
+
+	// sort by id
+	class CEntComparer
+	{
+	public:
+		bool operator()(const CSnapEntities &lhs, const CSnapEntities &rhs) const
+		{
+			return lhs.m_Item.m_ID < rhs.m_Item.m_ID;
+		}
+	};
+
+	std::sort(aItemData.begin(), aItemData.end(), CEntComparer());
+	std::sort(aItemEx.begin(), aItemEx.end(), CEntComparer());
+
+	// merge extended items with items they belong to
+	m_aSnapEntities.clear();
+
+	size_t IndexEx = 0;
+	for(const CSnapEntities &Ent : aItemData)
+	{
+		const CNetObj_EntityEx *pDataEx = 0;
+		while(IndexEx < aItemEx.size() && aItemEx[IndexEx].m_Item.m_ID < Ent.m_Item.m_ID)
+			IndexEx++;
+		if(IndexEx < aItemEx.size() && aItemEx[IndexEx].m_Item.m_ID == Ent.m_Item.m_ID)
+			pDataEx = (const CNetObj_EntityEx *)aItemEx[IndexEx].m_pData;
+
+		m_aSnapEntities.push_back({Ent.m_Item, Ent.m_pData, pDataEx});
+	}
 }

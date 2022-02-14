@@ -87,9 +87,6 @@ Client
 Close
 == Sulje
 
-Compatible version
-== Yhteensopiva versio
-
 Connect
 == Yhdistä
 
@@ -245,9 +242,6 @@ MOTD
 
 Map
 == Kenttä
-
-Maximum ping:
-== Maksimiping:
 
 Mouse sens.
 == Hiiren herkkyys
@@ -886,15 +880,6 @@ Show console window
 Themes directory
 == Teemahakemisto
 
-Automatically take statboard screenshot
-== 
-
-Automatically create statboard csv
-== 
-
-Max CSVs
-== 
-
 Dummy settings
 == Dummyn asetukset
 
@@ -903,9 +888,6 @@ Download skins
 
 Vanilla skins only
 == Pelkästään oletusulkonäöt
-
-Fat skins (DDFat)
-== 
 
 Skin prefix
 == Ulkonäön etuliite
@@ -943,23 +925,8 @@ Toggle dummy
 Toggle ghost
 == Vaihda haamu
 
-Dummy copy
-== 
-
-Hammerfly dummy
-== 
-
-Converse
-== 
-
-Statboard
-== 
-
 Lock team
 == Lukitse joukkue
-
-Show entities
-== 
 
 Show HUD
 == Näytä HUD
@@ -1006,9 +973,6 @@ Enable game sounds
 Enable gun sound
 == Ota aseiden äänet käyttöön
 
-Enable long pain sound (used when shooting in freeze)
-== 
-
 Enable server message sound
 == Ota palvelinviestiäänet käyttöön
 
@@ -1041,9 +1005,6 @@ HUD
 
 DDNet
 == DDNet
-
-Assets
-== 
 
 DDNet Client needs to be restarted to complete update!
 == DDNet-asiakas täytyy käynnistää uudelleen latauksen viimeistelemiseksi
@@ -1132,20 +1093,11 @@ Save ghost
 Gameplay
 == Peli
 
-Overlay entities
-== 
-
 Size
 == Koko
 
-Show text entities
-== 
-
 Show others (own team only)
 == Näytä muut (vain joukkuekaverit)
-
-Show quads
-== 
 
 AntiPing
 == AntiPing
@@ -1171,23 +1123,11 @@ Old mouse mode
 Background
 == Tausta
 
-Entities Background color
-== 
-
 Use current map as background
 == Käytä nykyistä kenttää taustana
 
-Show tiles layers from BG map
-== 
-
-Regular Background Color
-== 
-
 Try fast HTTP map download first
 == Yritä nopeaa HTTP-kentänlatausta ensin
-
-New random timeout code
-== 
 
 DDNet %s is available:
 == DDNet %s on saatavilla:
@@ -1207,17 +1147,8 @@ No updates available
 Check now
 == Tarkista nyt
 
-Entities
-== 
-
 Emoticons
 == Hymiöt
-
-Particles
-== 
-
-Assets directory
-== 
 
 Discord
 == Discord
@@ -1242,9 +1173,6 @@ Stop server
 
 Run server
 == Suorita palvelin
-
-Server executable not found, can't run server
-== 
 
 Editor
 == Editori
@@ -1274,9 +1202,6 @@ Manual
 Race
 == Kisa
 
-Auto
-== 
-
 Replay
 == Uudelleentoisto
 
@@ -1301,14 +1226,8 @@ Net
 FPM
 == FPM
 
-Spree
-== 
-
 Best
 == Paras
-
-Grabs
-== 
 
 1 new mention
 == 1 uusi maininta
@@ -1318,3 +1237,111 @@ Grabs
 
 9+ new mentions
 == 9+ uutta mainintaa
+
+Are you sure that you want to disconnect and switch to a different server?
+== 
+
+Refreshing...
+== 
+
+Settings file
+== 
+
+Config directory
+== 
+
+Automatically take statboard screenshot
+== 
+
+Automatically create statboard csv
+== 
+
+Max CSVs
+== 
+
+Fat skins (DDFat)
+== 
+
+Dummy copy
+== 
+
+Hammerfly dummy
+== 
+
+Converse
+== 
+
+Statboard
+== 
+
+Show entities
+== 
+
+Windowed fullscreen
+== 
+
+Enable long pain sound (used when shooting in freeze)
+== 
+
+Assets
+== 
+
+Kill Messages
+== 
+
+Kill Message Normal Color
+== 
+
+Kill Message Highlight Color
+== 
+
+Overlay entities
+== 
+
+Show text entities
+== 
+
+Show quads
+== 
+
+Show local player's key presses
+== 
+
+Entities Background color
+== 
+
+Show tiles layers from BG map
+== 
+
+Regular Background Color
+== 
+
+New random timeout code
+== 
+
+Run on join
+== 
+
+Chat command (e.g. showall 1)
+== 
+
+Entities
+== 
+
+Particles
+== 
+
+Assets directory
+== 
+
+Server executable not found, can't run server
+== 
+
+Auto
+== 
+
+Spree
+== 
+
+Grabs
+== 

@@ -85,9 +85,6 @@ Client
 Close
 == Κλείσιμο
 
-Compatible version
-== Συμβατή έκδοση
-
 Connect
 == Σύνδεση
 
@@ -247,9 +244,6 @@ MOTD
 Map
 == Χάρτης
 
-Maximum ping:
-== Μέγιστο ping:
-
 Mouse sens.
 == Ταχύτητα δείκτη
 
@@ -349,9 +343,6 @@ Red team wins!
 
 Refresh
 == Ανανέωση
-
-Refreshing master servers
-== Ανανέωση κύριων διακομιστών
 
 Remote console
 == Απομακρ. κονσόλα
@@ -634,7 +625,7 @@ Saving ddnet-settings.cfg failed
 Replay feature is disabled!
 == 
 
-The width or height of texture %s is not divisible by 16, which might cause visual bugs.
+The width of texture %s is not divisible by %d, or the height is not divisible by %d, which might cause visual bugs.
 == 
 
 Warning
@@ -647,6 +638,9 @@ Server best:
 == 
 
 Personal best:
+== 
+
+Reset
 == 
 
 Browser
@@ -715,6 +709,9 @@ Your nickname '%s' is already used (%d points). Do you still want to use it?
 Checking for existing player with your name
 == 
 
+Are you sure that you want to disconnect and switch to a different server?
+== 
+
 Country / Region
 == 
 
@@ -736,6 +733,30 @@ transmits your player name to info2.ddnet.tw
 Theme
 == 
 
+AFR
+== 
+
+ASI
+== 
+
+AUS
+== 
+
+EUR
+== 
+
+NA
+== 
+
+SA
+== 
+
+CHN
+== 
+
+Getting server list from master server
+== 
+
 Search
 == 
 
@@ -754,6 +775,9 @@ Exclude
 %d player
 == 
 
+Refreshing...
+== 
+
 Filter connecting players
 == 
 
@@ -767,6 +791,9 @@ Countries
 == 
 
 Types
+== 
+
+Leak IP
 == 
 
 Select a name
@@ -808,16 +835,19 @@ Demos directory
 Render
 == 
 
-Connecting dummy
+Connect Dummy
 == 
 
-Connect Dummy
+Connecting dummy
 == 
 
 Kill
 == 
 
 Pause
+== 
+
+Time
 == 
 
 Reload
@@ -854,6 +884,12 @@ Refresh Rate
 == 
 
 Show console window
+== 
+
+Settings file
+== 
+
+Config directory
 == 
 
 Themes directory
@@ -937,10 +973,25 @@ Show entities
 Show HUD
 == 
 
+Chat command
+== 
+
 UI mouse s.
 == 
 
-Borderless window
+Dummy
+== 
+
+Windowed
+== 
+
+Windowed borderless
+== 
+
+Windowed fullscreen
+== 
+
+Desktop fullscreen
 == 
 
 may cause delay
@@ -949,7 +1000,7 @@ may cause delay
 Screen
 == 
 
-Use OpenGL 3.3 (experimental)
+Use modern OpenGL
 == 
 
 Preinit VBO (iGPUs only)
@@ -1012,7 +1063,7 @@ DDNet Client needs to be restarted to complete update!
 Use DDRace Scoreboard
 == 
 
-Show client IDs in Scoreboard
+Show client IDs
 == 
 
 Show score
@@ -1021,16 +1072,43 @@ Show score
 Show health + ammo
 == 
 
-Use old chat style
+Show names in chat in team colors
 == 
 
-Show names in chat in team colors
+Show votes window after voting
 == 
 
 Show kill messages
 == 
 
-Show votes window after voting
+Kill Messages
+== 
+
+Kill Message Normal Color
+== 
+
+Kill Message Highlight Color
+== 
+
+Laser Outline Color
+== 
+
+Laser Inner Color
+== 
+
+Hookline
+== 
+
+No hit
+== 
+
+Hookable
+== 
+
+Tee
+== 
+
+Use old chat style
 == 
 
 Messages
@@ -1039,58 +1117,22 @@ Messages
 System message
 == 
 
-Reset
-== 
-
 Highlighted message
-== 
-
-Spectator
-== 
-
-Look out!
 == 
 
 Team message
 == 
 
-We will win
-== 
-
 Friend message
-== 
-
-Highlight
-== 
-
-Friend
-== 
-
-Hi o/
 == 
 
 Normal message
 == 
 
-Hello and welcome
-== 
-
 Client message
 == 
 
-Inner color
-== 
-
-Outline color
-== 
-
-Wait before try for
-== 
-
-second
-== 
-
-seconds
+Preview
 == 
 
 Save the best demo of each race
@@ -1144,13 +1186,16 @@ Show other players' hook collision lines
 Show other players' key presses
 == 
 
+Show local player's key presses
+== 
+
 Old mouse mode
 == 
 
-Background (regular)
+Background
 == 
 
-Background (entities)
+Entities Background color
 == 
 
 Use current map as background
@@ -1159,7 +1204,19 @@ Use current map as background
 Show tiles layers from BG map
 == 
 
+Regular Background Color
+== 
+
 Try fast HTTP map download first
+== 
+
+New random timeout code
+== 
+
+Run on join
+== 
+
+Chat command (e.g. showall 1)
 == 
 
 DDNet %s is available:
@@ -1180,9 +1237,6 @@ No updates available
 Check now
 == 
 
-New random timeout code
-== 
-
 Entities
 == 
 
@@ -1193,6 +1247,12 @@ Particles
 == 
 
 Assets directory
+== 
+
+Discord
+== 
+
+https://ddnet.tw/discord
 == 
 
 Learn
@@ -1233,9 +1293,6 @@ Update failed! Check log...
 == 
 
 Restart
-== 
-
-Time
 == 
 
 Manual

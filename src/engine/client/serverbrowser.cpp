@@ -23,6 +23,7 @@
 #include <engine/console.h>
 #include <engine/engine.h>
 #include <engine/friends.h>
+#include <engine/serverbrowser.h>
 #include <engine/storage.h>
 
 #include <mastersrv/mastersrv.h>
@@ -66,7 +67,6 @@ CServerBrowser::CServerBrowser()
 	m_ServerlistType = 0;
 	m_BroadcastTime = 0;
 	secure_random_fill(m_aTokenSeed, sizeof(m_aTokenSeed));
-	m_RequestNumber = 0;
 
 	m_pDDNetInfo = 0;
 
@@ -206,7 +206,7 @@ bool CServerBrowser::SortCompareName(int Index1, int Index2) const
 	CServerEntry *b = m_ppServerlist[Index2];
 	//	make sure empty entries are listed last
 	return (a->m_GotInfo && b->m_GotInfo) || (!a->m_GotInfo && !b->m_GotInfo) ? str_comp(a->m_Info.m_aName, b->m_Info.m_aName) < 0 :
-										    a->m_GotInfo ? true : false;
+										    a->m_GotInfo != 0;
 }
 
 bool CServerBrowser::SortCompareMap(int Index1, int Index2) const
@@ -281,10 +281,6 @@ void CServerBrowser::Filter()
 		else if(g_Config.m_BrFilterFull && Players(m_ppServerlist[i]->m_Info) == Max(m_ppServerlist[i]->m_Info))
 			Filtered = 1;
 		else if(g_Config.m_BrFilterPw && m_ppServerlist[i]->m_Info.m_Flags & SERVER_FLAG_PASSWORD)
-			Filtered = 1;
-		else if(g_Config.m_BrFilterPing && g_Config.m_BrFilterPing < m_ppServerlist[i]->m_Info.m_Latency)
-			Filtered = 1;
-		else if(g_Config.m_BrFilterCompatversion && str_comp_num(m_ppServerlist[i]->m_Info.m_aVersion, m_aNetVersion, 3) != 0)
 			Filtered = 1;
 		else if(g_Config.m_BrFilterServerAddress[0] && !str_find_nocase(m_ppServerlist[i]->m_Info.m_aAddress, g_Config.m_BrFilterServerAddress))
 			Filtered = 1;
@@ -399,7 +395,6 @@ int CServerBrowser::SortHash() const
 	i |= g_Config.m_BrFilterFriends << 7;
 	i |= g_Config.m_BrFilterPw << 8;
 	i |= g_Config.m_BrSortOrder << 9;
-	i |= g_Config.m_BrFilterCompatversion << 11;
 	i |= g_Config.m_BrFilterGametypeStrict << 12;
 	i |= g_Config.m_BrFilterUnfinishedMap << 13;
 	i |= g_Config.m_BrFilterCountry << 14;
@@ -767,19 +762,13 @@ void CServerBrowser::Set(const NETADDR &Addr, int Type, int Token, const CServer
 
 void CServerBrowser::Refresh(int Type)
 {
-	// clear out everything
-	m_ServerlistHeap.Reset();
-	m_NumServers = 0;
-	m_NumSortedServers = 0;
-	mem_zero(m_aServerlistIp, sizeof(m_aServerlistIp));
-	m_pFirstReqServer = 0;
-	m_pLastReqServer = 0;
-	m_NumRequests = 0;
-	m_CurrentMaxRequests = g_Config.m_BrMaxRequests;
-	m_RequestNumber++;
-
+	bool ServerListTypeChanged = m_ServerlistType != Type;
+	int OldServerListType = m_ServerlistType;
 	m_ServerlistType = Type;
 	secure_random_fill(m_aTokenSeed, sizeof(m_aTokenSeed));
+
+	if(Type == IServerBrowser::TYPE_LAN || (ServerListTypeChanged && OldServerListType == IServerBrowser::TYPE_LAN))
+		CleanUp();
 
 	if(Type == IServerBrowser::TYPE_LAN)
 	{
@@ -819,6 +808,13 @@ void CServerBrowser::Refresh(int Type)
 		m_pHttp->Refresh();
 		m_pPingCache->Load();
 		m_RefreshingHttp = true;
+
+		if(ServerListTypeChanged && m_pHttp->NumServers() > 0)
+		{
+			CleanUp();
+			UpdateFromHttp();
+			Sort();
+		}
 	}
 }
 
@@ -914,7 +910,7 @@ void CServerBrowser::RequestCurrentServerWithRandomToken(const NETADDR &Addr, in
 
 void CServerBrowser::SetCurrentServerPing(const NETADDR &Addr, int Ping)
 {
-	SetLatency(Addr, std::min(Ping, 999));
+	SetLatency(Addr, minimum(Ping, 999));
 }
 
 void ServerBrowserFillEstimatedLatency(int OwnLocation, const IServerBrowserPingCache::CEntry *pEntries, int NumEntries, int *pIndex, NETADDR Addr, CServerInfo *pInfo)
@@ -1159,6 +1155,19 @@ void CServerBrowser::UpdateFromHttp()
 	}
 }
 
+void CServerBrowser::CleanUp()
+{
+	// clear out everything
+	m_ServerlistHeap.Reset();
+	m_NumServers = 0;
+	m_NumSortedServers = 0;
+	mem_zero(m_aServerlistIp, sizeof(m_aServerlistIp));
+	m_pFirstReqServer = 0;
+	m_pLastReqServer = 0;
+	m_NumRequests = 0;
+	m_CurrentMaxRequests = g_Config.m_BrMaxRequests;
+}
+
 void CServerBrowser::Update(bool ForceResort)
 {
 	int64_t Timeout = time_freq();
@@ -1176,10 +1185,10 @@ void CServerBrowser::Update(bool ForceResort)
 	if(m_ServerlistType != TYPE_LAN && m_RefreshingHttp && !m_pHttp->IsRefreshing())
 	{
 		m_RefreshingHttp = false;
+		CleanUp();
 		UpdateFromHttp();
 		// TODO: move this somewhere else
-		if(m_Sorthash != SortHash() || ForceResort)
-			Sort();
+		Sort();
 		return;
 	}
 
@@ -1475,7 +1484,7 @@ int CServerBrowser::HasRank(const char *pMap)
 
 void CServerBrowser::LoadDDNetInfoJson()
 {
-	IOHANDLE File = m_pStorage->OpenFile(DDNET_INFO, IOFLAG_READ, IStorage::TYPE_SAVE);
+	IOHANDLE File = m_pStorage->OpenFile(DDNET_INFO, IOFLAG_READ | IOFLAG_SKIP_BOM, IStorage::TYPE_SAVE);
 	if(!File)
 		return;
 

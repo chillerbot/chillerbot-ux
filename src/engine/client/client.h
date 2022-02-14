@@ -8,6 +8,7 @@
 
 #include <base/hash.h>
 #include <engine/client.h>
+#include <engine/client/checksum.h>
 #include <engine/client/demoedit.h>
 #include <engine/client/friends.h>
 #include <engine/client/ghost.h>
@@ -41,6 +42,7 @@ public:
 	};
 
 	float m_Min, m_Max;
+	float m_MinRange, m_MaxRange;
 	float m_aValues[MAX_VALUES];
 	float m_aColors[MAX_VALUES][3];
 	int m_Index;
@@ -60,6 +62,10 @@ class CSmoothTime
 	int64_t m_Current;
 	int64_t m_Target;
 
+	int64_t m_SnapMargin;
+	int64_t m_CurrentMargin;
+	int64_t m_TargetMargin;
+
 	CGraph m_Graph;
 
 	int m_SpikeCounter;
@@ -73,6 +79,9 @@ public:
 
 	void UpdateInt(int64_t Target);
 	void Update(CGraph *pGraph, int64_t Target, int TimeLeft, int AdjustDirection);
+
+	int64_t GetMargin(int64_t Now);
+	void UpdateMargin(int64_t TargetMargin);
 };
 
 class CServerCapabilities
@@ -81,6 +90,8 @@ public:
 	bool m_ChatTimeoutCode;
 	bool m_AnyPlayerFlag;
 	bool m_PingEx;
+	bool m_AllowDummy;
+	bool m_SyncWeaponInput;
 };
 
 class CClient : public IClient, public CDemoPlayer::IListener
@@ -104,18 +115,9 @@ class CClient : public IClient, public CDemoPlayer::IListener
 	enum
 	{
 		NUM_SNAPSHOT_TYPES = 2,
-		PREDICTION_MARGIN = 1000 / 50 / 2, // magic network prediction value
 	};
 
-	enum
-	{
-		CLIENT_MAIN = 0,
-		CLIENT_DUMMY,
-		CLIENT_CONTACT,
-		NUM_CLIENTS,
-	};
-
-	class CNetClient m_NetClient[NUM_CLIENTS];
+	class CNetClient m_NetClient[NUM_CONNS];
 	class CDemoPlayer m_DemoPlayer;
 	class CDemoRecorder m_DemoRecorder[RECORDER_MAX];
 	class CDemoEditor m_DemoEditor;
@@ -165,23 +167,24 @@ class CClient : public IClient, public CDemoPlayer::IListener
 	// pinging
 	int64_t m_PingStartTime;
 
-	char m_aCurrentMap[MAX_PATH_LENGTH];
-	char m_aCurrentMapPath[MAX_PATH_LENGTH];
+	char m_aCurrentMap[IO_MAX_PATH_LENGTH];
+	char m_aCurrentMapPath[IO_MAX_PATH_LENGTH];
 
 	char m_aTimeoutCodes[NUM_DUMMIES][32];
-	bool m_aTimeoutCodeSent[NUM_DUMMIES];
+	bool m_CodeRunAfterJoin[NUM_DUMMIES];
 	bool m_GenerateTimeoutSeed;
 
 	//
 	char m_aCmdConnect[256];
-	char m_aCmdPlayDemo[MAX_PATH_LENGTH];
-	char m_aCmdEditMap[MAX_PATH_LENGTH];
+	char m_aCmdPlayDemo[IO_MAX_PATH_LENGTH];
+	char m_aCmdEditMap[IO_MAX_PATH_LENGTH];
 
 	// map download
 	std::shared_ptr<CGetFile> m_pMapdownloadTask;
 	char m_aMapdownloadFilename[256];
+	char m_aMapdownloadFilenameTemp[256];
 	char m_aMapdownloadName[256];
-	IOHANDLE m_MapdownloadFile;
+	IOHANDLE m_MapdownloadFileTemp;
 	int m_MapdownloadChunk;
 	int m_MapdownloadCrc;
 	int m_MapdownloadAmount;
@@ -207,6 +210,7 @@ class CClient : public IClient, public CDemoPlayer::IListener
 		int m_aData[MAX_INPUT_SIZE]; // the input data
 		int m_Tick; // the tick that the input is for
 		int64_t m_PredictedTime; // prediction latency when we sent this input
+		int64_t m_PredictionMargin; // prediction margin when we sent this input
 		int64_t m_Time;
 	} m_aInputs[NUM_DUMMIES][200];
 
@@ -264,7 +268,6 @@ class CClient : public IClient, public CDemoPlayer::IListener
 		class CHostLookup m_VersionServeraddr;
 	} m_VersionInfo;
 
-	volatile int m_GfxState;
 	static void GraphicsThreadProxy(void *pThis) { ((CClient *)pThis)->GraphicsThread(); }
 	void GraphicsThread();
 
@@ -276,6 +279,14 @@ class CClient : public IClient, public CDemoPlayer::IListener
 
 	IOHANDLE m_BenchmarkFile;
 	int64_t m_BenchmarkStopTime;
+
+	CChecksum m_Checksum;
+	int m_OwnExecutableSize = 0;
+	IOHANDLE m_OwnExecutable;
+
+	void UpdateDemoIntraTimers();
+	int MaxLatencyTicks() const;
+	int PredictionMargin() const;
 
 public:
 	IEngine *Engine() { return m_pEngine; }
@@ -293,13 +304,14 @@ public:
 	CClient();
 
 	// ----- send functions -----
-	virtual int SendMsg(CMsgPacker *pMsg, int Flags);
-	virtual int SendMsgY(CMsgPacker *pMsg, int Flags, int NetClient = 1);
+	virtual int SendMsg(int Conn, CMsgPacker *pMsg, int Flags);
+	// Send via the currently active client (main/dummy)
+	virtual int SendMsgActive(CMsgPacker *pMsg, int Flags);
 
 	void ChillerBotLoadMap(const char *pMap);
 	void SendChillerBotUX(bool Dummy);
 	void SendInfo();
-	void SendEnterGame();
+	void SendEnterGame(int Conn);
 	void SendReady();
 	void SendMapRequest();
 
@@ -327,8 +339,8 @@ public:
 	void SetState(int s);
 
 	// called when the map is loaded and we should init for a new round
-	void OnEnterGame();
-	virtual void EnterGame();
+	void OnEnterGame(bool Dummy);
+	virtual void EnterGame(int Conn);
 
 	virtual void Connect(const char *pAddress, const char *pPassword = NULL);
 	void DisconnectWithReason(const char *pReason);
@@ -338,6 +350,7 @@ public:
 	virtual void DummyConnect();
 	virtual bool DummyConnected();
 	virtual bool DummyConnecting();
+	virtual bool DummyAllowed();
 	int m_DummyConnected;
 	int m_LastDummyConnectTime;
 
@@ -371,8 +384,7 @@ public:
 
 	void ProcessConnlessPacket(CNetChunk *pPacket);
 	void ProcessServerInfo(int Type, NETADDR *pFrom, const void *pData, int DataSize);
-	void ProcessServerPacket(CNetChunk *pPacket);
-	void ProcessServerPacketDummy(CNetChunk *pPacket);
+	void ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy);
 
 	void ResetMapDownload();
 	void FinishMapDownload();
@@ -414,6 +426,7 @@ public:
 	static void Con_Minimize(IConsole::IResult *pResult, void *pUserData);
 	static void Con_Ping(IConsole::IResult *pResult, void *pUserData);
 	static void Con_Screenshot(IConsole::IResult *pResult, void *pUserData);
+	static void Con_Reset(IConsole::IResult *pResult, void *pUserData);
 
 #if defined(CONF_VIDEORECORDER)
 	static void StartVideo(IConsole::IResult *pResult, void *pUserData, const char *pVideName);
@@ -471,9 +484,12 @@ public:
 	void HandleDemoPath(const char *pPath);
 	void HandleMapPath(const char *pPath);
 
+	virtual void InitChecksum();
+	virtual int HandleChecksum(int Conn, CUuid Uuid, CUnpacker *pUnpacker);
+
 	// gfx
 	virtual void SwitchWindowScreen(int Index);
-	virtual void SetWindowParams(int FullscreenMode, bool IsBorderless);
+	virtual void SetWindowParams(int FullscreenMode, bool IsBorderless, bool AllowResizing);
 	virtual void ToggleWindowVSync();
 	virtual void LoadFont();
 	virtual void Notify(const char *pTitle, const char *pMessage);
@@ -498,7 +514,7 @@ public:
 	virtual void DemoSliceBegin();
 	virtual void DemoSliceEnd();
 	virtual void DemoSlice(const char *pDstPath, CLIENTFUNC_FILTER pfnFilter, void *pUser);
-	virtual void SaveReplay(const int Length);
+	virtual void SaveReplay(int Length);
 
 	virtual bool EditorHasUnsavedData() const { return m_pEditor->HasUnsavedData(); }
 
@@ -507,6 +523,7 @@ public:
 	virtual void GetSmoothTick(int *pSmoothTick, float *pSmoothIntraTick, float MixAmount);
 
 	virtual SWarning *GetCurWarning();
+	virtual CChecksumData *ChecksumData() { return &m_Checksum.m_Data; }
 };
 
 #endif

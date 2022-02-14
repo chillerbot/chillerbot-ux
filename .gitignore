@@ -8,6 +8,7 @@ docs/
 bundle/
 !/other/bundle/
 
+.DS_Store
 .ninja_deps
 .ninja_log
 CMakeCache.txt
@@ -21,6 +22,7 @@ Makefile
 Release
 _CPack_Packages/
 build.ninja
+checksummed_*
 cmake_install.cmake
 gmock.pc
 gmock_main.pc
@@ -35,11 +37,15 @@ pack_*/
 rules.ninja
 testrunner\[1\]_include.cmake
 
+/SDL2.framework
+
 # Ignore all the generated executables without extensions (for non-Windows
 # systems).
 chillerbot-ux
 chillerbot-ux-Server
 chillerbot-ux-Server-Launcher
+DDNet
+!DDNet/
 DDNet-Server
 DDNet-Server-Launcher
 libsteam_api.a
@@ -74,6 +80,7 @@ generated
 
 # IDE project files
 .cproject
+.cmake
 .idea
 .project
 .settings
@@ -90,10 +97,12 @@ tags
 /config.lua
 /objs
 
+*.a
 *.cmd
 *.dll
 *.dmg
 *.dtb
+*.dylib
 *.exe
 *.filters
 *.lnk
