@@ -59,6 +59,7 @@ class CChatHelper : public CComponent
 		Popping of the stack will always give you the most recent message.
 	*/
 	CLastPing m_aLastPings[PING_QUEUE_SIZE];
+	char m_aPendingReplys[PING_QUEUE_SIZE][1024];
 
 	void PushPing(const char *pName, const char *pClan, const char *pMessage)
 	{
@@ -72,14 +73,60 @@ class CChatHelper : public CComponent
 	}
 	void PopPing(char *pName, int SizeOfName, char *pClan, int SizeOfClan, char *pMessage, int SizeOfMessage)
 	{
+		GetLatestPing(pName, SizeOfName, pClan, SizeOfClan, pMessage, SizeOfMessage);
+		ShiftPings();
+	}
+	void GetLatestPing(char *pName, int SizeOfName, char *pClan, int SizeOfClan, char *pMessage, int SizeOfMessage)
+	{
 		str_copy(pName, m_aLastPings[0].m_aName, SizeOfName);
 		str_copy(pClan, m_aLastPings[0].m_aClan, SizeOfClan);
 		str_copy(pMessage, m_aLastPings[0].m_aMessage, SizeOfMessage);
+	}
+	void ShiftPings()
+	{
 		m_aLastPings[PING_QUEUE_SIZE - 1].m_aName[0] = '\0';
 		m_aLastPings[PING_QUEUE_SIZE - 1].m_aClan[0] = '\0';
 		m_aLastPings[PING_QUEUE_SIZE - 1].m_aMessage[0] = '\0';
 		for(int i = 0; i < PING_QUEUE_SIZE - 1; i++)
 			m_aLastPings[i] = m_aLastPings[i + 1];
+	}
+
+	bool AddPendingReply(const char *pResponse)
+	{
+		for(auto &Reply : m_aPendingReplys)
+		{
+			if(Reply[0])
+			{
+				if(!str_comp(Reply, pResponse))
+					return true;
+				continue;
+			}
+
+			str_copy(Reply, pResponse, sizeof(Reply));
+			return true;
+		}
+		dbg_assert(true, "pending replys full");
+		return false;
+	}
+	bool CheckPendingReplys(const char *pMessage)
+	{
+		dbg_msg("chathelper", "checking message='%s'", pMessage);
+		for(auto &Reply : m_aPendingReplys)
+		{
+			if(!Reply[0])
+				continue;
+
+			dbg_msg("chathelper", "checking message='%s' repls='%s'", pMessage, Reply);
+			if(!str_comp(pMessage, Reply))
+			{
+				// yea this shouldnt work
+				// str comp against the actual ping we are popping
+				dbg_msg("chathelper", "shifiting message='%s'", pMessage);
+				ShiftPings();
+				return true;
+			}
+		}
+		return false;
 	}
 
 	char m_aGreetName[32];
