@@ -30,6 +30,7 @@ void CChatHelper::OnInit()
 	m_NextMessageSend = 0;
 	m_aLastAfkPing[0] = '\0';
 	mem_zero(m_aSendBuffer, sizeof(m_aSendBuffer));
+	mem_zero(m_aPendingReplys, sizeof(m_aPendingReplys));
 }
 
 void CChatHelper::OnRender()
@@ -110,12 +111,14 @@ void CChatHelper::ConReplyToLastPing(IConsole::IResult *pResult, void *pUserData
 	// given there is any respondable message is still in the stack
 	while(aMessage[0])
 	{
-		pSelf->PopPing(aName, sizeof(aName), aClan, sizeof(aClan), aMessage, sizeof(aMessage));
+		// pSelf->PopPing(aName, sizeof(aName), aClan, sizeof(aClan), aMessage, sizeof(aMessage));
+		pSelf->GetLatestPing(aName, sizeof(aName), aClan, sizeof(aClan), aMessage, sizeof(aMessage));
 		CReplyToPing ReplyToPing = CReplyToPing(pSelf, aName, aClan, aMessage, aResponse, sizeof(aResponse));
 		if(ReplyToPing.Reply())
 		{
 			if(aResponse[0])
 			{
+				pSelf->AddPendingReply(aResponse);
 				pSelf->m_pClient->m_Chat.Say(0, aResponse);
 				break;
 			}
@@ -246,8 +249,6 @@ void CChatHelper::OnChatMessage(int ClientID, int Team, const char *pMsg)
 		Highlighted = true;
 	if(Team == 3) // whisper recv
 		Highlighted = true;
-	if(!Highlighted)
-		return;
 	char aName[64];
 	str_copy(aName, m_pClient->m_aClients[ClientID].m_aName, sizeof(aName));
 	if(ClientID == 63 && !str_comp_num(m_pClient->m_aClients[ClientID].m_aName, " ", 2))
@@ -256,9 +257,17 @@ void CChatHelper::OnChatMessage(int ClientID, int Team, const char *pMsg)
 		// dbg_msg("chillerbot", "fixname 128 player '%s' -> '%s'", m_pClient->m_aClients[ClientID].m_aName, aName);
 	}
 	// ignore own and dummys messages
+	bool OwnOrDummy = false;
 	if(!str_comp(aName, m_pClient->m_aClients[m_pClient->m_LocalIDs[0]].m_aName))
-		return;
+		OwnOrDummy = true;
 	if(Client()->DummyConnected() && !str_comp(aName, m_pClient->m_aClients[m_pClient->m_LocalIDs[1]].m_aName))
+		OwnOrDummy = true;
+	if(OwnOrDummy)
+	{
+		CheckPendingReplys(pMsg);
+		return;
+	}
+	if(!Highlighted)
 		return;
 	if(m_LangParser.IsGreeting(pMsg))
 	{
