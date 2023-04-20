@@ -28,6 +28,29 @@ bool CTerminalUI::DoPopup(int Popup, const char *pTitle)
 	return true;
 }
 
+#include <engine/shared/rust_version.h>
+
+void _str_pad_right_utf8(char *pStr, int size, int pad_len)
+{
+	char aBuf[2048];
+	str_copy(aBuf, pStr, sizeof(aBuf));
+	int ByteSize;
+	int LetterCount;
+	str_utf8_stats(pStr, sizeof(aBuf), sizeof(aBuf), &ByteSize, &LetterCount);
+
+	int full_width_length = ChillerRustGaming(pStr, size);
+	int c_len = str_length(pStr);
+	int pad_len_utf8_rust = pad_len + (full_width_length - c_len);
+
+	int pad_len_utf8 = pad_len + (ByteSize - LetterCount);
+
+	str_format(pStr, size, "%-*s", pad_len_utf8, aBuf);
+	dbg_msg(
+		"pad",
+		"pad_len=%d pad_len_utf8=%d pad_len_utf8_rust=%d ByteSize=%d LetterCount=%d res='%s'",
+		pad_len, pad_len_utf8, pad_len_utf8_rust, ByteSize, LetterCount, pStr);
+}
+
 void CTerminalUI::RenderHelpPage()
 {
 	if(!m_RenderHelpPage)
@@ -142,7 +165,7 @@ void CTerminalUI::RenderServerList()
 			str_format(aPlayers, sizeof(aPlayers), "%d/%d", pItem->m_NumPlayers, pItem->m_MaxPlayers);
 		}
 
-		str_pad_right_utf8(aName, sizeof(aName), 60);
+		_str_pad_right_utf8(aName, sizeof(aName), 60);
 		str_format(aBuf, sizeof(aBuf),
 			"%s | %-20s | %-16s",
 			aName,

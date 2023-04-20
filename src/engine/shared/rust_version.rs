@@ -8,6 +8,13 @@ use ddnet_engine::IConsole_FCommandCallback;
 use ddnet_engine::IConsole_IResult;
 use ddnet_engine::IConsole_OUTPUT_LEVEL_STANDARD;
 use std::pin::Pin;
+use std::str;
+use std::slice;
+
+extern crate unicode_width;
+
+use unicode_width::UnicodeWidthStr;
+use std::convert::TryInto;
 
 #[cxx::bridge]
 mod ffi {
@@ -20,7 +27,19 @@ mod ffi {
     extern "Rust" {
         fn RustVersionPrint(console: &IConsole);
         fn RustVersionRegister(console: Pin<&mut IConsole>);
+        unsafe fn ChillerRustGaming(text: *const u8, size: usize) -> i32;
     }
+}
+
+/// ChillerRustGaming
+#[allow(non_snake_case)]
+pub fn ChillerRustGaming(text: *const u8, size: usize) -> i32 {
+    // println!("helo rust gamingers");
+    let slice = unsafe { slice::from_raw_parts(text, size) };
+    let gaminger = unsafe { str::from_utf8_unchecked(slice) };
+    // println!("rust got str: {}", gaminger);
+    let width = gaminger.width_cjk().try_into().unwrap();
+    return width;
 }
 
 /// Print the Rust version used for compiling this crate.

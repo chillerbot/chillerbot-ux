@@ -34,8 +34,14 @@ int CChatHelper::ChatCommandGetROffset(const char *pCmd)
 	return -1;
 }
 
+#include <engine/shared/rust_version.h>
+
 void CChatHelper::OnInit()
 {
+	char aBuf[256];
+	str_copy(aBuf, "henlo from c plos plos", sizeof(aBuf));
+	int RustVal = ChillerRustGaming(aBuf, str_length(aBuf));
+	dbg_msg("chillerbot", "got value from rust: %d", RustVal);
 	m_pChillerBot = &m_pClient->m_ChillerBotUX;
 
 	m_aGreetName[0] = '\0';
