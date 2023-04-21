@@ -46,6 +46,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ddnet-chillerbot-rs"
+version = "0.0.1"
+dependencies = [
+ "cxx",
+ "ddnet-base",
+ "ddnet-engine",
+ "ddnet-test",
+ "unicode-width",
+]
+
+[[package]]
 name = "ddnet-engine"
 version = "0.0.1"
 dependencies = [

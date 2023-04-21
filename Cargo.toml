@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "src/base",
+  "src/chillerbot-rs",
   "src/engine",
   "src/engine/shared",
   "src/rust-bridge/test",

@@ -1,0 +1,20 @@
+[package]
+name = "ddnet-chillerbot-rs"
+version = "0.0.1"
+edition = "2018"
+publish = false
+license = "Zlib"
+
+[lib]
+crate-type = ["rlib", "staticlib"]
+path = "lib.rs"
+
+[dependencies]
+ddnet-base = { path = "../base" }
+ddnet-engine = { path = "../engine" }
+
+cxx = "1.0"
+unicode-width = "0.1.10"
+
+[dev-dependencies]
+ddnet-test = { path = "../rust-bridge/test", features = ["link-test-libraries"] }

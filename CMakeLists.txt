@@ -864,6 +864,22 @@ endif()
 # RUST
 ########################################################################
 
+# chillerbot \
+set_glob(RUST_CHILLERBOT_RS GLOB_RECURSE "rs;toml;h;cpp" src/chillerbot-rs
+  Cargo.toml
+  build.rs
+  lib.rs
+  rust.rs
+  rust_version.rs
+)
+
+set_src(RUST_BRIDGE_CHILLERBOT GLOB_RECURSE src/rust-bridge-chillerbot
+  rust_version.cpp
+  rust_version.h
+)
+
+# chillerbot /
+
 set_glob(RUST_BASE GLOB_RECURSE "rs;toml" src/base
   Cargo.toml
   color.rs
@@ -899,7 +915,9 @@ set_glob(RUST_MASTERSRV GLOB "rs;toml" src/mastersrv/src
 )
 
 add_library(rust-bridge-shared EXCLUDE_FROM_ALL OBJECT ${RUST_BRIDGE_SHARED})
+add_library(rust-bridge-chillerbot EXCLUDE_FROM_ALL OBJECT ${RUST_BRIDGE_CHILLERBOT})
 list(APPEND TARGETS_OWN rust-bridge-shared)
+list(APPEND TARGETS_OWN rust-bridge-chillerbot)
 
 set(CARGO_BUILD_DIR "")
 set(CARGO_BUILD ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} DDNET_TEST_NO_LINK=1 ${RUST_CARGO} build)
@@ -955,10 +973,11 @@ set(RUST_SRC
       ${RUST_BASE}
       ${RUST_ENGINE_INTERFACE}
       ${RUST_ENGINE_SHARED}
+      ${RUST_CHILLERBOT_RS}
       Cargo.toml
       Cargo.lock
 )
-set(RUST_TARGETS engine_shared)
+set(RUST_TARGETS engine_shared chillerbot_rs)
 if(NOT CMAKE_OSX_ARCHITECTURES)
   set(RUST_OUTPUTS)
   foreach(rust_target ${RUST_TARGETS})
@@ -2403,6 +2422,7 @@ if(CLIENT)
 
     ${TARGET_STEAMAPI}
     rust_engine_shared
+    rust_chillerbot_rs
 
     ${PLATFORM_CLIENT_LIBS}
     ${LIBS}
@@ -2441,6 +2461,7 @@ if(CLIENT)
       $<TARGET_OBJECTS:engine-shared>
       $<TARGET_OBJECTS:game-shared>
       $<TARGET_OBJECTS:rust-bridge-shared>
+      $<TARGET_OBJECTS:rust-bridge-chillerbot>
     )
   else()
     add_executable(game-client WIN32
@@ -2452,6 +2473,7 @@ if(CLIENT)
       $<TARGET_OBJECTS:engine-shared>
       $<TARGET_OBJECTS:game-shared>
       $<TARGET_OBJECTS:rust-bridge-shared>
+      $<TARGET_OBJECTS:rust-bridge-chillerbot>
     )
   endif()
   set_property(TARGET game-client
@@ -2631,6 +2653,7 @@ if(SERVER)
     ${MYSQL_LIBRARIES}
     ${TARGET_ANTIBOT}
     rust_engine_shared
+    rust_chillerbot_rs
 
     ${LIBS}
   )
@@ -2643,6 +2666,7 @@ if(SERVER)
     $<TARGET_OBJECTS:engine-shared>
     $<TARGET_OBJECTS:game-shared>
     $<TARGET_OBJECTS:rust-bridge-shared>
+    $<TARGET_OBJECTS:rust-bridge-chillerbot>
   )
   set_property(TARGET game-server
       PROPERTY OUTPUT_NAME ${SERVER_EXECUTABLE}
@@ -2880,6 +2904,7 @@ add_library(rust_test STATIC EXCLUDE_FROM_ALL
   $<TARGET_OBJECTS:engine-shared>
   $<TARGET_OBJECTS:game-shared>
   $<TARGET_OBJECTS:rust-bridge-shared>
+  $<TARGET_OBJECTS:rust-bridge-chillerbot>
   ${DEPS}
 )
 
@@ -3382,6 +3407,7 @@ foreach(target ${TARGETS_OWN})
   target_include_directories(${target} PRIVATE ${PROJECT_BINARY_DIR}/src)
   target_include_directories(${target} PRIVATE src)
   target_include_directories(${target} PRIVATE src/rust-bridge)
+  target_include_directories(${target} PRIVATE src/rust-bridge-chillerbot)
   target_compile_definitions(${target} PRIVATE $<$<CONFIG:Debug>:CONF_DEBUG>)
   target_include_directories(${target} SYSTEM PRIVATE ${CURL_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS})
   target_compile_definitions(${target} PRIVATE GLEW_STATIC)
