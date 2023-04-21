@@ -9,7 +9,7 @@
 
 #include <csignal>
 
-#include <base/chillerbot/pad_utf8.h>
+#include "pad_utf8.h"
 
 #include "terminalui.h"
 
@@ -26,29 +26,6 @@ bool CTerminalUI::DoPopup(int Popup, const char *pTitle)
 	m_NewInput = false;
 	gs_NeedLogDraw = true;
 	return true;
-}
-
-#include <engine/shared/rust_version.h>
-
-void _str_pad_right_utf8(char *pStr, int size, int pad_len)
-{
-	char aBuf[2048];
-	str_copy(aBuf, pStr, sizeof(aBuf));
-	int ByteSize;
-	int LetterCount;
-	str_utf8_stats(pStr, sizeof(aBuf), sizeof(aBuf), &ByteSize, &LetterCount);
-
-	int full_width_length = ChillerRustGaming(pStr, size);
-	int c_len = str_length(pStr);
-	int pad_len_utf8_rust = pad_len + (full_width_length - c_len);
-
-	int pad_len_utf8 = pad_len + (ByteSize - LetterCount);
-
-	str_format(pStr, size, "%-*s", pad_len_utf8, aBuf);
-	dbg_msg(
-		"pad",
-		"pad_len=%d pad_len_utf8=%d pad_len_utf8_rust=%d ByteSize=%d LetterCount=%d res='%s'",
-		pad_len, pad_len_utf8, pad_len_utf8_rust, ByteSize, LetterCount, pStr);
 }
 
 void CTerminalUI::RenderHelpPage()
@@ -165,9 +142,11 @@ void CTerminalUI::RenderServerList()
 			str_format(aPlayers, sizeof(aPlayers), "%d/%d", pItem->m_NumPlayers, pItem->m_MaxPlayers);
 		}
 
-		_str_pad_right_utf8(aName, sizeof(aName), 60);
+		str_pad_right_utf8(aName, sizeof(aName), 60);
+		str_pad_right_utf8(aMap, sizeof(aMap), 20);
+		str_pad_right_utf8(aPlayers, sizeof(aPlayers), 16);
 		str_format(aBuf, sizeof(aBuf),
-			"%s | %-20s | %-16s",
+			"%s | %s | %s",
 			aName,
 			aMap,
 			aPlayers);
@@ -175,12 +154,14 @@ void CTerminalUI::RenderServerList()
 		if(m_SelectedServer == i)
 		{
 			wattron(g_LogWindow.m_pCursesWin, A_BOLD);
-			str_format(aLine, sizeof(aLine), "<%-*s>", width - 2, aBuf);
+			str_pad_right_utf8(aBuf, sizeof(aBuf), width - 2);
+			str_format(aLine, sizeof(aLine), "<%s>", aBuf);
 		}
 		else
 		{
 			wattroff(g_LogWindow.m_pCursesWin, A_BOLD);
-			str_format(aLine, sizeof(aLine), "|%-*s|", width - 2, aBuf);
+			str_pad_right_utf8(aBuf, sizeof(aBuf), width - 2);
+			str_format(aLine, sizeof(aLine), "|%s|", aBuf);
 		}
 		mvwprintw(g_LogWindow.m_pCursesWin, offY + k, offX, "%s", aLine);
 	}

@@ -1884,8 +1884,6 @@ set_src(BASE GLOB_RECURSE src/base
   bezier.h
   chillerbot/curses_colors.cpp
   chillerbot/curses_colors.h
-  chillerbot/pad_utf8.cpp
-  chillerbot/pad_utf8.h
   chillerbot/terminalui_logger.h
   color.h
   curses.h
@@ -2247,6 +2245,8 @@ if(CLIENT)
     components/chillerbot/terminalui/history.cpp
     components/chillerbot/terminalui/maplayers.cpp
     components/chillerbot/terminalui/menus.cpp
+    components/chillerbot/terminalui/pad_utf8.cpp
+    components/chillerbot/terminalui/pad_utf8.h
     components/chillerbot/terminalui/scoreboard.cpp
     components/chillerbot/terminalui/terminalui.cpp
     components/chillerbot/terminalui/terminalui.h

@@ -7,7 +7,7 @@
 #include <base/chillerbot/curses_colors.h>
 #include <base/terminalui.h>
 
-#include <base/chillerbot/pad_utf8.h>
+#include "pad_utf8.h"
 
 #include "terminalui.h"
 
@@ -781,8 +781,33 @@ void CTerminalUI::RefreshConsoleCmdHelpText()
 	}
 }
 
+#include <engine/shared/rust_version.h>
+
+
 void CTerminalUI::CompleteCommands(bool IsReverse)
 {
+	char aBuf[256];
+
+	str_copy(aBuf, "困", sizeof(aBuf));
+	int width = ChillerRustGaming(aBuf);
+	dbg_msg("width", "w=%d ex=2 str='%s'", width, aBuf);
+
+	str_copy(aBuf, "困困困", sizeof(aBuf));
+	width = ChillerRustGaming(aBuf);
+	dbg_msg("width", "w=%d ex=6 str='%s'", width, aBuf);
+
+	str_copy(aBuf, "xxx", sizeof(aBuf));
+	width = ChillerRustGaming(aBuf);
+	dbg_msg("width", "w=%d ex=3 str='%s'", width, aBuf);
+
+	str_copy(aBuf, "é", sizeof(aBuf));
+	width = ChillerRustGaming(aBuf);
+	dbg_msg("width", "w=%d ex=1 str='%s'", width, aBuf);
+
+	str_copy(aBuf, "ééé", sizeof(aBuf));
+	width = ChillerRustGaming(aBuf);
+	dbg_msg("width", "w=%d ex=3 str='%s'", width, aBuf);
+
 	int CompletionFlagmask = 0;
 	if(m_InputMode == INPUT_LOCAL_CONSOLE)
 		CompletionFlagmask = CFGFLAG_CLIENT;
