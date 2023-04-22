@@ -864,22 +864,6 @@ endif()
 # RUST
 ########################################################################
 
-# chillerbot \
-set_glob(RUST_CHILLERBOT_RS GLOB_RECURSE "rs;toml;h;cpp" src/chillerbot-rs
-  Cargo.toml
-  build.rs
-  lib.rs
-  rust.rs
-  rust_version.rs
-)
-
-set_src(RUST_BRIDGE_CHILLERBOT GLOB_RECURSE src/rust-bridge-chillerbot
-  rust_version.cpp
-  rust_version.h
-)
-
-# chillerbot /
-
 set_glob(RUST_BASE GLOB_RECURSE "rs;toml" src/base
   Cargo.toml
   color.rs
@@ -901,6 +885,12 @@ set_glob(RUST_ENGINE_SHARED GLOB_RECURSE "rs;toml" src/engine/shared
   rust_version.rs
 )
 
+set_glob(RUST_MASTERSRV GLOB "rs;toml" src/mastersrv/src
+  addr.rs
+  locations.rs
+  main.rs
+)
+
 set_src(RUST_BRIDGE_SHARED GLOB_RECURSE src/rust-bridge
   cpp/console.cpp
   cpp/console.h
@@ -908,16 +898,8 @@ set_src(RUST_BRIDGE_SHARED GLOB_RECURSE src/rust-bridge
   engine/shared/rust_version.h
 )
 
-set_glob(RUST_MASTERSRV GLOB "rs;toml" src/mastersrv/src
-  addr.rs
-  locations.rs
-  main.rs
-)
-
 add_library(rust-bridge-shared EXCLUDE_FROM_ALL OBJECT ${RUST_BRIDGE_SHARED})
-add_library(rust-bridge-chillerbot EXCLUDE_FROM_ALL OBJECT ${RUST_BRIDGE_CHILLERBOT})
 list(APPEND TARGETS_OWN rust-bridge-shared)
-list(APPEND TARGETS_OWN rust-bridge-chillerbot)
 
 set(CARGO_BUILD_DIR "")
 set(CARGO_BUILD ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} DDNET_TEST_NO_LINK=1 ${RUST_CARGO} build)
@@ -973,11 +955,13 @@ set(RUST_SRC
       ${RUST_BASE}
       ${RUST_ENGINE_INTERFACE}
       ${RUST_ENGINE_SHARED}
-      ${RUST_CHILLERBOT_RS}
       Cargo.toml
       Cargo.lock
 )
-set(RUST_TARGETS engine_shared chillerbot_rs)
+set(RUST_TARGETS engine_shared)
+
+include("cmake/chillerbot/chillerbot_rust.cmake")
+
 if(NOT CMAKE_OSX_ARCHITECTURES)
   set(RUST_OUTPUTS)
   foreach(rust_target ${RUST_TARGETS})
@@ -3407,7 +3391,6 @@ foreach(target ${TARGETS_OWN})
   target_include_directories(${target} PRIVATE ${PROJECT_BINARY_DIR}/src)
   target_include_directories(${target} PRIVATE src)
   target_include_directories(${target} PRIVATE src/rust-bridge)
-  target_include_directories(${target} PRIVATE src/rust-bridge-chillerbot)
   target_compile_definitions(${target} PRIVATE $<$<CONFIG:Debug>:CONF_DEBUG>)
   target_include_directories(${target} SYSTEM PRIVATE ${CURL_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS})
   target_compile_definitions(${target} PRIVATE GLEW_STATIC)
@@ -3431,9 +3414,6 @@ foreach(target ${TARGETS_OWN})
   endif()
   if(HEADLESS_CLIENT)
     target_compile_definitions(${target} PRIVATE CONF_HEADLESS_CLIENT)
-  endif()
-  if(CURSES_CLIENT)
-    target_compile_definitions(${target} PRIVATE CONF_CURSES_CLIENT)
   endif()
   if(MYSQL)
     target_compile_definitions(${target} PRIVATE CONF_MYSQL)
@@ -3464,6 +3444,8 @@ foreach(target ${TARGETS_OWN})
    target_compile_definitions(${target} PRIVATE CONF_WEBASM)
   endif()
 endforeach()
+
+include("cmake/chillerbot/targets.cmake")
 
 foreach(target ${TARGETS_DEP})
   if(MSVC)
