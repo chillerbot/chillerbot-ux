@@ -146,6 +146,26 @@ void CTerminalUI::RenderHelpPage()
 	}
 }
 
+void CTerminalUI::WinServerBrowser::RefreshPos(int NumServers, bool SearchOnTop)
+{
+	int mx = getmaxx(g_LogWindow.m_pCursesWin);
+	int my = getmaxy(g_LogWindow.m_pCursesWin);
+	int offY = 2;
+	int offX = 40;
+	// lower browser if enough space
+	// or input bar is there
+	if(my >= 60 || SearchOnTop)
+		offY = 5;
+	int width = minimum(128, mx - 3);
+	if(mx < width + 2 + offX)
+		offX = 2;
+	int height = minimum(NumServers, my - (offY + 2));
+	m_X = offX;
+	m_Y = offY;
+	m_Width = width;
+	m_Height = height;
+}
+
 void CTerminalUI::RenderServerList()
 {
 	if(!m_RenderServerList)
@@ -163,33 +183,20 @@ void CTerminalUI::RenderServerList()
 		str_copy(aTab, "ddnet", sizeof(aTab));
 	else if(g_Config.m_UiPage == CMenus::PAGE_KOG)
 		str_copy(aTab, "KoG", sizeof(aTab));
-	int mx = getmaxx(g_LogWindow.m_pCursesWin);
-	int my = getmaxy(g_LogWindow.m_pCursesWin);
-	int offY = 5;
-	int offX = 40;
-	if(my < 60)
-		offY = 2;
-	int width = minimum(128, mx - 3);
-	if(mx < width + 2 + offX)
-		offX = 2;
-	if(width < 2)
-		return;
 	m_NumServers = ServerBrowser()->NumSortedServers();
-	int height = minimum(m_NumServers, my - (offY + 2));
-	g_LogWindow.DrawBorders(offX, offY - 1, width, height + 2);
-	mvwprintw(g_LogWindow.m_pCursesWin, offY - 1, offX + 3, "[ %s ]", aTab);
+	m_WinServerBrowser.RefreshPos(m_NumServers, SearchBarOnTopOfBrowser());
+	if(m_WinServerBrowser.m_Width < 2)
+		return;
 	int From = 0;
-	int To = height;
-	m_WinServerBrowser.m_X = offX;
-	m_WinServerBrowser.m_Y = offY;
-	m_WinServerBrowser.m_Width = width;
-	m_WinServerBrowser.m_Height = height;
+	int To = m_WinServerBrowser.m_Height;
+	g_LogWindow.DrawBorders(m_WinServerBrowser.m_X, m_WinServerBrowser.m_Y - 1, m_WinServerBrowser.m_Width, m_WinServerBrowser.m_Height + 2);
+	mvwprintw(g_LogWindow.m_pCursesWin, m_WinServerBrowser.m_Y - 1, m_WinServerBrowser.m_X + 3, "[ %s ]", aTab);
 	if(To > 1 && m_SelectedServer >= To - 1)
 	{
 		From = m_SelectedServer - (To - 1);
 		To = m_SelectedServer + 1;
 	}
-	for(int i = From, k = 0; i < To && k < height; i++, k++)
+	for(int i = From, k = 0; i < To && k < m_WinServerBrowser.m_Height; i++, k++)
 	{
 		const CServerInfo *pItem = ServerBrowser()->SortedGet(i);
 		if(!pItem)
@@ -245,19 +252,19 @@ void CTerminalUI::RenderServerList()
 			aName,
 			aMap,
 			aPlayers);
-		aBuf[width - 1] = '\0'; // ensure no line wrapping
+		aBuf[m_WinServerBrowser.m_Width - 1] = '\0'; // ensure no line wrapping
 		if(m_SelectedServer == i)
 		{
 			wattron(g_LogWindow.m_pCursesWin, A_BOLD);
-			str_pad_right_utf8(aBuf, sizeof(aBuf), width - 2);
+			str_pad_right_utf8(aBuf, sizeof(aBuf), m_WinServerBrowser.m_Width - 2);
 			str_format(aLine, sizeof(aLine), "<%s>", aBuf);
 		}
 		else
 		{
-			str_pad_right_utf8(aBuf, sizeof(aBuf), width - 2);
+			str_pad_right_utf8(aBuf, sizeof(aBuf), m_WinServerBrowser.m_Width - 2);
 			str_format(aLine, sizeof(aLine), "|%s|", aBuf);
 		}
-		mvwprintw(g_LogWindow.m_pCursesWin, offY + k, offX, "%s", aLine);
+		mvwprintw(g_LogWindow.m_pCursesWin, m_WinServerBrowser.m_Y + k, m_WinServerBrowser.m_X, "%s", aLine);
 		wattroff(g_LogWindow.m_pCursesWin, A_BOLD);
 	}
 }

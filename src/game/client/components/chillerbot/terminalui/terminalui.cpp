@@ -157,6 +157,11 @@ void CTerminalUI::InputDraw()
 	UpdateCursor();
 }
 
+bool CTerminalUI::SearchBarOnTopOfBrowser()
+{
+	return InputMode() == INPUT_BROWSER_SEARCH && g_Config.m_ClTermBrowserSearchTop;
+}
+
 int CTerminalUI::CursesTick()
 {
 	// getmaxyx does not work with gdb see https://github.com/chillerbot/chillerbot-ux/issues/128
@@ -178,7 +183,7 @@ int CTerminalUI::CursesTick()
 		wresize(g_InfoWin.m_pCursesWin, INFO_WIN_HEIGHT, g_NewX);
 
 		// search bar on top
-		if(InputMode() == INPUT_BROWSER_SEARCH && g_Config.m_ClTermBrowserSearchTop)
+		if(SearchBarOnTopOfBrowser())
 		{
 			// this works if you want to move the log down instead of overlap
 			// mvwin(g_LogWindow.m_pCursesWin, g_InputWin.m_Height, 0);
@@ -190,7 +195,13 @@ int CTerminalUI::CursesTick()
 			wresize(g_InputWin.m_pCursesWin, g_InputWin.m_Height, m_WinServerBrowser.m_Width);
 			// dbg_msg("chiller", "%d %d", m_WinServerBrowser.m_Y - g_InputWin.m_Height, m_WinServerBrowser.m_X);
 			// mvwin(g_InputWin.m_pCursesWin, m_WinServerBrowser.m_Y - g_InputWin.m_Height, m_WinServerBrowser.m_X);
+
+
+			m_NumServers = ServerBrowser()->NumSortedServers();
+			m_WinServerBrowser.RefreshPos(m_NumServers, SearchBarOnTopOfBrowser());
+
 			mvwin(g_InputWin.m_pCursesWin, m_WinServerBrowser.m_Y - (g_InputWin.m_Height + 1), m_WinServerBrowser.m_X);
+			dbg_msg("chiller", "input win to y=%d x=%d", m_WinServerBrowser.m_Y - (g_InputWin.m_Height + 1), m_WinServerBrowser.m_X);
 		}
 		else // search bar on bottom
 		{

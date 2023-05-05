@@ -37,7 +37,13 @@ class CTerminalUI : public CComponent
 		int m_Width;
 		int m_Height;
 	};
-	WindowInfo m_WinServerBrowser;
+	class WinServerBrowser : public WindowInfo
+	{
+		public:
+		using WindowInfo::WindowInfo;
+		void RefreshPos(int NumServers, bool SearchOnTop);
+	};
+	WinServerBrowser m_WinServerBrowser;
 
 	void RenderScoreboard(int Team, class CTermWindow *pWin);
 	void OpenServerList();
@@ -240,6 +246,7 @@ class CTerminalUI : public CComponent
 
 	static void ConTerm(IConsole::IResult *pResult, void *pUserData);
 
+	bool SearchBarOnTopOfBrowser();
 	void RenderConnecting();
 	bool RenderDownload();
 	bool RconAuthed() { return Client()->RconAuthed(); }
