@@ -31,6 +31,30 @@ To activate the advanced mode you have to set `cl_war_list_advanced 1`.
 Check `!help` in chat for all the commands.
 And you also want to checkout the folders and files that are created in your ddnet directory in the chillerbot/warlist folder.
 
+### Auto reply in chat
+
+There is a command to auto reply to common messages in chat. It is not some smart AI its just a fixed list of known words but it works pretty well.
+It does not reply automatically you have to bind it and actively press the bind if you want it to attempt a reply.
+It only replies to the last message that pinged (highlighted your name) in chat. And only if it is recent enough.
+So you have to press the bind shortly after the message appeared in chat otherwise it will assume the message is no longer relevant.
+
+The command you want to bind is ``reply_to_last_ping``
+
+![warlist simple preview](https://raw.githubusercontent.com/ChillerDragon/cdn/master/auto_reply_bind.png)
+
+Here some screenshots of the things it can reply to. If there was no message it can reply to it will not do anything.
+
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/dyn.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/enemies.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/grenade.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/how_are_you.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/reason.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/sense.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/where_close.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/where_far.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/why_kill_me.png)
+![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/watch_me.gif)
+
 ### Password manager
 
 Go to your teeworlds/chillerbot directory and create the file ``chillpw_secret.txt``
