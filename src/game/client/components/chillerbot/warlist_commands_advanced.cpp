@@ -35,7 +35,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		m_pClient->m_Chat.AddLine(-2, 0, "!peace <folder>");
 		m_pClient->m_Chat.AddLine(-2, 0, "!war <folder>");
 		m_pClient->m_Chat.AddLine(-2, 0, "!team <folder>");
-		m_pClient->m_Chat.AddLine(-2, 0, "!unfriend <folder>");
+		m_pClient->m_Chat.AddLine(-2, 0, "!unfriend <folder>"); // aliases delteam, unteam
 		m_pClient->m_Chat.AddLine(-2, 0, "!addreason <folder> [--force] <reason>");
 		m_pClient->m_Chat.AddLine(-2, 0, "!search <name>");
 		m_pClient->m_Chat.AddLine(-2, 0, "!create <war|team|neutral|traitor> <folder> [name]");
@@ -219,7 +219,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		ReloadList();
 		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
 	}
-	else if(!str_comp(pCmd, "unfriend")) // "unfriend <folder>"
+	else if(!str_comp(pCmd, "unfriend") || !str_comp(pCmd, "unteam") || !str_comp(pCmd, "delteam")) // "unfriend <folder>"
 	{
 		if(NumArgs < 1)
 		{

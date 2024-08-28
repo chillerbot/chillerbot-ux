@@ -111,44 +111,24 @@ bool CWarList::OnChatCmdSimple(char Prefix, int ClientId, int Team, const char *
 		m_pClient->m_Chat.AddLine(-2, 0, "Error: create only works in advanced warlist mode");
 		return true;
 	}
-	else if(!str_comp(pCmd, "addwar")) // "addwar <name>"
+	else if(!str_comp(pCmd, "addwar") || !str_comp(pCmd, "war")) // "addwar <name>"
 	{
 		AddSimpleWar(pRawArgLine);
 		return true;
 	}
-	else if(!str_comp(pCmd, "addteam")) // "addteam <name>"
+	else if(!str_comp(pCmd, "team") || !str_comp(pCmd, "addteam")) // "team <name>"
 	{
 		AddSimpleTeam(pRawArgLine);
 		return true;
 	}
-	else if(!str_comp(pCmd, "peace")) // "peace <name>"
+	else if(!str_comp(pCmd, "delwar") ||!str_comp(pCmd, "peace") ) // "delwar <name>"
 	{
 		RemoveSimpleWar(pRawArgLine);
 		return true;
 	}
-	else if(!str_comp(pCmd, "delwar")) // "delwar <name>"
-	{
-		RemoveSimpleWar(pRawArgLine);
-		return true;
-	}
-	else if(!str_comp(pCmd, "team")) // "team <name>"
-	{
-		AddSimpleTeam(pRawArgLine);
-		return true;
-	}
-	else if(!str_comp(pCmd, "delteam")) // "delteam <name>"
+	else if(!str_comp(pCmd, "delteam") || !str_comp(pCmd, "unfriend")|| !str_comp(pCmd, "unteam")) // "unfriend <name>"
 	{
 		RemoveSimpleTeam(pRawArgLine);
-		return true;
-	}
-	else if(!str_comp(pCmd, "unfriend")) // "unfriend <name>"
-	{
-		RemoveSimpleTeam(pRawArgLine);
-		return true;
-	}
-	else if(!str_comp(pCmd, "war")) // "war <name>"
-	{
-		AddSimpleWar(pRawArgLine);
 		return true;
 	}
 	else if(!str_comp(pCmd, "addreason")) // "addreason <folder> <reason can contain spaces>"
