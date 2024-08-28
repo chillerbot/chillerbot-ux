@@ -94,22 +94,30 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
-		if(aName[0])
-		{
-			if(SearchName(aName, false, true))
-			{
-				str_format(aBuf, sizeof(aBuf), "Error: name '%s' is already used in different folder", aName);
-				m_pClient->m_Chat.AddLine(-2, 0, aBuf);
-				return true;
-			}
-			str_format(aBuf, sizeof(aBuf), "Created folder %s/%s and add name '%s'", aType, aFolder, aName);
-			AddWar(aFolder, aName);
-		}
-		else
+		if(!aName[0])
 		{
 			str_format(aBuf, sizeof(aBuf), "Created folder %s/%s", aType, aFolder);
+			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			return true;
 		}
+
+		if(SearchName(aName, false, true))
+		{
+			str_format(aBuf, sizeof(aBuf), "Error: name '%s' is already used in different folder", aName);
+			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			return true;
+		}
+		str_format(aBuf, sizeof(aBuf), "Created folder %s/%s and add name '%s'", aType, aFolder, aName);
 		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		if(!str_comp(aType, "war"))
+			AddWar(aFolder, aName);
+		else if(!str_comp(aType, "team"))
+			AddTeam(aFolder, aName);
+		else
+		{
+			str_format(aBuf, sizeof(aBuf), "Error: failed to add name '%s' to '%s' list (list type not supported)", aName, aType);
+			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		}
 	}
 	else if(!str_comp(pCmd, "addwar")) // "addwar <folder> <name can contain spaces>"
 	{
