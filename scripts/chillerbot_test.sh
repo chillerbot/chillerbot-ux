@@ -140,6 +140,7 @@ function wait_for_fifo() {
 	cl_chat_spam_filter 0;
 	player_name client1;
 	cl_tabbed_out_msg 0;
+	cl_war_list_advanced 1;
 	connect localhost:17822" > client1.log &
 
 wait_for_fifo client1.fifo 10
@@ -154,6 +155,7 @@ $gdb ./chillerbot-* \
 	cl_tabbed_out_msg 0;
 	connect localhost:17822;
 	player_clan "Chilli.*";
+	cl_war_list_advanced 1;
 	inp_mousesens 1000' > client2.log &
 
 wait_for_fifo client2.fifo 10
