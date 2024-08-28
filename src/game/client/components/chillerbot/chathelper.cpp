@@ -203,7 +203,10 @@ void CChatHelper::SayFormat(const char *pMsg)
 		}
 		aBuf[BufI++] = pMsg[i];
 	}
-	aBuf[minimum(sizeof(aBuf) - 1, BufI)] = '\0';
+	// string end
+	aBuf[BufI] = '\0';
+	// fallback nullterm at buffer end
+	aBuf[sizeof(aBuf) - 1] = '\0';
 	m_pClient->m_Chat.SendChat(0, aBuf);
 }
 
