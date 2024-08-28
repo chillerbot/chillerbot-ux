@@ -121,12 +121,12 @@ bool CWarList::OnChatCmdSimple(char Prefix, int ClientId, int Team, const char *
 		AddSimpleTeam(pRawArgLine);
 		return true;
 	}
-	else if(!str_comp(pCmd, "delwar") ||!str_comp(pCmd, "peace") ) // "delwar <name>"
+	else if(!str_comp(pCmd, "delwar") || !str_comp(pCmd, "peace")) // "delwar <name>"
 	{
 		RemoveSimpleWar(pRawArgLine);
 		return true;
 	}
-	else if(!str_comp(pCmd, "delteam") || !str_comp(pCmd, "unfriend")|| !str_comp(pCmd, "unteam")) // "unfriend <name>"
+	else if(!str_comp(pCmd, "delteam") || !str_comp(pCmd, "unfriend") || !str_comp(pCmd, "unteam")) // "unfriend <name>"
 	{
 		RemoveSimpleTeam(pRawArgLine);
 		return true;
