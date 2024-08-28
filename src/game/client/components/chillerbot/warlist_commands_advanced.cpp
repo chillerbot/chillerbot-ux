@@ -380,7 +380,6 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 				m_pClient->m_Chat.AddLine(-2, 0, aBuf);
 				return true;
 			}
-			io_close(File);
 		}
 		File = Storage()->OpenFile(aFilename, IOFLAG_WRITE, IStorage::TYPE_SAVE);
 		if(!File)
