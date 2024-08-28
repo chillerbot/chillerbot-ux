@@ -7,6 +7,30 @@ Made for main client usage. Based on DDNet which is based on DDrace which is bas
 Features
 --------
 
+### Colored name plates (war list)
+
+**Simple warlist (default):**
+
+This feature was designed for block servers to track your friends and enemies.
+You can use those commands in chat to color names:
+- ``!war <name>``
+- ``!peace <name>``
+- ``!team <name>``
+- ``!delteam <name>``
+
+![warlist simple preview](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_warlist_basic.gif)
+
+**Advanced warlist (not recommended for beginners):**
+
+There is also an advanced warlist mode that is harder to use but has stronger features.
+When the advanced warlist mode is active you can bundle multiple names together in one folder.
+You can peace/war a player and his dummy/fake names at the same time.
+You can also store reasons for your wars and war clan tags.
+The reasons can be used in auto chat replies and displayed in game over the red name tag.
+To activate the advanced mode you have to set `cl_war_list_advanced 1`.
+Check `!help` in chat for all the commands.
+And you also want to checkout the folders and files that are created in your ddnet directory in the chillerbot/warlist folder.
+
 ### Password manager
 
 Go to your teeworlds/chillerbot directory and create the file ``chillpw_secret.txt``
