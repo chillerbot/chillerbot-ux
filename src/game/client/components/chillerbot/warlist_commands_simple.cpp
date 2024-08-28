@@ -103,11 +103,6 @@ bool CWarList::OnChatCmdSimple(char Prefix, int ClientId, int Team, const char *
 		m_pClient->m_Chat.AddLine(-2, 0, "!delteam <name>");
 		// m_pClient->m_Chat.AddLine(-2, 0, "!search <name>");
 	}
-	else if(!str_comp(pCmd, "create"))
-	{
-		m_pClient->m_Chat.AddLine(-2, 0, "Error: create only works in advanced warlist mode");
-		return true;
-	}
 	else if(!str_comp(pCmd, "war") || !str_comp(pCmd, "addwar")) // "war <name>"
 	{
 		AddSimpleWar(pRawArgLine);
@@ -130,6 +125,7 @@ bool CWarList::OnChatCmdSimple(char Prefix, int ClientId, int Team, const char *
 	}
 	else if(
 		!str_comp(pCmd, "addreason") ||
+		!str_comp(pCmd, "create") ||
 		!str_comp(pCmd, "addtraitor"))
 	{
 		char aBuf[512];
