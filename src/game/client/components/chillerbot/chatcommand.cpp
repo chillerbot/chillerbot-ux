@@ -8,7 +8,8 @@
 
 #include <game/client/components/chat.h>
 
-#include "base/system.h"
+#include <base/system.h>
+
 #include "chatcommand.h"
 
 void CChatCommand::OnServerMsg(const char *pMsg)
