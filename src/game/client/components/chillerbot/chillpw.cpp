@@ -14,8 +14,15 @@ void CChillPw::OnMapLoad()
 	m_LoginOffset[1] = 0;
 	m_ChatDelay[0] = time_get() + time_freq() * 2;
 	m_ChatDelay[1] = time_get() + time_freq() * 2;
-	str_copy(m_aCurrentServerAddr, g_Config.m_UiServerAddress, sizeof(m_aCurrentServerAddr));
-	str_copy(m_aCurrentServerAddrNoPort, g_Config.m_UiServerAddress, sizeof(m_aCurrentServerAddrNoPort));
+
+	const char *pAddrSkipProtocol = g_Config.m_UiServerAddress;
+	if(str_startswith(pAddrSkipProtocol, "tw-0.7+udp://"))
+		pAddrSkipProtocol += str_length("tw-0.7+udp://");
+	if(str_startswith(pAddrSkipProtocol, "tw-0.6+udp://"))
+		pAddrSkipProtocol += str_length("tw-0.6+udp://");
+
+	str_copy(m_aCurrentServerAddr, pAddrSkipProtocol, sizeof(m_aCurrentServerAddr));
+	str_copy(m_aCurrentServerAddrNoPort, pAddrSkipProtocol, sizeof(m_aCurrentServerAddrNoPort));
 	for(int i = 0; i < str_length(m_aCurrentServerAddr); i++)
 	{
 		if(m_aCurrentServerAddr[i] == ':')
