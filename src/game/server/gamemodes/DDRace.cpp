@@ -18,6 +18,7 @@ CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 	IGameController(pGameServer)
 {
 	m_pGameType = g_Config.m_SvTestingCommands ? TEST_TYPE_NAME : GAME_TYPE_NAME;
+	m_GameFlags = protocol7::GAMEFLAG_RACE;
 }
 
 CGameControllerDDRace::~CGameControllerDDRace() = default;
@@ -109,6 +110,11 @@ void CGameControllerDDRace::HandleCharacterTiles(CCharacter *pChr, int MapIndex)
 		GameServer()->SendChatTarget(ClientId, "You are now out of the solo part");
 		pChr->SetSolo(false);
 	}
+}
+
+void CGameControllerDDRace::SetArmorProgress(CCharacter *pCharacer, int Progress)
+{
+	pCharacer->SetArmor(clamp(10 - (Progress / 15), 0, 10));
 }
 
 void CGameControllerDDRace::OnPlayerConnect(CPlayer *pPlayer)
