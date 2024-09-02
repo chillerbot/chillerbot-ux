@@ -748,15 +748,13 @@ void CPlayers::RenderPlayer(
 
 	int QuadOffsetToEmoticon = NUM_WEAPONS * 2 + 2 + 2;
 	if((Player.m_PlayerFlags & PLAYERFLAG_CHATTING) && !m_pClient->m_aClients[ClientId].m_Afk)
-	{
-		int CurEmoticon = (SPRITE_DOTDOT - SPRITE_OOP);
-		Graphics()->TextureSet(GameClient()->m_EmoticonsSkin.m_aSpriteEmoticons[CurEmoticon]);
-		int QuadOffset = QuadOffsetToEmoticon + CurEmoticon;
-		Graphics()->SetColor(1.0f, 1.0f, 1.0f, Alpha);
-		Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, Position.x + 24.f, Position.y - 40.f);
-
-		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-		Graphics()->QuadsSetRotation(0);
+{
+		if(!g_Config.m_ClHideChatBubble)
+		{
+			int CurEmoticon = (SPRITE_DOTDOT - SPRITE_OOP);
+			Graphics()->TextureSet(GameClient()->m_EmoticonsSkin.m_aSpriteEmoticons[CurEmoticon]);
+			Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffsetToEmoticon + CurEmoticon, Position.x + 24.f, Position.y - 40.f);
+		}
 	}
 
 	if(g_Config.m_ClAfkEmote && m_pClient->m_aClients[ClientId].m_Afk && !(Client()->DummyConnected() && ClientId == m_pClient->m_aLocalIds[!g_Config.m_ClDummy]))

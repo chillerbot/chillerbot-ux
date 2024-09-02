@@ -181,12 +181,16 @@ void CControls::OnMessage(int Msg, void *pRawMsg)
 int CControls::SnapInput(int *pData)
 {
 	// update player state
-	if(m_pClient->m_Chat.IsActive())
-		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags = PLAYERFLAG_CHATTING;
-	else if(m_pClient->m_Menus.IsActive())
-		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags = PLAYERFLAG_IN_MENU;
-	else
-		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags = PLAYERFLAG_PLAYING;
+  if(g_Config.m_ClHideChatBubble)
+    m_aInputData[g_Config.m_ClDummy].m_PlayerFlags &= ~PLAYERFLAG_CHATTING;
+
+  if(m_pClient->m_Chat.IsActive() && !g_Config.m_ClHideChatBubble)
+    m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_CHATTING;
+
+  else if(m_pClient->m_Menus.IsActive())
+    m_aInputData[g_Config.m_ClDummy].m_PlayerFlags = PLAYERFLAG_IN_MENU;
+  else
+    m_aInputData[g_Config.m_ClDummy].m_PlayerFlags = PLAYERFLAG_PLAYING;
 
 	if(m_pClient->m_Scoreboard.Active())
 		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_SCOREBOARD;

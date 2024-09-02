@@ -199,6 +199,8 @@ public:
 	CTerminalUI m_TerminalUI;
 	CStresser m_Stresser;
 
+	const CEmoticon *Emoticon() const { return &m_Emoticon; }
+
 private:
 	std::vector<class CComponent *> m_vpAll;
 	std::vector<class CComponent *> m_vpInput;
