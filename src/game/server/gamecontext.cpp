@@ -108,6 +108,9 @@ void CGameContext::Construct(int Resetting)
 		for(auto &pSavedTee : m_apSavedTees)
 			pSavedTee = nullptr;
 
+		for(auto &pSavedTeleTee : m_apSavedTeleTees)
+			pSavedTeleTee = nullptr;
+
 		for(auto &pSavedTeam : m_apSavedTeams)
 			pSavedTeam = nullptr;
 
@@ -130,6 +133,9 @@ void CGameContext::Destruct(int Resetting)
 	{
 		for(auto &pSavedTee : m_apSavedTees)
 			delete pSavedTee;
+
+		for(auto &pSavedTeleTee : m_apSavedTeleTees)
+			delete pSavedTeleTee;
 
 		for(auto &pSavedTeam : m_apSavedTeams)
 			delete pSavedTeam;
@@ -773,7 +779,6 @@ void CGameContext::StartVote(const char *pDesc, const char *pCommand, const char
 {
 	// reset votes
 	m_VoteEnforce = VOTE_ENFORCE_UNKNOWN;
-	m_VoteEnforcer = -1;
 	for(auto &pPlayer : m_apPlayers)
 	{
 		if(pPlayer)
@@ -1204,7 +1209,7 @@ void CGameContext::OnTick()
 			}
 			else if(m_VoteEnforce == VOTE_ENFORCE_YES_ADMIN)
 			{
-				Console()->ExecuteLine(m_aVoteCommand, m_VoteEnforcer);
+				Console()->ExecuteLine(m_aVoteCommand, m_VoteCreator);
 				SendChat(-1, TEAM_ALL, "Vote passed enforced by authorized player", -1, FLAG_SIX);
 				EndVote();
 			}
@@ -1711,6 +1716,9 @@ void CGameContext::OnClientDrop(int ClientId, const char *pReason)
 
 	delete m_apSavedTees[ClientId];
 	m_apSavedTees[ClientId] = nullptr;
+
+	delete m_apSavedTeleTees[ClientId];
+	m_apSavedTeleTees[ClientId] = nullptr;
 
 	m_aTeamMapping[ClientId] = -1;
 
@@ -3208,12 +3216,19 @@ void CGameContext::ConHotReload(IConsole::IResult *pResult, void *pUserData)
 		if(!pSelf->GetPlayerChar(i))
 			continue;
 
+		CCharacter *pChar = pSelf->GetPlayerChar(i);
+
 		// Save the tee individually
 		pSelf->m_apSavedTees[i] = new CSaveTee();
-		pSelf->m_apSavedTees[i]->Save(pSelf->GetPlayerChar(i), false);
+		pSelf->m_apSavedTees[i]->Save(pChar, false);
+
+		if(pSelf->m_apPlayers[i])
+			pSelf->m_apSavedTeleTees[i] = new CSaveTee(pSelf->m_apPlayers[i]->m_LastTeleTee);
 
 		// Save the team state
 		pSelf->m_aTeamMapping[i] = pSelf->GetDDRaceTeam(i);
+		if(pSelf->m_aTeamMapping[i] == TEAM_SUPER)
+			pSelf->m_aTeamMapping[i] = pChar->m_TeamBeforeSuper;
 
 		if(pSelf->m_apSavedTeams[pSelf->m_aTeamMapping[i]])
 			continue;
@@ -3778,7 +3793,7 @@ void CGameContext::RegisterChatCommands()
 	Console()->Register("rescuemode", "?r['auto'|'manual']", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConRescueMode, this, "Sets one of the two rescue modes (auto or manual). Prints current mode if no arguments provided");
 	Console()->Register("tp", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConTeleTo, this, "Depending on the number of supplied arguments, teleport yourself to; (0.) where you are spectating or aiming; (1.) the specified player name");
 	Console()->Register("teleport", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConTeleTo, this, "Depending on the number of supplied arguments, teleport yourself to; (0.) where you are spectating or aiming; (1.) the specified player name");
-	Console()->Register("tpxy", "f[x] f[y]", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConTeleXY, this, "Teleport yourself to the specified coordinates. A tilde (~) can be used to denote your current position, e.g. '/tpxy ~1 ~' to teleport one tile to the right");
+	Console()->Register("tpxy", "s[x] s[y]", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConTeleXY, this, "Teleport yourself to the specified coordinates. A tilde (~) can be used to denote your current position, e.g. '/tpxy ~1 ~' to teleport one tile to the right");
 	Console()->Register("lasttp", "", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConLastTele, this, "Teleport yourself to the last location you teleported to");
 	Console()->Register("tc", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConTeleCursor, this, "Teleport yourself to player or to where you are spectating/or looking if no player name is given");
 	Console()->Register("telecursor", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConTeleCursor, this, "Teleport yourself to player or to where you are spectating/or looking if no player name is given");
@@ -4820,7 +4835,6 @@ void CGameContext::ForceVote(int EnforcerId, bool Success)
 		return;
 
 	m_VoteEnforce = Success ? CGameContext::VOTE_ENFORCE_YES_ADMIN : CGameContext::VOTE_ENFORCE_NO_ADMIN;
-	m_VoteEnforcer = EnforcerId;
 
 	char aBuf[256];
 	const char *pOption = Success ? "yes" : "no";

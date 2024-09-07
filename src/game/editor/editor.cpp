@@ -1121,23 +1121,23 @@ void CEditor::DoToolbarLayers(CUIRect ToolBar)
 		// zoom group
 		TB_Top.VSplitLeft(20.0f, &Button, &TB_Top);
 		static int s_ZoomOutButton = 0;
-		if(DoButton_FontIcon(&s_ZoomOutButton, FONT_ICON_MINUS, 0, &Button, 0, "[NumPad-] Zoom out", IGraphics::CORNER_L))
+		if(DoButton_FontIcon(&s_ZoomOutButton, FONT_ICON_MINUS, 0, &Button, 0, m_QuickActionZoomOut.Description(), IGraphics::CORNER_L))
 		{
-			MapView()->Zoom()->ChangeValue(50.0f);
+			m_QuickActionZoomOut.Call();
 		}
 
 		TB_Top.VSplitLeft(25.0f, &Button, &TB_Top);
 		static int s_ZoomNormalButton = 0;
-		if(DoButton_FontIcon(&s_ZoomNormalButton, FONT_ICON_MAGNIFYING_GLASS, 0, &Button, 0, "[NumPad*] Zoom to normal and remove editor offset", IGraphics::CORNER_NONE))
+		if(DoButton_FontIcon(&s_ZoomNormalButton, FONT_ICON_MAGNIFYING_GLASS, 0, &Button, 0, m_QuickActionResetZoom.Description(), IGraphics::CORNER_NONE))
 		{
-			MapView()->ResetZoom();
+			m_QuickActionResetZoom.Call();
 		}
 
 		TB_Top.VSplitLeft(20.0f, &Button, &TB_Top);
 		static int s_ZoomInButton = 0;
-		if(DoButton_FontIcon(&s_ZoomInButton, FONT_ICON_PLUS, 0, &Button, 0, "[NumPad+] Zoom in", IGraphics::CORNER_R))
+		if(DoButton_FontIcon(&s_ZoomInButton, FONT_ICON_PLUS, 0, &Button, 0, m_QuickActionZoomIn.Description(), IGraphics::CORNER_R))
 		{
-			MapView()->Zoom()->ChangeValue(-50.0f);
+			m_QuickActionZoomIn.Call();
 		}
 
 		TB_Top.VSplitLeft(5.0f, nullptr, &TB_Top);
@@ -1228,10 +1228,10 @@ void CEditor::DoToolbarLayers(CUIRect ToolBar)
 			static char s_PipetteButton;
 			ColorPalette.VSplitLeft(PipetteButtonWidth, &Button, &ColorPalette);
 			ColorPalette.VSplitLeft(Spacing, nullptr, &ColorPalette);
-			if(DoButton_FontIcon(&s_PipetteButton, FONT_ICON_EYE_DROPPER, m_ColorPipetteActive ? 1 : 0, &Button, 0, "[Ctrl+Shift+C] Color pipette. Pick a color from the screen by clicking on it.", IGraphics::CORNER_ALL) ||
+			if(DoButton_FontIcon(&s_PipetteButton, FONT_ICON_EYE_DROPPER, m_QuickActionPipette.Active(), &Button, 0, m_QuickActionPipette.Description(), IGraphics::CORNER_ALL) ||
 				(CLineInput::GetActiveInput() == nullptr && ModPressed && ShiftPressed && Input()->KeyPress(KEY_C)))
 			{
-				m_ColorPipetteActive = !m_ColorPipetteActive;
+				m_QuickActionPipette.Call();
 			}
 
 			// Palette color pickers
@@ -5743,30 +5743,25 @@ void CEditor::RenderModebar(CUIRect View)
 
 void CEditor::RenderStatusbar(CUIRect View, CUIRect *pTooltipRect)
 {
-	const bool ButtonsDisabled = m_ShowPicker;
-
 	CUIRect Button;
 	View.VSplitRight(100.0f, &View, &Button);
-	static int s_EnvelopeButton = 0;
-	if(DoButton_Editor(&s_EnvelopeButton, m_QuickActionEnvelopes.Label(), m_QuickActionEnvelopes.Color(), &Button, 0, m_QuickActionEnvelopes.Description()) == 1)
+	if(DoButton_Editor(&m_QuickActionEnvelopes, m_QuickActionEnvelopes.Label(), m_QuickActionEnvelopes.Color(), &Button, 0, m_QuickActionEnvelopes.Description()) == 1)
 	{
 		m_QuickActionEnvelopes.Call();
 	}
 
 	View.VSplitRight(10.0f, &View, nullptr);
 	View.VSplitRight(100.0f, &View, &Button);
-	static int s_SettingsButton = 0;
-	if(DoButton_Editor(&s_SettingsButton, "Server settings", ButtonsDisabled ? -1 : m_ActiveExtraEditor == EXTRAEDITOR_SERVER_SETTINGS, &Button, 0, "Toggles the server settings editor.") == 1)
+	if(DoButton_Editor(&m_QuickActionServerSettings, m_QuickActionServerSettings.Label(), m_QuickActionServerSettings.Color(), &Button, 0, m_QuickActionServerSettings.Description()) == 1)
 	{
-		m_ActiveExtraEditor = m_ActiveExtraEditor == EXTRAEDITOR_SERVER_SETTINGS ? EXTRAEDITOR_NONE : EXTRAEDITOR_SERVER_SETTINGS;
+		m_QuickActionServerSettings.Call();
 	}
 
 	View.VSplitRight(10.0f, &View, nullptr);
 	View.VSplitRight(100.0f, &View, &Button);
-	static int s_HistoryButton = 0;
-	if(DoButton_Editor(&s_HistoryButton, "History", ButtonsDisabled ? -1 : m_ActiveExtraEditor == EXTRAEDITOR_HISTORY, &Button, 0, "Toggles the editor history view.") == 1)
+	if(DoButton_Editor(&m_QuickActionHistory, m_QuickActionHistory.Label(), m_QuickActionHistory.Color(), &Button, 0, m_QuickActionHistory.Description()) == 1)
 	{
-		m_ActiveExtraEditor = m_ActiveExtraEditor == EXTRAEDITOR_HISTORY ? EXTRAEDITOR_NONE : EXTRAEDITOR_HISTORY;
+		m_QuickActionHistory.Call();
 	}
 
 	View.VSplitRight(10.0f, pTooltipRect, nullptr);
@@ -7700,7 +7695,7 @@ void CEditor::RenderMenubar(CUIRect MenuBar)
 	if(DoButton_Ex(&s_SettingsButton, "Settings", 0, &SettingsButton, 0, nullptr, IGraphics::CORNER_T, EditorFontSizes::MENU, TEXTALIGN_ML))
 	{
 		static SPopupMenuId s_PopupMenuEntitiesId;
-		Ui()->DoPopupMenu(&s_PopupMenuEntitiesId, SettingsButton.x, SettingsButton.y + SettingsButton.h - 1.0f, 200.0f, 92.0f, this, PopupMenuSettings, PopupProperties);
+		Ui()->DoPopupMenu(&s_PopupMenuEntitiesId, SettingsButton.x, SettingsButton.y + SettingsButton.h - 1.0f, 200.0f, 106.0f, this, PopupMenuSettings, PopupProperties);
 	}
 
 	CUIRect ChangedIndicator, Info, Help, Close;
@@ -8601,7 +8596,7 @@ void CEditor::HandleWriterFinishJobs()
 	Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "editor/save", aBuf);
 
 	// send rcon.. if we can
-	if(Client()->RconAuthed())
+	if(Client()->RconAuthed() && g_Config.m_EdAutoMapReload)
 	{
 		CServerInfo CurrentServerInfo;
 		Client()->GetServerInfo(&CurrentServerInfo);

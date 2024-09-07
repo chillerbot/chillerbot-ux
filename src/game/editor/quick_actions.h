@@ -128,13 +128,37 @@ REGISTER_QUICK_ACTION(
 	DEFAULT_BTN,
 	"Adds a new group.")
 REGISTER_QUICK_ACTION(
+	ResetZoom,
+	"Reset Zoom",
+	[&]() { MapView()->ResetZoom(); },
+	ALWAYS_FALSE,
+	ALWAYS_FALSE,
+	DEFAULT_BTN,
+	"[Numpad*] Zoom to normal and remove editor offset.")
+REGISTER_QUICK_ACTION(
+	ZoomOut,
+	"Zoom Out",
+	[&]() { MapView()->Zoom()->ChangeValue(50.0f); },
+	ALWAYS_FALSE,
+	ALWAYS_FALSE,
+	DEFAULT_BTN,
+	"[Numpad-] Zoom out.")
+REGISTER_QUICK_ACTION(
+	ZoomIn,
+	"Zoom In",
+	[&]() { MapView()->Zoom()->ChangeValue(-50.0f); },
+	ALWAYS_FALSE,
+	ALWAYS_FALSE,
+	DEFAULT_BTN,
+	"[Numpad+] Zoom in.")
+REGISTER_QUICK_ACTION(
 	Refocus,
 	"Refocus",
 	[&]() { MapView()->Focus(); },
 	ALWAYS_FALSE,
 	ALWAYS_FALSE,
 	DEFAULT_BTN,
-	"[HOME] Restore map focus.")
+	"[Home] Restore map focus.")
 REGISTER_QUICK_ACTION(
 	Proof,
 	"Proof",
@@ -179,6 +203,22 @@ REGISTER_QUICK_ACTION(
 	ALWAYS_FALSE,
 	[&]() -> int { return m_ShowPicker ? -1 : m_ActiveExtraEditor == EXTRAEDITOR_ENVELOPES; },
 	"Toggles the envelope editor.")
+REGISTER_QUICK_ACTION(
+	ServerSettings,
+	"Server settings",
+	[&]() { m_ActiveExtraEditor = m_ActiveExtraEditor == EXTRAEDITOR_SERVER_SETTINGS ? EXTRAEDITOR_NONE : EXTRAEDITOR_SERVER_SETTINGS; },
+	ALWAYS_FALSE,
+	ALWAYS_FALSE,
+	[&]() -> int { return m_ShowPicker ? -1 : m_ActiveExtraEditor == EXTRAEDITOR_SERVER_SETTINGS; },
+	"Toggles the server settings editor.")
+REGISTER_QUICK_ACTION(
+	History,
+	"History",
+	[&]() { m_ActiveExtraEditor = m_ActiveExtraEditor == EXTRAEDITOR_HISTORY ? EXTRAEDITOR_NONE : EXTRAEDITOR_HISTORY; },
+	ALWAYS_FALSE,
+	ALWAYS_FALSE,
+	[&]() -> int { return m_ShowPicker ? -1 : m_ActiveExtraEditor == EXTRAEDITOR_HISTORY; },
+	"Toggles the editor history view.")
 REGISTER_QUICK_ACTION(
 	AddImage,
 	"Add Image",
@@ -228,6 +268,14 @@ REGISTER_QUICK_ACTION(
 	[&]() -> bool { return m_ShowTileInfo == SHOW_TILE_HEXADECIMAL; },
 	DEFAULT_BTN,
 	"[Ctrl+Shift+I] Show tile information in hexadecimal.")
+REGISTER_QUICK_ACTION(
+	Pipette,
+	"Pipette",
+	[&]() { m_ColorPipetteActive = !m_ColorPipetteActive; },
+	ALWAYS_FALSE,
+	[&]() -> bool { return m_ColorPipetteActive; },
+	DEFAULT_BTN,
+	"[Ctrl+Shift+C] Color pipette. Pick a color from the screen by clicking on it.")
 
 #undef ALWAYS_FALSE
 #undef DEFAULT_BTN

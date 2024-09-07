@@ -362,7 +362,7 @@ public:
 
 	int UnpackAndValidateSnapshot(CSnapshot *pFrom, CSnapshot *pTo);
 
-	void ResetMapDownload();
+	void ResetMapDownload(bool ResetActive);
 	void FinishMapDownload();
 
 	void RequestDDNetInfo() override;
