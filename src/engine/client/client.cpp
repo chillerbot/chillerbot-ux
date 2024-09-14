@@ -806,6 +806,8 @@ void CClient::DummyDisconnect(const char *pReason)
 	m_aReceivedSnapshots[1] = 0;
 	m_DummyConnected = false;
 	m_DummyConnecting = false;
+	m_DummyReconnectOnReload = false;
+	m_DummyDeactivateOnReconnect = false;
 	GameClient()->OnDummyDisconnect();
 }
 
@@ -1564,7 +1566,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 				}
 			}
 
-			if(m_DummyConnected)
+			if(m_DummyConnected && !m_DummyReconnectOnReload)
 			{
 				DummyDisconnect(0);
 			}
@@ -1693,9 +1695,25 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 				}
 			}
 		}
+		else if(Conn == CONN_MAIN && (pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 && Msg == NETMSG_MAP_RELOAD)
+		{
+			if(m_DummyConnected)
+			{
+				m_DummyReconnectOnReload = true;
+				m_DummyDeactivateOnReconnect = g_Config.m_ClDummy == 0;
+				g_Config.m_ClDummy = 0;
+			}
+			else
+				m_DummyDeactivateOnReconnect = false;
+		}
 		else if(Conn == CONN_MAIN && (pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 && Msg == NETMSG_CON_READY)
 		{
 			GameClient()->OnConnected();
+			if(m_DummyReconnectOnReload)
+			{
+				m_DummySendConnInfo = true;
+				m_DummyReconnectOnReload = false;
+			}
 		}
 		else if(Conn == CONN_DUMMY && Msg == NETMSG_CON_READY)
 		{
@@ -1703,7 +1721,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 			m_DummyConnecting = false;
 			g_Config.m_ClDummy = 1;
 			Rcon("crashmeplx");
-			if(m_aRconAuthed[0])
+			if(m_aRconAuthed[0] && !m_aRconAuthed[1])
 				RconAuth(m_aRconUsername, m_aRconPassword);
 		}
 		else if(Msg == NETMSG_PING)
@@ -2788,6 +2806,16 @@ void CClient::Update()
 				m_CurrentServerCurrentPingTime = NowPing;
 				m_CurrentServerNextPingTime = NowPing + 600 * Freq; // ping every 10 minutes
 			}
+		}
+
+		if(m_DummyDeactivateOnReconnect && g_Config.m_ClDummy == 1)
+		{
+			m_DummyDeactivateOnReconnect = false;
+			g_Config.m_ClDummy = 0;
+		}
+		else if(!m_DummyConnected && m_DummyDeactivateOnReconnect)
+		{
+			m_DummyDeactivateOnReconnect = false;
 		}
 
 		m_LastDummy = (bool)g_Config.m_ClDummy;
