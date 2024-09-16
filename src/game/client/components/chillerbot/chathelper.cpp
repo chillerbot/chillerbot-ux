@@ -123,20 +123,21 @@ void CChatHelper::ConReplyToLastPing(IConsole::IResult *pResult, void *pUserData
 	char aName[32];
 	char aClan[32];
 	char aMessage[2048];
-	aMessage[0] = 'x';
+	aMessage[0] = 'x'; // poor mans "do while" loop xd
+	int Team = 0;
 	// pop message stack until reached the end
 	// abort as soon as a response is found
 	// this makes sure we always respond to something
 	// given there is any respondable message is still in the stack
 	while(aMessage[0])
 	{
-		pSelf->PopPing(aName, sizeof(aName), aClan, sizeof(aClan), aMessage, sizeof(aMessage));
+		pSelf->PopPing(aName, sizeof(aName), aClan, sizeof(aClan), aMessage, sizeof(aMessage), &Team);
 		CReplyToPing ReplyToPing = CReplyToPing(pSelf, aName, aClan, aMessage, aResponse, sizeof(aResponse));
 		if(ReplyToPing.Reply())
 		{
 			if(aResponse[0])
 			{
-				pSelf->m_pClient->m_Chat.SendChat(0, aResponse);
+				pSelf->SayBuffer(aResponse, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL);
 				break;
 			}
 		}
@@ -317,7 +318,7 @@ void CChatHelper::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	if(!str_comp(m_aLastPings[0].m_aMessage, pMsg))
 		return;
 	char aBuf[2048];
-	PushPing(aName, m_pClient->m_aClients[ClientId].m_aClan, pMsg);
+	PushPing(aName, m_pClient->m_aClients[ClientId].m_aClan, pMsg, Team);
 	int64_t AfkTill = m_pChillerBot->GetAfkTime();
 	if(m_pChillerBot->IsAfk())
 	{

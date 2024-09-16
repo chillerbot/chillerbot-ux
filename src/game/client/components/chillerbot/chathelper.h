@@ -83,16 +83,24 @@ class CChatHelper : public CComponent
 
 	struct CLastPing
 	{
-		CLastPing()
+		void Reset()
 		{
 			m_aName[0] = '\0';
 			m_aClan[0] = '\0';
 			m_aMessage[0] = '\0';
 			m_ReciveTime = 0;
+			m_Team = 0;
 		}
+
+		CLastPing()
+		{
+			Reset();
+		}
+
 		char m_aName[32];
 		char m_aClan[32];
 		char m_aMessage[2048];
+		int m_Team;
 		int64_t m_ReciveTime;
 	};
 
@@ -110,7 +118,7 @@ class CChatHelper : public CComponent
 	*/
 	CLastPing m_aLastPings[PING_QUEUE_SIZE];
 
-	void PushPing(const char *pName, const char *pClan, const char *pMessage)
+	void PushPing(const char *pName, const char *pClan, const char *pMessage, int Team)
 	{
 		// yikers is this copying a shitton of data by value?
 		for(int i = PING_QUEUE_SIZE - 1; i > 0; i--)
@@ -118,13 +126,15 @@ class CChatHelper : public CComponent
 		str_copy(m_aLastPings[0].m_aName, pName, sizeof(m_aLastPings[0].m_aName));
 		str_copy(m_aLastPings[0].m_aClan, pClan, sizeof(m_aLastPings[0].m_aClan));
 		str_copy(m_aLastPings[0].m_aMessage, pMessage, sizeof(m_aLastPings[0].m_aMessage));
+		m_aLastPings[0].m_Team = Team;
 		m_aLastPings[0].m_ReciveTime = time_get();
 	}
-	void PopPing(char *pName, int SizeOfName, char *pClan, int SizeOfClan, char *pMessage, int SizeOfMessage)
+	void PopPing(char *pName, int SizeOfName, char *pClan, int SizeOfClan, char *pMessage, int SizeOfMessage, int *pTeam)
 	{
 		str_copy(pName, m_aLastPings[0].m_aName, SizeOfName);
 		str_copy(pClan, m_aLastPings[0].m_aClan, SizeOfClan);
 		str_copy(pMessage, m_aLastPings[0].m_aMessage, SizeOfMessage);
+		*pTeam = m_aLastPings[0].m_Team;
 		m_aLastPings[PING_QUEUE_SIZE - 1].m_aName[0] = '\0';
 		m_aLastPings[PING_QUEUE_SIZE - 1].m_aClan[0] = '\0';
 		m_aLastPings[PING_QUEUE_SIZE - 1].m_aMessage[0] = '\0';
