@@ -56,8 +56,16 @@ public:
 			Sixup.Reset();
 	}
 
-	IGraphics::CTextureHandle m_Texture;
-	IGraphics::CTextureHandle m_PlayerPicTexture;
+	IGraphics::CTextureHandle m_PlayerPicTexture; // chillerbot-ux
+
+	void Apply(const CSkin *pSkin)
+	{
+		m_OriginalRenderSkin = pSkin->m_OriginalSkin;
+		m_ColorableRenderSkin = pSkin->m_ColorableSkin;
+		m_BloodColor = pSkin->m_BloodColor;
+		m_SkinMetrics = pSkin->m_Metrics;
+	}
+
 	CSkin::SSkinTextures m_OriginalRenderSkin;
 	CSkin::SSkinTextures m_ColorableRenderSkin;
 
