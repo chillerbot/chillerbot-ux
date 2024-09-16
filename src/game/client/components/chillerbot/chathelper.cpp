@@ -171,13 +171,13 @@ void CChatHelper::ConDeleteChatFilter(IConsole::IResult *pResult, void *pUserDat
 
 bool CChatHelper::LineShouldHighlight(const char *pLine, const char *pName)
 {
-	const char *pHL = str_find_nocase(pLine, pName);
+	const char *pHL = str_utf8_find_nocase(pLine, pName);
 
 	if(pHL)
 	{
 		int Length = str_length(pName);
 
-		if((pLine == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '?' || pHL[Length] == ':'))
+		if(Length > 0 && (pLine == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '?' || pHL[Length] == ':'))
 			return true;
 	}
 
