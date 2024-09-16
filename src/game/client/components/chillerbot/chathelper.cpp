@@ -137,7 +137,8 @@ void CChatHelper::ConReplyToLastPing(IConsole::IResult *pResult, void *pUserData
 		{
 			if(aResponse[0])
 			{
-				pSelf->SayBuffer(aResponse, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL);
+				pSelf->m_pClient->m_Chat.SendChat(Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL, aResponse);
+				// pSelf->SayBuffer(aResponse, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL);
 				break;
 			}
 		}
