@@ -53,13 +53,13 @@ void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	if(Num == 0)
 	{
 		str_format(aBuf, sizeof(aBuf), "Error: %s missing token (usage: '/whisper name token command')", aName);
-		m_pClient->m_ChatHelper.SayBuffer(aBuf);
+		m_pClient->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
 		return;
 	}
 	else if(Num == 1 && IsFDDRace)
 	{
 		str_format(aBuf, sizeof(aBuf), "Error: %s missing command (usage: '/whisper name token command')", aName);
-		m_pClient->m_ChatHelper.SayBuffer(aBuf);
+		m_pClient->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
 		return;
 	}
 	if(!str_comp(aMsg[IsFDDRace ? 1 : 0], g_Config.m_ClRemoteControlTokenAdmin))
@@ -78,7 +78,7 @@ void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 			sizeof(aBuf),
 			"Error: %s failed to remote control (invalid token)",
 			aName);
-		m_pClient->m_ChatHelper.SayBuffer(aBuf);
+		m_pClient->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
 		return;
 	}
 }

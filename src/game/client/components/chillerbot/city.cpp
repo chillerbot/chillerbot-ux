@@ -9,6 +9,7 @@
 #include <engine/serverbrowser.h>
 
 #include "chillerbotux.h"
+#include "game/client/components/chillerbot/chathelper.h"
 
 #include "city.h"
 
@@ -221,7 +222,7 @@ void CCityHelper::OnServerMsg(const char *pMsg)
 	}
 	if(!str_comp(pMsg, "You don't have enough money in your wallet"))
 	{
-		m_pClient->m_ChatHelper.SayBuffer("/stats", true);
+		m_pClient->m_ChatHelper.SayBuffer("/stats", CChatHelper::BUFFER_CHAT_ALL, true);
 		return;
 	}
 	if(!str_comp(pMsg, "No such command: money."))

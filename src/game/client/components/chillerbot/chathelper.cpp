@@ -9,6 +9,7 @@
 #include <game/client/components/chat.h>
 #include <game/client/components/chillerbot/chillerbotux.h>
 #include <game/client/gameclient.h>
+#include <game/generated/protocol.h>
 
 #include "chathelper.h"
 
@@ -44,7 +45,7 @@ void CChatHelper::OnInit()
 	m_NextGreetClear = 0;
 	m_NextMessageSend = 0;
 	m_aLastAfkPing[0] = '\0';
-	mem_zero(m_aSendBuffer, sizeof(m_aSendBuffer));
+	mem_zero(m_aaaSendBuffer, sizeof(m_aaaSendBuffer));
 }
 
 void CChatHelper::OnRender()
@@ -71,24 +72,28 @@ void CChatHelper::OnRender()
 		}
 		if(m_NextMessageSend < TimeNow)
 		{
-			if(m_aSendBuffer[0][0])
+			for(int Team = 0; Team < NUM_BUFFERS; Team++)
 			{
-				m_pClient->m_Chat.SendChat(0, m_aSendBuffer[0]);
-				for(int i = 0; i < MAX_CHAT_BUFFER_LEN - 1; i++)
-					str_copy(m_aSendBuffer[i], m_aSendBuffer[i + 1], sizeof(m_aSendBuffer[i]));
-				m_aSendBuffer[MAX_CHAT_BUFFER_LEN - 1][0] = '\0';
-				m_NextMessageSend = TimeNow + time_freq() * 5;
+				if(m_aaaSendBuffer[Team][0][0])
+				{
+					// the BUFFER_ enum overlaps with 0 for public chat and 1 for team chat chat.cpp api
+					m_pClient->m_Chat.SendChat(Team, m_aaaSendBuffer[Team][0]);
+					for(int i = 0; i < MAX_CHAT_BUFFER_LEN - 1; i++)
+						str_copy(m_aaaSendBuffer[Team][i], m_aaaSendBuffer[Team][i + 1], sizeof(m_aaaSendBuffer[Team][i]));
+					m_aaaSendBuffer[Team][MAX_CHAT_BUFFER_LEN - 1][0] = '\0';
+					m_NextMessageSend = TimeNow + time_freq() * 5;
+				}
 			}
 		}
 	}
 }
 
-void CChatHelper::SayBuffer(const char *pMsg, bool StayAfk)
+void CChatHelper::SayBuffer(const char *pMsg, int Team, bool StayAfk)
 {
 	if(StayAfk)
 		m_pClient->m_ChillerBotUX.m_IgnoreChatAfk++;
 	// append at end
-	for(auto &Buf : m_aSendBuffer)
+	for(auto &Buf : m_aaaSendBuffer[Team])
 	{
 		if(Buf[0])
 			continue;
@@ -97,8 +102,8 @@ void CChatHelper::SayBuffer(const char *pMsg, bool StayAfk)
 	}
 	// full -> shift buffer and overwrite oldest element (index 0)
 	for(int i = 0; i < MAX_CHAT_BUFFER_LEN - 1; i++)
-		str_copy(m_aSendBuffer[i], m_aSendBuffer[i + 1], sizeof(m_aSendBuffer[i]));
-	str_copy(m_aSendBuffer[MAX_CHAT_BUFFER_LEN - 1], pMsg, sizeof(m_aSendBuffer[MAX_CHAT_BUFFER_LEN - 1]));
+		str_copy(m_aaaSendBuffer[Team][i], m_aaaSendBuffer[Team][i + 1], sizeof(m_aaaSendBuffer[Team][i]));
+	str_copy(m_aaaSendBuffer[Team][MAX_CHAT_BUFFER_LEN - 1], pMsg, sizeof(m_aaaSendBuffer[Team][MAX_CHAT_BUFFER_LEN - 1]));
 }
 
 void CChatHelper::OnConsoleInit()
@@ -331,11 +336,11 @@ void CChatHelper::OnChatMessage(int ClientId, int Team, const char *pMsg)
 		{
 			char aEscape[256];
 			str_format(aEscape, sizeof(aEscape), ".%s", aBuf);
-			SayBuffer(aEscape, true);
+			SayBuffer(aEscape, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL, true);
 		}
 		else
 		{
-			SayBuffer(aBuf, true);
+			SayBuffer(aBuf, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL, true);
 		}
 		str_format(m_aLastAfkPing, sizeof(m_aLastAfkPing), "%s: %s", m_pClient->m_aClients[ClientId].m_aName, pMsg);
 		m_pChillerBot->SetComponentNoteLong("afk", m_aLastAfkPing);
@@ -352,7 +357,7 @@ void CChatHelper::OnChatMessage(int ClientId, int Team, const char *pMsg)
 		if(pGraphics && !pGraphics->WindowActive() && Graphics())
 		{
 			str_format(aBuf, sizeof(aBuf), "%s: I am currently tabbed out", aName);
-			SayBuffer(aBuf, true);
+			SayBuffer(aBuf, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL, true);
 			return;
 		}
 	}
@@ -497,13 +502,13 @@ bool CChatHelper::FilterChat(int ClientId, int Team, const char *pLine)
 			if(ReplyToPing.Reply())
 			{
 				if(aResponse[0])
-					SayBuffer(aResponse);
+					SayBuffer(aResponse, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL);
 			}
 			else
 			{
 				char aBuf[512];
 				str_format(aBuf, sizeof(aBuf), "%s your message got spam filtered", aName);
-				SayBuffer(aBuf);
+				SayBuffer(aBuf, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL);
 			}
 			// TODO: do we need PopPing() here? Can't we omit the pLine parameter then from this func?
 			// who is called first FilterChat() or OnChatMessage()

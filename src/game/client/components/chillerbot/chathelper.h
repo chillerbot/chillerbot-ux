@@ -132,10 +132,20 @@ class CChatHelper : public CComponent
 			m_aLastPings[i] = m_aLastPings[i + 1];
 	}
 
+	char m_aaChatFilter[MAX_CHAT_FILTERS][MAX_CHAT_FILTER_LEN];
 	char m_aGreetName[32];
 	char m_aLastAfkPing[2048];
-	char m_aSendBuffer[MAX_CHAT_BUFFER_LEN][2048];
-	char m_aaChatFilter[MAX_CHAT_FILTERS][MAX_CHAT_FILTER_LEN];
+
+public:
+	enum
+	{
+		BUFFER_CHAT_ALL,
+		BUFFER_CHAT_TEAM,
+		NUM_BUFFERS,
+	};
+
+private:
+	char m_aaaSendBuffer[NUM_BUFFERS][MAX_CHAT_BUFFER_LEN][2048];
 
 	void DoGreet();
 	void SayFormat(const char *pMsg);
@@ -151,10 +161,10 @@ class CChatHelper : public CComponent
 
 	void OnChatMessage(int ClientId, int Team, const char *pMsg);
 
-	virtual void OnRender() override;
-	virtual void OnMessage(int MsgType, void *pRawMsg) override;
-	virtual void OnConsoleInit() override;
-	virtual void OnInit() override;
+	void OnRender() override;
+	void OnMessage(int MsgType, void *pRawMsg) override;
+	void OnConsoleInit() override;
+	void OnInit() override;
 
 	static void ConReplyToLastPing(IConsole::IResult *pResult, void *pUserData);
 	static void ConSayHi(IConsole::IResult *pResult, void *pUserData);
@@ -165,15 +175,16 @@ class CChatHelper : public CComponent
 
 public:
 	CChatHelper();
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 	bool LineShouldHighlight(const char *pLine, const char *pName);
-	void RegisterCommand(const char *pName, const char *pParams, int flags, const char *pHelp);
+	void RegisterCommand(const char *pName, const char *pParams, int Flags, const char *pHelp);
 	int Get128Name(const char *pMsg, char *pName);
 	const char *GetGreetName() { return m_aGreetName; }
 	const char *LastAfkPingMessage() { return m_aLastAfkPing; }
 	void ClearLastAfkPingMessage() { m_aLastAfkPing[0] = '\0'; }
 	bool HowToJoinClan(const char *pClan, char *pResponse, int SizeOfResponse);
 	CLangParser &LangParser() { return m_LangParser; }
+
 	/*
 		Function: ChatCommandGetROffset
 
@@ -202,9 +213,10 @@ public:
 			Adds message to spam safe queue.
 
 		Parameters:
+			Team - has to be one of the buffer enums BUFFER_CHAT_ALL or BUFFER_CHAT_TEAM
 			StayAfk - Do not deactivate afk mode.
 	*/
-	void SayBuffer(const char *pMsg, bool StayAfk = false);
+	void SayBuffer(const char *pMsg, int Team, bool StayAfk = false);
 	bool FilterChat(int ClientId, int Team, const char *pLine);
 	bool OnAutocomplete(CLineInput *pInput, const char *pCompletionBuffer, int PlaceholderOffset, int PlaceholderLength, int *pOldChatStringLength, int *pCompletionChosen, bool ReverseTAB);
 };
