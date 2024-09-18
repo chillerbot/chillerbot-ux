@@ -21,10 +21,13 @@ private:
 	void OnInit() override;
 	void OnConsoleInit() override;
 
+	void LoadPasswords();
+
 	static void ConChillpw(IConsole::IResult *pResult, void *pUserData);
 
 	void ConStatus();
 	void ConDumpHost();
+	void ConReload();
 
 	bool AuthChatAccount(int Dummy, int Offset);
 	void SavePassword(const char *pServer, const char *pPassword);

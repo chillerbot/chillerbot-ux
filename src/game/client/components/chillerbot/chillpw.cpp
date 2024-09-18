@@ -35,7 +35,12 @@ void CChillPw::OnMapLoad()
 
 void CChillPw::OnConsoleInit()
 {
-	Console()->Register("chillpw", "?s[status|dump_host]", CFGFLAG_CLIENT, ConChillpw, this, "");
+	Console()->Register("chillpw", "?s[status|dump_host|reload]", CFGFLAG_CLIENT, ConChillpw, this, "");
+}
+
+void CChillPw::ConReload()
+{
+	LoadPasswords();
 }
 
 void CChillPw::ConStatus()
@@ -135,6 +140,8 @@ void CChillPw::ConChillpw(IConsole::IResult *pResult, void *pUserData)
 
 	if(!str_comp_nocase(pResult->GetString(0), "dump_host"))
 		pSelf->ConDumpHost();
+	else if(!str_comp_nocase(pResult->GetString(0), "reload"))
+		pSelf->ConReload();
 	else
 		pSelf->ConStatus();
 }
@@ -166,7 +173,7 @@ void CChillPw::OnRender()
 	}
 }
 
-void CChillPw::OnInit()
+void CChillPw::LoadPasswords()
 {
 	m_NumLoadedPasswords = 0;
 	IOHANDLE File = Storage()->OpenFile(g_Config.m_ClPasswordFile, IOFLAG_READ, IStorage::TYPE_ALL);
@@ -186,6 +193,11 @@ void CChillPw::OnInit()
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", aBuf);
 		return;
 	}
+
+	for(char *aPassword : m_aaPasswords)
+		aPassword[0] = '\0';
+	for(char *aHostname : m_aaHostnames)
+		aHostname[0] = '\0';
 
 	const char *pLine;
 	while((pLine = LineReader.Get()) && Line < MAX_PASSWORDS)
@@ -224,6 +236,11 @@ void CChillPw::OnInit()
 	m_NumLoadedPasswords = Line;
 	str_format(aBuf, sizeof(aBuf), "loaded %d passwords from '%s'", m_NumLoadedPasswords, g_Config.m_ClPasswordFile);
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", aBuf);
+}
+
+void CChillPw::OnInit()
+{
+	LoadPasswords();
 }
 
 void CChillPw::SavePassword(const char *pServer, const char *pPassword)
