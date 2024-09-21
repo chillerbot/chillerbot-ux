@@ -1008,6 +1008,7 @@ endif()
 ########################################################################
 
 set(EXPECTED_DATA
+  announcement.txt
   arrow.png
   assets/entities/comfort/ddnet.png
   assets/entities/license.txt
