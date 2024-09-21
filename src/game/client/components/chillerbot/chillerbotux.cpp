@@ -35,8 +35,11 @@ void CChillerBotUX::OnRender()
 		{
 			if(m_NextHeartbeat < time_get())
 			{
-				m_NextHeartbeat = time_get() + time_freq() * 60;
-				m_HeartbeatState = STATE_WANTREFRESH;
+				if(m_HeartbeatState == STATE_DONE)
+				{
+					m_NextHeartbeat = time_get() + time_freq() * 60;
+					m_HeartbeatState = STATE_WANTREFRESH;
+				}
 			}
 			if(m_HeartbeatState == STATE_WANTREFRESH)
 			{

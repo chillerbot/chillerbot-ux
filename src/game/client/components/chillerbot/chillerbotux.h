@@ -23,7 +23,7 @@ class CChillerBotUX : public CComponent
 		STATE_WANTREFRESH,
 		STATE_REFRESHING,
 	};
-	int m_HeartbeatState;
+	int m_HeartbeatState = STATE_DONE;
 	int m_PlaytimeMinutes;
 	std::shared_ptr<CHttpRequest> m_pAliveGet = nullptr;
 	int64_t m_NextHeartbeat;
