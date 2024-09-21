@@ -60,7 +60,7 @@ void CChillerBotUX::OnRender()
 			}
 			else if(m_HeartbeatState == STATE_REFRESHING)
 			{
-				if(m_pAliveGet->State() == EHttpState::QUEUED || m_pAliveGet->State() == EHttpState::RUNNING)
+				if(!m_pAliveGet->Done())
 				{
 					return;
 				}
