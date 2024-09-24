@@ -1,7 +1,7 @@
 #include <engine/shared/config.h>
 #include <game/editor/editor.h>
 
-void CEditor::BrushDrawChiller(const std::shared_ptr<CLayerTiles> &pLayer, const std::shared_ptr<CLayerTiles> &pBrush, float wx, float wy)
+void CEditor::BrushDrawChiller(const std::shared_ptr<CLayerTiles> &pLayer, const std::shared_ptr<CLayerTiles> &pBrush, vec2 WorldPos)
 {
 	if(!g_Config.m_ClMineTeeEditor)
 		return;
@@ -14,8 +14,8 @@ void CEditor::BrushDrawChiller(const std::shared_ptr<CLayerTiles> &pLayer, const
 	int Group = m_SelectedGroup;
 	int Layer = m_vSelectedLayers[0];
 
-	int sx = pLayer->ConvertX(wx);
-	int sy = pLayer->ConvertY(wy);
+	int sx = pLayer->ConvertX(WorldPos.x);
+	int sy = pLayer->ConvertY(WorldPos.y);
 
 	for(int y = 0; y < pBrush->m_Height; y++)
 	{
