@@ -55,6 +55,16 @@ Here some screenshots of the things it can reply to. If there was no message it 
 ![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/why_kill_me.png)
 ![reply](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_replies/watch_me.gif)
 
+### Run commands on vote start
+
+With the ``cl_run_on_vote_start`` you can run any console command when a vote is started.
+
+
+Examples:
+
+- ``cl_run_on_vote_start say "f4 far"``
+- ``cl_run_on_vote_start say "/save secret_save_code"``
+
 ### Password manager
 
 Go to your teeworlds/chillerbot directory and create the file ``chillpw_secret.txt``
