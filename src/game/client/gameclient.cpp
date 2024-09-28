@@ -2580,14 +2580,11 @@ void CGameClient::CClientData::CSixup::Reset()
 	}
 }
 
-void CGameClient::SendSwitchTeam(int Team)
+void CGameClient::SendSwitchTeam(int Team) const
 {
 	CNetMsg_Cl_SetTeam Msg;
 	Msg.m_Team = Team;
 	Client()->SendPackMsgActive(&Msg, MSGFLAG_VITAL);
-
-	if(Team != TEAM_SPECTATORS)
-		m_Camera.OnReset();
 }
 
 // TODO: move this to chillerbot-ux component
