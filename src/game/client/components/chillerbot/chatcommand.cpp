@@ -71,7 +71,7 @@ bool CChatCommand::ParseChatCmd(char Prefix, int ClientId, int Team, const char 
 	aCmd[i] = '\0';
 	int ROffset = m_pClient->m_ChatHelper.ChatCommandGetROffset(aCmd);
 
-	// max 8 args of 128 len each
+	// max 16 args of 128 len each
 	const int MaxArgs = 16;
 	char **ppArgs = new char *[MaxArgs];
 	for(int x = 0; x < MaxArgs; ++x)
@@ -141,7 +141,7 @@ bool CChatCommand::ParseChatCmd(char Prefix, int ClientId, int Team, const char 
 	// str_format(aBuf, sizeof(aBuf), "got cmd '%s' with %d args: %s", aCmd, NumArgs, aArgsStr);
 	// Say(aBuf);
 	bool match = OnChatCmd(Prefix, ClientId, Team, aCmd, NumArgs, (const char **)ppArgs, aRawArgLine);
-	for(int x = 0; x < 8; ++x)
+	for(int x = 0; x < MaxArgs; ++x)
 		delete[] ppArgs[x];
 	delete[] ppArgs;
 	return match;
