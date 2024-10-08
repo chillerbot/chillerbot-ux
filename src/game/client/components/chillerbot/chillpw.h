@@ -1,10 +1,10 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_CHILLPW_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_CHILLPW_H
 
-#include "engine/shared/protocol.h"
 #include <engine/client.h>
 #include <engine/console.h>
 #include <engine/shared/config.h>
+#include <engine/shared/protocol.h>
 #include <game/client/component.h>
 
 #define MAX_PASSWORDS 1024
