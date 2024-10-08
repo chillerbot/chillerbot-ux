@@ -176,10 +176,14 @@ void CChillPw::OnRender()
 			continue;
 
 		if(AuthChatAccount(i, m_LoginOffset[i] + 1))
+		{
 			m_ChatDelay[i] = time_get() + time_freq() * 2;
+			m_LoginOffset[i]++;
+		}
 		else
+		{
 			m_ChatDelay[i] = 0;
-		m_LoginOffset[i]++;
+		}
 	}
 }
 
