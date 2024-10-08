@@ -1,6 +1,7 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_CHILLPW_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_CHILLPW_H
 
+#include "engine/shared/protocol.h"
 #include <engine/client.h>
 #include <engine/console.h>
 #include <engine/shared/config.h>
@@ -45,13 +46,15 @@ private:
 	int m_aDummy[MAX_PASSWORDS];
 	char m_aaPasswords[MAX_PASSWORDS][MAX_PASSWORD_LENGTH];
 	char m_aaHostnames[MAX_PASSWORDS][MAX_HOSTNAME_LENGTH];
-	char m_aCurrentServerAddr[64];
+	int m_NumAddrs = 0;
+	char m_aaCurrentServerAddrs[MAX_SERVER_ADDRESSES][64];
 	/*
-		m_aCurrentServerAddrNoPort
+		m_aaCurrentServerAddrsNoPort
 
 		Cut off first occurence of ":" so only supporting ipv4
 	*/
-	char m_aCurrentServerAddrNoPort[64];
+	char m_aaCurrentServerAddrsNoPort[MAX_SERVER_ADDRESSES][64];
+	bool IsCurrentAddr(const char *pHost);
 	int64_t m_ChatDelay[NUM_DUMMIES];
 	int m_LoginOffset[NUM_DUMMIES];
 	int m_NumLoadedPasswords;

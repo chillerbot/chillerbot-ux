@@ -1,7 +1,9 @@
 // ChillerDragon 2020 - chillerbot ux
 
 #include <base/system.h>
+#include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
+#include <engine/shared/protocol.h>
 #include <game/client/components/chat.h>
 #include <game/client/gameclient.h>
 #include <game/generated/protocol.h>
@@ -15,22 +17,72 @@ void CChillPw::OnMapLoad()
 	m_ChatDelay[0] = time_get() + time_freq() * 2;
 	m_ChatDelay[1] = time_get() + time_freq() * 2;
 
-	const char *pAddrSkipProtocol = g_Config.m_UiServerAddress;
-	if(str_startswith(pAddrSkipProtocol, "tw-0.7+udp://"))
-		pAddrSkipProtocol += str_length("tw-0.7+udp://");
-	if(str_startswith(pAddrSkipProtocol, "tw-0.6+udp://"))
-		pAddrSkipProtocol += str_length("tw-0.6+udp://");
+	mem_zero(m_aaCurrentServerAddrs, sizeof(m_aaCurrentServerAddrs));
+	mem_zero(m_aaCurrentServerAddrsNoPort, sizeof(m_aaCurrentServerAddrsNoPort));
 
-	str_copy(m_aCurrentServerAddr, pAddrSkipProtocol, sizeof(m_aCurrentServerAddr));
-	str_copy(m_aCurrentServerAddrNoPort, pAddrSkipProtocol, sizeof(m_aCurrentServerAddrNoPort));
-	for(int i = 0; i < str_length(m_aCurrentServerAddr); i++)
+	const char *pNextAddr = g_Config.m_UiServerAddress;
+	char aBuffer[128];
+	m_NumAddrs = 0;
+	while((pNextAddr = str_next_token(pNextAddr, ",", aBuffer, sizeof(aBuffer))))
 	{
-		if(m_aCurrentServerAddr[i] == ':')
+		const char *pAddrSkipProtocol = aBuffer;
+		if(str_startswith(pAddrSkipProtocol, "tw-0.7+udp://"))
+			pAddrSkipProtocol += str_length("tw-0.7+udp://");
+		if(str_startswith(pAddrSkipProtocol, "tw-0.6+udp://"))
+			pAddrSkipProtocol += str_length("tw-0.6+udp://");
+
+		dbg_msg("chillpw", "addr: %s", pAddrSkipProtocol);
+
+		str_copy(m_aaCurrentServerAddrs[m_NumAddrs], pAddrSkipProtocol, sizeof(m_aaCurrentServerAddrs[m_NumAddrs]));
+		str_copy(m_aaCurrentServerAddrsNoPort[m_NumAddrs], pAddrSkipProtocol, sizeof(m_aaCurrentServerAddrsNoPort[m_NumAddrs]));
+		for(int i = 0; i < str_length(m_aaCurrentServerAddrs[m_NumAddrs]); i++)
 		{
-			m_aCurrentServerAddrNoPort[i] = '\0';
+			if(m_aaCurrentServerAddrs[m_NumAddrs][i] == ':')
+			{
+				m_aaCurrentServerAddrsNoPort[m_NumAddrs][i] = '\0';
+				break;
+			}
+		}
+
+		if(++m_NumAddrs >= MAX_SERVER_ADDRESSES)
+		{
+			dbg_msg("chillpw", "exceeded max number of addrs");
 			break;
 		}
 	}
+}
+
+bool CChillPw::IsCurrentAddr(const char *pHost)
+{
+	if(!pHost || pHost[0] == '\0')
+		return false;
+
+	for(int i = 0; i < m_NumAddrs; i++)
+	{
+		if(!str_find(pHost, ":") || str_find(pHost, ":*"))
+		{
+			if(!str_comp(m_aaCurrentServerAddrsNoPort[i], pHost))
+				return true;
+		}
+		else
+		{
+			if(!str_comp(m_aaCurrentServerAddrs[i], pHost))
+				return true;
+
+			// if it has a port and it does not match skip to next entry
+			if(str_find(m_aaCurrentServerAddrs[i], ":"))
+				continue;
+			// skip all non default port entrys
+			if(!str_endswith(pHost, ":8303"))
+				continue;
+			// if hostname without port does not match skip
+			if(!str_startswith(pHost, m_aaCurrentServerAddrs[i]) || pHost[str_length(m_aaCurrentServerAddrs[i])] != ':')
+				continue;
+
+			return true;
+		}
+	}
+	return false;
 }
 
 void CChillPw::OnConsoleInit()
@@ -56,36 +108,15 @@ void CChillPw::ConStatus()
 	int FoundDummy = 0;
 	for(int i = 0; i < MAX_PASSWORDS; i++)
 	{
-		if(m_aaHostnames[i][0] == '\0')
+		if(!IsCurrentAddr(m_aaHostnames[i]))
 			continue;
-		if(!str_find(m_aaHostnames[i], ":") || str_find(m_aaHostnames[i], ":*"))
-		{
-			if(str_comp(m_aCurrentServerAddrNoPort, m_aaHostnames[i]))
-				continue;
-		}
-		else
-		{
-			if(str_comp(m_aCurrentServerAddr, m_aaHostnames[i]))
-			{
-				// if it has a port and it does not match skip to next entry
-				if(str_find(m_aCurrentServerAddr, ":"))
-					continue;
 
-				// skip all non default port entrys
-				if(!str_endswith(m_aaHostnames[i], ":8303"))
-					continue;
-
-				// if hostname without port does not match skip
-				if(!str_startswith(m_aaHostnames[i], m_aCurrentServerAddr) || m_aaHostnames[i][str_length(m_aCurrentServerAddr)] != ':')
-					continue;
-			}
-		}
 		if(m_aDummy[i] == 0)
 			Found++;
 		else
 			FoundDummy++;
 	}
-	str_format(aBuf, sizeof(aBuf), "curret host: '%s'", m_aCurrentServerAddr);
+	str_format(aBuf, sizeof(aBuf), "curret host: '%s' (%d addresses)", m_aaCurrentServerAddrs[0], m_NumAddrs);
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillpw", aBuf);
 	// main
 	str_format(aBuf, sizeof(aBuf), "  [main] known passwords: %d", Found);
@@ -104,30 +135,9 @@ void CChillPw::ConDumpHost()
 {
 	for(int i = 0; i < MAX_PASSWORDS; i++)
 	{
-		if(m_aaHostnames[i][0] == '\0')
+		if(!IsCurrentAddr(m_aaHostnames[i]))
 			continue;
-		if(!str_find(m_aaHostnames[i], ":") || str_find(m_aaHostnames[i], ":*"))
-		{
-			if(str_comp(m_aCurrentServerAddrNoPort, m_aaHostnames[i]))
-				continue;
-		}
-		else
-		{
-			if(str_comp(m_aCurrentServerAddr, m_aaHostnames[i]))
-			{
-				// if it has a port and it does not match skip to next entry
-				if(str_find(m_aCurrentServerAddr, ":"))
-					continue;
 
-				// skip all non default port entrys
-				if(!str_endswith(m_aaHostnames[i], ":8303"))
-					continue;
-
-				// if hostname without port does not match skip
-				if(!str_startswith(m_aaHostnames[i], m_aCurrentServerAddr) || m_aaHostnames[i][str_length(m_aCurrentServerAddr)] != ':')
-					continue;
-			}
-		}
 		char aBuf[2048];
 		str_format(aBuf, sizeof(aBuf), "dummy=%d host=%s pass: %s", m_aDummy[i], m_aaHostnames[i], m_aaPasswords[i]);
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillpw", aBuf);
@@ -261,30 +271,9 @@ bool CChillPw::AuthChatAccount(int Dummy, int Offset)
 	int Found = 0;
 	for(int i = 0; i < MAX_PASSWORDS; i++)
 	{
-		if(m_aaHostnames[i][0] == '\0')
+		if(!IsCurrentAddr(m_aaHostnames[i]))
 			continue;
-		if(!str_find(m_aaHostnames[i], ":") || str_find(m_aaHostnames[i], ":*"))
-		{
-			if(str_comp(m_aCurrentServerAddrNoPort, m_aaHostnames[i]))
-				continue;
-		}
-		else
-		{
-			if(str_comp(m_aCurrentServerAddr, m_aaHostnames[i]))
-			{
-				// if it has a port and it does not match skip to next entry
-				if(str_find(m_aCurrentServerAddr, ":"))
-					continue;
 
-				// skip all non default port entrys
-				if(!str_endswith(m_aaHostnames[i], ":8303"))
-					continue;
-
-				// if hostname without port does not match skip
-				if(!str_startswith(m_aaHostnames[i], m_aCurrentServerAddr) || m_aaHostnames[i][str_length(m_aCurrentServerAddr)] != ':')
-					continue;
-			}
-		}
 		if(Dummy != m_aDummy[i])
 			continue;
 		if(Offset > ++Found)
