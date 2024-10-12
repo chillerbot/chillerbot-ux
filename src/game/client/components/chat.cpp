@@ -1315,6 +1315,9 @@ void CChat::SendChat(int Team, const char *pLine)
 	if(*str_utf8_skip_whitespaces(pLine) == '\0')
 		return;
 
+	if(!m_pClient->m_ChillerBotUX.OnSendChat(Team, pLine))
+		return;
+
 	m_LastChatSend = time();
 
 	if(m_pClient->Client()->IsSixup())
@@ -1332,8 +1335,6 @@ void CChat::SendChat(int Team, const char *pLine)
 	Msg.m_Team = Team;
 	Msg.m_pMessage = pLine;
 	Client()->SendPackMsgActive(&Msg, MSGFLAG_VITAL);
-
-	m_pClient->m_ChillerBotUX.ReturnFromAfk(pLine);
 }
 
 void CChat::SendChatQueued(const char *pLine)

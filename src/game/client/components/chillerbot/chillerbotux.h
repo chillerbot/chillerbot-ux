@@ -139,6 +139,9 @@ public:
 	virtual int Sizeof() const override { return sizeof(*this); }
 	int m_IgnoreChatAfk;
 
+	// return false to drop the message
+	bool OnSendChat(int Team, const char *pLine);
+
 	void ReturnFromAfk(const char *pChatMessage = 0);
 	int64_t GetAfkTime() { return m_AfkTill; }
 	const char *GetAfkMessage() { return m_aAfkMessage; }

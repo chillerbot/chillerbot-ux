@@ -18,6 +18,8 @@ You can use those commands in chat to color names:
 - ``!team <name>``
 - ``!delteam <name>``
 
+The commands will end up in public chat by default. They can be hidden with the following console command: ``cl_silent_chat_commands 1``
+
 ![warlist simple preview](https://raw.githubusercontent.com/ChillerDragon/cdn/master/chillerbot_warlist_basic.gif)
 
 **Advanced warlist (not recommended for beginners):**

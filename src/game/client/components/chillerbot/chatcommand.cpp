@@ -16,15 +16,16 @@ void CChatCommand::OnServerMsg(const char *pMsg)
 {
 }
 
-void CChatCommand::OnChatMsg(int ClientId, int Team, const char *pMsg)
+bool CChatCommand::OnChatMsg(int ClientId, int Team, const char *pMsg)
 {
 	if(!pMsg[1])
-		return;
+		return false;
 	if(pMsg[0] == '.' || pMsg[0] == ':' || pMsg[0] == '!' || pMsg[0] == '#' || pMsg[0] == '$' || pMsg[0] == '/')
 		if(ParseChatCmd(pMsg[0], ClientId, Team, pMsg + 1))
-			return;
+			return true;
 
 	OnNoChatCommandMatches(ClientId, Team, pMsg);
+	return false;
 }
 
 void CChatCommand::OnNoChatCommandMatches(int ClientId, int Team, const char *pMsg)
@@ -152,9 +153,17 @@ void CChatCommand::OnMessage(int MsgType, void *pRawMsg)
 	if(MsgType == NETMSGTYPE_SV_CHAT)
 	{
 		CNetMsg_Sv_Chat *pMsg = (CNetMsg_Sv_Chat *)pRawMsg;
-		if(pMsg->m_ClientId == -1 && pMsg->m_Team < 2)
+		int ClientId = pMsg->m_ClientId;
+		if(ClientId == -1 && pMsg->m_Team < 2)
+		{
 			OnServerMsg(pMsg->m_pMessage);
-		else
-			OnChatMsg(pMsg->m_ClientId, pMsg->m_Team, pMsg->m_pMessage);
+		}
+		// ignore own messages
+		// they get processed on send
+		// if the server spoofs us we drop it
+		else if(ClientId != m_pClient->m_aLocalIds[0] && (!m_pClient->Client()->DummyConnected() || ClientId != m_pClient->m_aLocalIds[1]))
+		{
+			OnChatMsg(ClientId, pMsg->m_Team, pMsg->m_pMessage);
+		}
 	}
 }

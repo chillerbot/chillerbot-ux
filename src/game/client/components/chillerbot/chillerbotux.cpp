@@ -6,6 +6,7 @@
 #include <engine/engine.h>
 #include <engine/graphics.h>
 #include <engine/keys.h>
+#include <engine/shared/config.h>
 #include <engine/shared/json.h>
 #include <engine/shared/protocol.h>
 #include <engine/textrender.h>
@@ -130,6 +131,20 @@ void CChillerBotUX::OnRender()
 		}
 	}
 	m_LastForceDir = m_ForceDir;
+}
+
+bool CChillerBotUX::OnSendChat(int Team, const char *pLine)
+{
+	ReturnFromAfk(pLine);
+
+	int ClientId = m_pClient->m_aLocalIds[g_Config.m_ClDummy];
+	if(m_pClient->m_ChatCommand.OnChatMsg(ClientId, Team, pLine))
+	{
+		if(g_Config.m_ClSilentChatCommands)
+			return false;
+	}
+
+	return true;
 }
 
 void CChillerBotUX::OnStateChange(int NewState, int OldState)
