@@ -334,6 +334,11 @@ void CTerminalUI::OnReset()
 
 void CTerminalUI::OnShutdown()
 {
+	delwin(g_LogWindow.m_pCursesWin);
+	delwin(g_GameWindow.m_pCursesWin);
+	delwin(g_InfoWin.m_pCursesWin);
+	delwin(g_InputWin.m_pCursesWin);
+
 	endwin();
 	if(g_Config.m_ClTermHistory)
 		for(int i = 0; i < NUM_INPUTS; i++)
