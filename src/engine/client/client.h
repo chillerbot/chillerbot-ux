@@ -489,8 +489,6 @@ public:
 	void GenerateTimeoutSeed() override;
 	void GenerateTimeoutCodes(const NETADDR *pAddrs, int NumAddrs);
 
-	int GetCurrentRaceTime() override;
-
 	const char *GetCurrentMap() const override;
 	const char *GetCurrentMapPath() const override;
 	SHA256_DIGEST GetCurrentMapSha256() const override;
