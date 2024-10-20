@@ -1231,7 +1231,7 @@ void CChillerBotUX::OnMessage(int MsgType, void *pRawMsg)
 		GameClient()->m_MapLayersBackground.RefreshTileBuffers([&]() {});
 
 		// fixes skipped tiles that were empty
-		Collision()->Layers()->Init(Kernel());
+		Collision()->Layers()->Init(Kernel()->RequestInterface<IMap>(), false);
 
 		// doesnt help
 		// Collision()->Init(Layers());
