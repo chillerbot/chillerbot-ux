@@ -515,7 +515,7 @@ int CTerminalUI::GetInput()
 				if(m_pClient->Client()->RconAuthed())
 					m_pClient->Client()->Rcon(g_aInputStr);
 				else
-					m_pClient->Client()->RconAuth("", g_aInputStr);
+					m_pClient->Client()->RconAuth("", g_aInputStr, g_Config.m_ClDummy);
 			}
 			else if(InputMode() == INPUT_CHAT)
 				m_pClient->m_Chat.SendChat(0, g_aInputStr);
