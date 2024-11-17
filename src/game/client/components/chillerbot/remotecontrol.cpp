@@ -17,6 +17,13 @@ void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 		return;
 	if(ClientId < 0 || ClientId >= 64)
 		return;
+	// the value can be -1 caught by asan and this is also checked everywhere else
+	// but not sure when exactly that happens
+	// is this the "do you know someone who uses a bot?" message?
+	// that gets sent by the server before we know our own client id
+	// or are we dropping some interesting messages here?
+	if(m_pClient->m_aLocalIds[0] < 0 || m_pClient->m_aLocalIds[0] >= MAX_CLIENTS)
+		return;
 
 	char aName[64];
 	str_copy(aName, m_pClient->m_aClients[ClientId].m_aName, sizeof(aName));
