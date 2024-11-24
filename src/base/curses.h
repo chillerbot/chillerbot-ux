@@ -10,3 +10,6 @@
 #else
 #include <curses.h>
 #endif /* HAS_CURSES */
+
+// https://github.com/ddnet/ddnet/pull/9248#issuecomment-2496038033
+#undef COLORS
