@@ -702,7 +702,7 @@ void CGameClient::OnReset()
 	m_LastScreenAspect = 0.0f;
 	m_LastDummyConnected = false;
 
-	m_MultiViewPersonalZoom = 0;
+	m_MultiViewPersonalZoom = 0.0f;
 	m_MultiViewActivated = false;
 	m_MultiView.m_IsInit = false;
 
@@ -811,6 +811,9 @@ void CGameClient::OnRender()
 			pWarning->m_WasShown = true;
 		}
 	}
+
+	// update camera data prior to CControls::OnRender to allow CControls::m_aTargetPos to compensate using camera data
+	m_Camera.UpdateCamera();
 
 	// render all systems
 	for(auto &pComponent : m_vpAll)
@@ -4305,7 +4308,7 @@ float CGameClient::MapValue(float MaxValue, float MinValue, float MaxRange, floa
 void CGameClient::ResetMultiView()
 {
 	m_Camera.SetZoom(std::pow(CCamera::ZOOM_STEP, g_Config.m_ClDefaultZoom - 10), g_Config.m_ClSmoothZoomTime);
-	m_MultiViewPersonalZoom = 0;
+	m_MultiViewPersonalZoom = 0.0f;
 	m_MultiViewActivated = false;
 	m_MultiView.m_Solo = false;
 	m_MultiView.m_IsInit = false;
