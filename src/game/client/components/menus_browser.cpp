@@ -28,7 +28,7 @@ static const ColorRGBA gs_HighlightedTextColor = ColorRGBA(0.4f, 0.4f, 1.0f, 1.0
 
 static ColorRGBA PlayerBackgroundColor(bool Friend, bool Clan, bool Afk, bool Inside)
 {
-	static const ColorRGBA COLORS[] = {ColorRGBA(0.5f, 1.0f, 0.5f), ColorRGBA(0.4f, 0.4f, 1.0f), ColorRGBA(0.75f, 0.75f, 0.75f)};
+	static const ColorRGBA COLORS_RENAMED_BY_CHILLER_FOR_NCURSES[] = {ColorRGBA(0.5f, 1.0f, 0.5f), ColorRGBA(0.4f, 0.4f, 1.0f), ColorRGBA(0.75f, 0.75f, 0.75f)};
 	static const ColorRGBA COLORS_AFK[] = {ColorRGBA(1.0f, 1.0f, 0.5f), ColorRGBA(0.4f, 0.75f, 1.0f), ColorRGBA(0.6f, 0.6f, 0.6f)};
 	int i;
 	if(Friend)
@@ -37,7 +37,7 @@ static ColorRGBA PlayerBackgroundColor(bool Friend, bool Clan, bool Afk, bool In
 		i = 1;
 	else
 		i = 2;
-	return (Afk ? COLORS_AFK[i] : COLORS[i]).WithAlpha(Inside ? 0.45f : 0.3f);
+	return (Afk ? COLORS_AFK[i] : COLORS_RENAMED_BY_CHILLER_FOR_NCURSES[i]).WithAlpha(Inside ? 0.45f : 0.3f);
 }
 
 template<size_t N>
