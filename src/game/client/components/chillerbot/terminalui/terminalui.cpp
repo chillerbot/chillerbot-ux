@@ -4,6 +4,7 @@
 #include <game/client/components/controls.h>
 #include <game/client/gameclient.h>
 
+#include <base/ccurses.h>
 #include <base/chillerbot/curses_colors.h>
 #include <base/terminalui.h>
 
@@ -160,7 +161,7 @@ void CTerminalUI::InputDraw()
 int CTerminalUI::CursesTick()
 {
 	// getmaxyx does not work with gdb see https://github.com/chillerbot/chillerbot-ux/issues/128
-	getmaxyx(stdscr, g_NewY, g_NewX);
+	getmaxyx(ccurses_stdscr(), g_NewY, g_NewX);
 
 	// Works better with gdb but breaks the github pipeline
 	// struct winsize w;
@@ -204,7 +205,7 @@ int CTerminalUI::CursesTick()
 			mvwin(g_InputWin.m_pCursesWin, g_NewY - g_InputWin.m_Height, 0);
 		}
 
-		wclear(stdscr);
+		wclear(ccurses_stdscr());
 		wclear(g_InfoWin.m_pCursesWin);
 		if(g_InputWin.IsActive())
 		{
@@ -294,7 +295,7 @@ void CTerminalUI::OnInit()
 	init_curses_colors();
 
 	// set up initial windows
-	getmaxyx(stdscr, g_ParentY, g_ParentX);
+	getmaxyx(ccurses_stdscr(), g_ParentY, g_ParentX);
 
 	g_LogWindow.m_pCursesWin = newwin(g_ParentY - (g_InputWin.m_Height + INFO_WIN_HEIGHT), g_ParentX, 0, 0);
 	g_GameWindow.m_pCursesWin = newwin(g_ParentY - (g_InputWin.m_Height + INFO_WIN_HEIGHT), g_ParentX, 0, 0); // TODO: fix this size
@@ -458,8 +459,8 @@ static void StrCopyUntilSpace(char *pDest, size_t DestSize, const char *pSrc)
 
 int CTerminalUI::GetInput()
 {
-	nodelay(stdscr, TRUE);
-	keypad(stdscr, TRUE);
+	nodelay(ccurses_stdscr(), TRUE);
+	keypad(ccurses_stdscr(), TRUE);
 	cbreak();
 	noecho();
 	int c = getch();

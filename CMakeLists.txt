@@ -2014,6 +2014,8 @@ add_custom_command(OUTPUT "src/game/generated/wordlist.h"
 set_src(BASE GLOB_RECURSE src/base
   bezier.cpp
   bezier.h
+  ccurses.cpp
+  ccurses.h
   chillerbot/curses_colors.cpp
   chillerbot/curses_colors.h
   chillerbot/dbg_print.h
