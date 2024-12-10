@@ -306,6 +306,15 @@ static void GenerateTimeoutCode(char *pTimeoutCode)
 	}
 }
 
+void CGameClient::InitializeLanguage()
+{
+	// set the language
+	g_Localization.LoadIndexfile(Storage(), Console());
+	if(g_Config.m_ClShowWelcome)
+		g_Localization.SelectDefaultLanguage(Console(), g_Config.m_ClLanguagefile, sizeof(g_Config.m_ClLanguagefile));
+	g_Localization.Load(g_Config.m_ClLanguagefile, Storage(), Console());
+}
+
 void CGameClient::OnInit()
 {
 	const int64_t OnInitStart = time_get();
@@ -351,12 +360,6 @@ void CGameClient::OnInit()
 	{
 		str_format(m_aDDNetVersionStr, sizeof(m_aDDNetVersionStr), "%s %s", GAME_NAME, GAME_RELEASE_VERSION);
 	}
-
-	// set the language
-	g_Localization.LoadIndexfile(Storage(), Console());
-	if(g_Config.m_ClShowWelcome)
-		g_Localization.SelectDefaultLanguage(Console(), g_Config.m_ClLanguagefile, sizeof(g_Config.m_ClLanguagefile));
-	g_Localization.Load(g_Config.m_ClLanguagefile, Storage(), Console());
 
 	// TODO: this should be different
 	// setup item sizes
@@ -824,13 +827,18 @@ void CGameClient::OnRender()
 	// update the local character and spectate position
 	UpdatePositions();
 
-	// display gfx & client warnings
-	for(SWarning *pWarning : {Graphics()->GetCurWarning(), Client()->GetCurWarning()})
+	// display warnings
+	if(m_Menus.CanDisplayWarning())
 	{
-		if(pWarning != nullptr && m_Menus.CanDisplayWarning())
+		std::optional<SWarning> Warning = Graphics()->CurrentWarning();
+		if(!Warning.has_value())
 		{
-			m_Menus.PopupWarning(pWarning->m_aWarningTitle[0] == '\0' ? Localize("Warning") : pWarning->m_aWarningTitle, pWarning->m_aWarningMsg, Localize("Ok"), pWarning->m_AutoHide ? 10s : 0s);
-			pWarning->m_WasShown = true;
+			Warning = Client()->CurrentWarning();
+		}
+		if(Warning.has_value())
+		{
+			const SWarning TheWarning = Warning.value();
+			m_Menus.PopupWarning(TheWarning.m_aWarningTitle[0] == '\0' ? Localize("Warning") : TheWarning.m_aWarningTitle, TheWarning.m_aWarningMsg, Localize("Ok"), TheWarning.m_AutoHide ? 10s : 0s);
 		}
 	}
 

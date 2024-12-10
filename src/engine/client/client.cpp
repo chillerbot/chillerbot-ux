@@ -2695,7 +2695,7 @@ void CClient::Update()
 			{
 				SWarning Warning(Localize("Error playing demo"), m_DemoPlayer.ErrorMessage());
 				Warning.m_AutoHide = false;
-				m_vWarnings.emplace_back(Warning);
+				AddWarning(Warning);
 			}
 		}
 	}
@@ -3061,6 +3061,9 @@ void CClient::Run()
 	Graphics()->Clear(0, 0, 0);
 	Graphics()->Swap();
 
+	// init localization first, making sure all errors during init can be localized
+	GameClient()->InitializeLanguage();
+
 	// init sound, allowed to fail
 	const bool SoundInitFailed = Sound()->Init() != 0;
 
@@ -3126,7 +3129,7 @@ void CClient::Run()
 	{
 		SWarning Warning(Localize("Sound error"), Localize("The audio device couldn't be initialised."));
 		Warning.m_AutoHide = false;
-		m_vWarnings.emplace_back(Warning);
+		AddWarning(Warning);
 	}
 
 	bool LastD = false;
@@ -5056,23 +5059,22 @@ void CClient::GetSmoothTick(int *pSmoothTick, float *pSmoothIntraTick, float Mix
 
 void CClient::AddWarning(const SWarning &Warning)
 {
+	const std::unique_lock<std::mutex> Lock(m_WarningsMutex);
 	m_vWarnings.emplace_back(Warning);
 }
 
-SWarning *CClient::GetCurWarning()
+std::optional<SWarning> CClient::CurrentWarning()
 {
+	const std::unique_lock<std::mutex> Lock(m_WarningsMutex);
 	if(m_vWarnings.empty())
 	{
-		return NULL;
-	}
-	else if(m_vWarnings[0].m_WasShown)
-	{
-		m_vWarnings.erase(m_vWarnings.begin());
-		return NULL;
+		return std::nullopt;
 	}
 	else
 	{
-		return m_vWarnings.data();
+		std::optional<SWarning> Result = std::make_optional(m_vWarnings[0]);
+		m_vWarnings.erase(m_vWarnings.begin());
+		return Result;
 	}
 }
 
