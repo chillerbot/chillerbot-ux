@@ -215,7 +215,7 @@ printf "${COLOR_CYAN}%s${COLOR_RESET}\n" "Copying libraries..."
 
 function copy_libs() {
 	mkdir -p "lib/$2"
-	cp "$ANDROID_SUB_BUILD_DIR/$1/libDDNet.so" "lib/$2" || exit 1
+	cp "$ANDROID_SUB_BUILD_DIR/$1/libchillerbot-ux.so" "lib/$2" || exit 1
 }
 
 if [[ "${ANDROID_BUILD}" == "arm" || "${ANDROID_BUILD}" == "all" ]]; then
