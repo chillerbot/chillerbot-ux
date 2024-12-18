@@ -142,6 +142,22 @@ public:
 	// return false to drop the message
 	bool OnSendChat(int Team, const char *pLine);
 
+	// return true to send the input
+	// is called at the end of ddnet's SnapInput
+	// `WouldSend` holds the value if the ddnet client wants to send the input
+	// but the return value is what is actually used
+	//
+	// `pInput` is what the ddnet client wants to send
+	// but it can also be altered
+	//
+	// Only called from the active tee never for the dummy
+	// if you want to set the dummy input can manually set it using:
+	//
+	// ```C++
+	// m_pClient->m_Controls.m_aInputData[!g_Config.m_ClDummy]
+	// ```
+	bool OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput);
+
 	void ReturnFromAfk(const char *pChatMessage = 0);
 	int64_t GetAfkTime() { return m_AfkTill; }
 	const char *GetAfkMessage() { return m_aAfkMessage; }

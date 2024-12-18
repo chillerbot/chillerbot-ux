@@ -408,14 +408,6 @@ void CTerminalUI::OnRender()
 	if(cl_InterruptSignaled)
 		Console()->ExecuteLine("quit");
 
-	if(IsChatting())
-	{
-		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_CHATTING;
-		// TODO: add a chillerbot hook into controls SendChat and set it from there
-		//       otherwise we spam input network packets way too hard
-		m_SendData[g_Config.m_ClDummy] = true;
-	}
-
 	if(!m_pClient->m_Snap.m_pLocalCharacter)
 		return;
 	float X = m_pClient->m_Snap.m_pLocalCharacter->m_X;
@@ -424,6 +416,24 @@ void CTerminalUI::OnRender()
 		"%.2f %.2f scoreboard=%d",
 		X / 32, Y / 32,
 		m_ScoreboardActive);
+}
+
+bool CTerminalUI::OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput)
+{
+	// no need to force send on change
+	// inputs are sent frequently enough that we only have to hijack
+	// one of them to get the flag out there
+	//
+	// I tested it and could not witness ANY delay with my bare eyes
+	// that might be caused by some bug thats spamming inputs somewhere
+	// so if that gets fixed we might have to revist this if we want
+	// playerflags to stay snappy
+	if(!WouldSend)
+		return false;
+
+	if(IsChatting())
+		pInput->m_PlayerFlags |= PLAYERFLAG_CHATTING;
+	return WouldSend;
 }
 
 void CTerminalUI::SetInputMode(int Mode)

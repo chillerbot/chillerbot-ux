@@ -175,6 +175,17 @@ bool CChillerBotUX::OnSendChat(int Team, const char *pLine)
 	return true;
 }
 
+bool CChillerBotUX::OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput)
+{
+#if defined(CONF_CURSES_CLIENT)
+	WouldSend = m_pClient->m_TerminalUI.OnSnapInput(WouldSend, pInput);
+#endif
+
+	// register your chillerbot-ux component below!
+
+	return WouldSend;
+}
+
 void CChillerBotUX::OnStateChange(int NewState, int OldState)
 {
 	if(NewState == IClient::STATE_OFFLINE && m_pClient->Client()->ReconnectTime() == 0)

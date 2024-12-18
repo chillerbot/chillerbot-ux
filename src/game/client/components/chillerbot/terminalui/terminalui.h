@@ -1,8 +1,8 @@
-
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_TERMINALUI_TERMINALUI_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_TERMINALUI_TERMINALUI_H
 
 #include <game/client/component.h>
+#include <game/generated/protocol.h>
 
 #if defined(CONF_CURSES_CLIENT)
 #include "terminalui_keys.h" /* undefines conflicting ncurses key codes */
@@ -417,6 +417,10 @@ class CTerminalUI : public CComponent
 
 public:
 	int OnKeyPress(int Key, WINDOW *pWin);
+
+	// chillerbot-ux specific hook
+	bool OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput);
+
 #endif
 public:
 	CNetObj_PlayerInput m_aInputData[NUM_DUMMIES];
