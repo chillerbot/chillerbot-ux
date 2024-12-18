@@ -1,8 +1,10 @@
 // ChillerDragon 2020 - chillerbot
 
 #include <engine/client/serverbrowser.h>
+#include <engine/shared/config.h>
 #include <game/client/components/controls.h>
 #include <game/client/gameclient.h>
+#include <game/generated/protocol.h>
 
 #include <base/ccurses.h>
 #include <base/chillerbot/curses_colors.h>
@@ -376,6 +378,19 @@ void CTerminalUI::OnMessage(int MsgType, void *pRawMsg)
 	}
 }
 
+bool CTerminalUI::IsChatting()
+{
+	if(InputMode() == INPUT_CHAT)
+		return true;
+	if(InputMode() == INPUT_CHAT_TEAM)
+		return true;
+	if(InputMode() == INPUT_SEARCH_CHAT)
+		return true;
+	if(InputMode() == INPUT_SEARCH_CHAT_TEAM)
+		return true;
+	return false;
+}
+
 void CTerminalUI::OnRender()
 {
 	m_SendData[0] = false;
@@ -392,6 +407,14 @@ void CTerminalUI::OnRender()
 
 	if(cl_InterruptSignaled)
 		Console()->ExecuteLine("quit");
+
+	if(IsChatting())
+	{
+		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_CHATTING;
+		// TODO: add a chillerbot hook into controls SendChat and set it from there
+		//       otherwise we spam input network packets way too hard
+		m_SendData[g_Config.m_ClDummy] = true;
+	}
 
 	if(!m_pClient->m_Snap.m_pLocalCharacter)
 		return;

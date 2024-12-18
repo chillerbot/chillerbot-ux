@@ -158,6 +158,10 @@ class CTerminalUI : public CComponent
 		}
 	};
 
+	// returns true if the curses chat input is open
+	// either public chat or team chat
+	bool IsChatting();
+
 	/*
 		m_LockKeyUntilRelease
 
