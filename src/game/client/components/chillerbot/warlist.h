@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include <base/color.h>
 #include <game/client/component.h>
 
 class CWarList : public CComponent
@@ -174,7 +175,7 @@ public:
 	bool IsWarClan(int ClientId);
 	bool IsTeamClan(int ClientId);
 	bool IsWarClanmate(int ClientId);
-	void SetNameplateColor(int ClientId, ColorRGBA *pColor);
+	ColorRGBA GetNameplateColor(int ClientId);
 	void ReloadList();
 
 	int NumEnemies() { return m_WarDirs + m_TraitorDirs; }

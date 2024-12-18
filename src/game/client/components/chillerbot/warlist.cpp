@@ -2,14 +2,13 @@
 
 #include <vector>
 
+#include <base/color.h>
+#include <base/system.h>
 #include <engine/config.h>
 #include <engine/shared/linereader.h>
+#include <engine/storage.h>
 #include <engine/textrender.h>
 #include <game/client/gameclient.h>
-
-#include <base/system.h>
-
-#include <engine/storage.h>
 
 #include "chillerbotux.h"
 
@@ -424,25 +423,25 @@ bool CWarList::IsWarClanmate(int ClientId)
 	return false;
 }
 
-void CWarList::SetNameplateColor(int ClientId, ColorRGBA *pColor)
+ColorRGBA CWarList::GetNameplateColor(int ClientId)
 {
 	if(!g_Config.m_ClWarList)
-		return;
+		return ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
 
 	if(IsWar(ClientId))
-		*pColor = ColorRGBA(7.0f, 0.2f, 0.2f, 1.0f);
+		return ColorRGBA(7.0f, 0.2f, 0.2f, 1.0f);
 	else if(IsTeam(ClientId))
-		*pColor = ColorRGBA(0.0f, 0.9f, 0.2f, 1.0f);
+		return ColorRGBA(0.0f, 0.9f, 0.2f, 1.0f);
 	else if(IsTraitor(ClientId))
-		*pColor = ColorRGBA(0.1f, 0.1f, 0.1f, 1.0f);
+		return ColorRGBA(0.1f, 0.1f, 0.1f, 1.0f);
 	else if(IsWarClan(ClientId))
-		*pColor = ColorRGBA(7.0f, 0.2f, 0.2f, 1.0f);
+		return ColorRGBA(7.0f, 0.2f, 0.2f, 1.0f);
 	else if(IsTeamClan(ClientId))
-		*pColor = ColorRGBA(0.0f, 0.9f, 0.2f, 1.0f);
+		return ColorRGBA(0.0f, 0.9f, 0.2f, 1.0f);
 	else if(IsWarClanmate(ClientId))
-		*pColor = ColorRGBA(7.0f, 0.5f, 0.2f, 1.0f);
+		return ColorRGBA(7.0f, 0.5f, 0.2f, 1.0f);
 	else
-		*pColor = ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
+		return ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 bool CWarList::RemoveTeamNameFromVector(const char *pDir, const char *pName)

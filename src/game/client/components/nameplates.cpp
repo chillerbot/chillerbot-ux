@@ -263,7 +263,7 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 				Data.m_Color = m_pClient->GetDDTeamColor(Team, 0.75f);
 		}
 	}
-	m_pClient->m_WarList.SetNameplateColor(pPlayerInfo->m_ClientId, &Data.m_Color); // chillerbot-ux
+	Data.m_Color = m_pClient->m_WarList.GetNameplateColor(pPlayerInfo->m_ClientId); // chillerbot-ux
 
 	int ShowDirectionConfig = g_Config.m_ClShowDirection;
 #if defined(CONF_VIDEORECORDER)
