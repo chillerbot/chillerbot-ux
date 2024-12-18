@@ -33,7 +33,9 @@
 
 struct CServerProcess
 {
-	PROCESS m_Process;
+#if !defined(CONF_PLATFORM_ANDROID)
+	PROCESS m_Process = INVALID_PROCESS;
+#endif
 };
 
 // component to fetch keypresses, override all other input
@@ -661,14 +663,17 @@ public:
 	CMenus();
 	virtual int Sizeof() const override { return sizeof(*this); }
 
-	void RenderLoading(const char *pCaption, const char *pContent, int IncreaseCounter, bool RenderLoadingBar = true, bool RenderMenuBackgroundMap = true);
+	void RenderLoading(const char *pCaption, const char *pContent, int IncreaseCounter);
+	void FinishLoading();
 
 	bool IsInit() { return m_IsInit; }
 
 	bool IsActive() const { return m_MenuActive; }
 	void SetActive(bool Active);
 
+	void RunServer();
 	void KillServer();
+	bool IsServerRunning() const;
 
 	virtual void OnInit() override;
 	void OnConsoleInit() override;

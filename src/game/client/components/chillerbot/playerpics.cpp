@@ -135,11 +135,11 @@ void CPlayerPics::RenderNameplate(
 void CPlayerPics::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pPlayerInfo, float Alpha, bool ForceAlpha)
 {
 	int ClientId = pPlayerInfo->m_ClientId;
-	float FontSizeClan = 18.0f + 20.0f * g_Config.m_ClNameplatesClanSize / 100.0f;
-	float YOffset = Position.y - (g_Config.m_ClRenderPicHeight + (g_Config.m_ClNameplatesClan ? 90.0f : 60.0f));
+	float FontSizeClan = 18.0f + 20.0f * g_Config.m_ClNamePlatesClanSize / 100.0f;
+	float YOffset = Position.y - (g_Config.m_ClRenderPicHeight + (g_Config.m_ClNamePlatesClan ? 90.0f : 60.0f));
 
 	// render playerpic
-	if(!pPlayerInfo->m_Local || g_Config.m_ClNameplatesOwn)
+	if(!pPlayerInfo->m_Local || g_Config.m_ClNamePlatesOwn)
 	{
 		const char *pName = m_pClient->m_aClients[pPlayerInfo->m_ClientId].m_aName;
 		if(g_Config.m_ClRenderPic)
@@ -191,7 +191,7 @@ void CPlayerPics::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pP
 
 void CPlayerPics::OnRender()
 {
-	if(!g_Config.m_ClNameplates)
+	if(!g_Config.m_ClNamePlates)
 		return;
 
 	// get screen edges to avoid rendering offscreen
