@@ -8,6 +8,7 @@
 
 #include <base/ccurses.h>
 #include <base/chillerbot/curses_colors.h>
+#include <base/system.h>
 #include <base/terminalui.h>
 
 #include "pad_utf8.h"
@@ -285,8 +286,8 @@ void CTerminalUI::OnInit()
 	mem_zero(m_aLastPressedKey, sizeof(m_aLastPressedKey));
 	mem_zero(m_aaInputHistory, sizeof(m_aaInputHistory));
 	mem_zero(m_InputHistory, sizeof(m_InputHistory));
-	AimX = 20;
-	AimY = 0;
+	m_Input.m_TargetX = 20;
+	m_Input.m_TargetY = 0;
 	setlocale(LC_CTYPE, "");
 	curses_init();
 	m_InputMode = INPUT_NORMAL;
@@ -433,6 +434,14 @@ bool CTerminalUI::OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput)
 
 	if(IsChatting())
 		pInput->m_PlayerFlags |= PLAYERFLAG_CHATTING;
+
+	// should we do a mem copy here?
+	pInput->m_TargetX = m_Input.m_TargetX;
+	pInput->m_TargetY = m_Input.m_TargetY;
+	pInput->m_Direction = m_Input.m_Direction;
+	pInput->m_Fire = m_Input.m_Fire;
+	pInput->m_Jump = m_Input.m_Jump;
+
 	return WouldSend;
 }
 
@@ -499,7 +508,23 @@ int CTerminalUI::GetInput()
 	int c = getch();
 
 	if(c == m_LockKeyUntilRelease)
+	{
+		// detect not pressing any key for a third of a second as release
+		// the problem is that even holding down a key
+		// still fires the -1 key like 5 times in a row
+		// so we have to use a janky timer to detect release
+		//
+		// can we get raw keyboard mode for nicer key release detection?
+		// https://stackoverflow.com/a/1598436
+		if(c == EOF && m_LastKeyPress < time_get() - time_freq() / 3)
+		{
+			m_Input.m_Direction = 0;
+			m_Input.m_Jump = 0;
+			m_Input.m_Hook = 0;
+			m_Input.m_Fire = 0;
+		}
 		return EOF;
+	}
 
 	// always skip
 	// nonblocking empty read
@@ -1141,11 +1166,6 @@ void CTerminalUI::RenderInputSearch()
 int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 {
 	bool KeyPressed = true;
-	// m_pClient->m_Controls.SetCursesDir(-2);
-	// m_pClient->m_Controls.SetCursesJump(-2);
-	// m_pClient->m_Controls.SetCursesHook(-2);
-	// m_pClient->m_Controls.SetCursesTargetX(AimX);
-	// m_pClient->m_Controls.SetCursesTargetY(AimY);
 	TrackKey(Key);
 	if(Key == 9) // tab
 	{
@@ -1155,26 +1175,18 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	}
 	else if(Key == 'k')
 		m_pClient->SendKill(g_Config.m_ClDummy);
-	else if(KeyInHistory(' ', 5) || Key == ' ')
+	else if(Key == ' ')
 	{
-		m_aInputData[g_Config.m_ClDummy] = m_pClient->m_Controls.m_aInputData[g_Config.m_ClDummy];
-		m_aInputData[g_Config.m_ClDummy].m_Jump = 1;
-		m_SendData[g_Config.m_ClDummy] = true;
+		m_Input.m_Jump = 1;
 	}
-	else if(KeyInHistory('a', 5) || Key == 'a')
+	else if(Key == 'a')
 	{
-		m_aInputData[g_Config.m_ClDummy] = m_pClient->m_Controls.m_aInputData[g_Config.m_ClDummy];
-		m_aInputData[g_Config.m_ClDummy].m_Direction = -1;
-		m_SendData[g_Config.m_ClDummy] = true;
+		m_Input.m_Direction = -1;
 	}
-	else if(KeyInHistory('d', 5) || Key == 'd')
+	else if(Key == 'd')
 	{
-		m_aInputData[g_Config.m_ClDummy] = m_pClient->m_Controls.m_aInputData[g_Config.m_ClDummy];
-		m_aInputData[g_Config.m_ClDummy].m_Direction = 1;
-		m_SendData[g_Config.m_ClDummy] = true;
+		m_Input.m_Direction = 1;
 	}
-	else if(KeyInHistory(' ', 3) || Key == ' ')
-		/* m_pClient->m_Controls.SetCursesJump(1); */ return 0;
 	else if(Key == '?')
 	{
 		OpenHelpPopup();
@@ -1241,20 +1253,20 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	else if(Key == KEY_LEFT)
 	{
 		g_InputWin.PrevMenuItem();
-		AimX = maximum(AimX - 10, -20);
+		m_Input.m_TargetX = maximum(m_Input.m_TargetX - 10, -20);
 		if(m_RenderServerList)
 			SetServerBrowserPage(g_Config.m_UiPage - 1);
 	}
 	else if(Key == KEY_RIGHT)
 	{
 		g_InputWin.NextMenuItem();
-		AimX = minimum(AimX + 10, 20);
+		m_Input.m_TargetX = maximum(m_Input.m_TargetX + 10, 20);
 		if(m_RenderServerList)
 			SetServerBrowserPage(g_Config.m_UiPage + 1);
 	}
 	else if(Key == KEY_UP)
 	{
-		AimY = maximum(AimY - 10, -20);
+		m_Input.m_TargetY = maximum(m_Input.m_TargetY - 10, -20);
 		if(m_RenderServerList && m_NumServers)
 			m_SelectedServer = clamp(m_SelectedServer - 1, 0, m_NumServers - 1);
 		else
@@ -1264,7 +1276,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	}
 	else if(Key == KEY_DOWN)
 	{
-		AimY = minimum(AimY + 10, 20);
+		m_Input.m_TargetY = maximum(m_Input.m_TargetY + 10, 20);
 		if(m_RenderServerList && m_NumServers)
 			m_SelectedServer = clamp(m_SelectedServer + 1, 0, m_NumServers - 1);
 		else

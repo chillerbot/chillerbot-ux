@@ -1,6 +1,8 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_TERMINALUI_TERMINALUI_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_TERMINALUI_TERMINALUI_H
 
+#include <engine/client.h>
+#include <engine/console.h>
 #include <game/client/component.h>
 #include <game/generated/protocol.h>
 
@@ -24,10 +26,10 @@ class CTerminalUI : public CComponent
 		KEY_HISTORY_LEN = 20
 	};
 
-	class WindowInfo
+	class CWindowInfo
 	{
 	public:
-		WindowInfo()
+		CWindowInfo()
 		{
 			m_X = 0;
 			m_Y = 0;
@@ -39,7 +41,7 @@ class CTerminalUI : public CComponent
 		int m_Width;
 		int m_Height;
 	};
-	WindowInfo m_WinServerBrowser;
+	CWindowInfo m_WinServerBrowser;
 
 	void RenderScoreboard(int Team, class CTermWindow *pWin);
 	void OpenServerList();
@@ -93,7 +95,7 @@ class CTerminalUI : public CComponent
 
 		INPUT_HISTORY_MAX_LEN = 16,
 	};
-	const char *GetInputMode()
+	const char *GetInputMode() const
 	{
 		switch(m_InputMode)
 		{
@@ -235,14 +237,14 @@ class CTerminalUI : public CComponent
 	bool SaveCurrentHistoryBufferToDisk(int Type);
 	bool LoadInputHistoryFile(int Type);
 
-	virtual void OnInit() override;
-	virtual void OnConsoleInit() override;
-	virtual void OnReset() override;
-	virtual void OnRender() override;
-	virtual void OnShutdown() override;
-	virtual void OnStateChange(int NewState, int OldState) override;
-	virtual void OnMessage(int MsgType, void *pRawMsg) override;
-	virtual void OnMapLoad() override;
+	void OnInit() override;
+	void OnConsoleInit() override;
+	void OnReset() override;
+	void OnRender() override;
+	void OnShutdown() override;
+	void OnStateChange(int NewState, int OldState) override;
+	void OnMessage(int MsgType, void *pRawMsg) override;
+	void OnMapLoad() override;
 
 	static void ConTerm(IConsole::IResult *pResult, void *pUserData);
 
@@ -275,7 +277,7 @@ class CTerminalUI : public CComponent
 	void ClearCompletionPreview() { m_aCompletionPreview[0] = '\0'; }
 	void SetServerBrowserPage(int NewPage);
 	void RenderPopup();
-	bool IsSearchInputMode() { return m_InputMode > NUM_INPUTS; }
+	bool IsSearchInputMode() const { return m_InputMode > NUM_INPUTS; }
 	void OnInputModeChange(int Old, int New);
 	/*
 		UpdateCursor
@@ -357,8 +359,10 @@ class CTerminalUI : public CComponent
 		// POPUP_QUIT, // TODO: implement
 		POPUP_WARNING, // TODO: implement
 	};
-	int AimX;
-	int AimY;
+
+	// term-ux specific input for controlling the tee
+	CNetObj_PlayerInput m_Input;
+
 	int m_BroadcastTick;
 	bool m_ScoreboardActive;
 	bool m_RenderServerList;
@@ -372,7 +376,7 @@ class CTerminalUI : public CComponent
 	*/
 	int m_InputMode;
 	void SetInputMode(int Mode);
-	int InputMode() { return m_InputMode; }
+	int InputMode() const { return m_InputMode; }
 	int64_t m_LastKeyPress;
 	char m_LastKeyPressed;
 	int m_NumServers;
