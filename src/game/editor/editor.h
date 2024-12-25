@@ -455,15 +455,9 @@ public:
 
 		// DDRace
 
-		m_ViewTeleNumber = 1;
-		m_TeleNumbers = {
-			{TILE_TELEINEVIL, 1},
-			{TILE_TELEINWEAPON, 1},
-			{TILE_TELEINHOOK, 1},
-			{TILE_TELEIN, 1},
-			{TILE_TELEOUT, 1},
-			{TILE_TELECHECK, 1},
-			{TILE_TELECHECKOUT, 1}};
+		m_TeleNumber = 1;
+		m_TeleCheckpointNumber = 1;
+		m_ViewTeleNumber = 0;
 
 		m_SwitchNum = 1;
 		m_TuningNum = 1;
@@ -1165,8 +1159,9 @@ public:
 	IGraphics::CTextureHandle GetSwitchTexture();
 	IGraphics::CTextureHandle GetTuneTexture();
 
+	unsigned char m_TeleNumber;
+	unsigned char m_TeleCheckpointNumber;
 	unsigned char m_ViewTeleNumber;
-	std::map<int, unsigned char> m_TeleNumbers;
 
 	unsigned char m_TuningNum;
 
@@ -1180,7 +1175,7 @@ public:
 
 	void AdjustBrushSpecialTiles(bool UseNextFree, int Adjust = 0);
 	int FindNextFreeSwitchNumber();
-	int FindNextFreeTeleNumber(int Index);
+	int FindNextFreeTeleNumber(bool Checkpoint = false);
 
 	// Undo/Redo
 	CEditorHistory m_EditorHistory;
