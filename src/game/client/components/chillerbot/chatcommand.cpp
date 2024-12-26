@@ -70,7 +70,7 @@ bool CChatCommand::ParseChatCmd(char Prefix, int ClientId, int Team, const char 
 	str_copy(aRawArgLine, pCmdWithArgs + Skip);
 
 	aCmd[i] = '\0';
-	int ROffset = m_pClient->m_ChatHelper.ChatCommandGetROffset(aCmd);
+	int RestOffset = m_pClient->m_ChatHelper.ChatCommandGetROffset(aCmd);
 
 	// max 16 args of 128 len each
 	const int MaxArgs = 16;
@@ -98,7 +98,7 @@ bool CChatCommand::ParseChatCmd(char Prefix, int ClientId, int Team, const char 
 		{
 			// do not delimit on space
 			// if we reached the r parameter
-			if(NumArgs == ROffset)
+			if(NumArgs == RestOffset)
 			{
 				// strip spaces from the beggining
 				// add spaces in the middle and end
