@@ -139,11 +139,24 @@ void CCityHelper::OnMessage(int MsgType, void *pRawMsg)
 	{
 		CNetMsg_Sv_Broadcast *pMsg = (CNetMsg_Sv_Broadcast *)pRawMsg;
 		const char *pMoney = str_find(pMsg->m_pMessage, "Money [");
+		int Offset = sizeof("Money [");
+		if(!pMoney)
+		{
+			pMoney = str_find(pMsg->m_pMessage, "Wallet [");
+			Offset = sizeof("Wallet [");
+		}
+		if(!pMoney)
+		{
+			pMoney = str_find(pMsg->m_pMessage, "Кошелёк [");
+			Offset = sizeof("Кошелёк [");
+		}
 		if(!pMoney)
 			return;
+		// sizeof counts the null terminator too
+		Offset--;
 		char aMoney[128] = {0};
 		char aAmount[128] = {0};
-		str_copy(aMoney, pMoney + 7, sizeof(aMoney));
+		str_copy(aMoney, pMoney + Offset, sizeof(aMoney));
 		for(int i = 0; i < 128; i++)
 		{
 			if(aMoney[i] == ']' || aMoney[i] == '\0' || aMoney[i] == '\n')
@@ -154,7 +167,6 @@ void CCityHelper::OnMessage(int MsgType, void *pRawMsg)
 			aAmount[i] = aMoney[i];
 		}
 		SetWalletMoney(atoi(aAmount));
-		;
 	}
 	else if(MsgType == NETMSGTYPE_SV_CHAT)
 	{
