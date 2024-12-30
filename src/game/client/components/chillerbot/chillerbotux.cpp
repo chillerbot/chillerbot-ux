@@ -779,7 +779,6 @@ void CChillerBotUX::OnConsoleInit()
 	Console()->Register("load_map", "s[file]", CFGFLAG_CLIENT, ConLoadMap, this, "Load mapfile");
 	Console()->Register("dump_players", "?s[search]", CFGFLAG_CLIENT, ConDumpPlayers, this, "Prints players to console");
 	Console()->Register("force_quit", "", CFGFLAG_CLIENT, ConForceQuit, this, "Forces a dirty client quit all data will be lost");
-	Console()->Register("dummy_connect_if_not_connected", "", CFGFLAG_CLIENT, ConDummyConnectIfNotConnected, this, "wraps dummy_connect without log spam");
 
 	Console()->Chain("cl_camp_hack", ConchainCampHack, this);
 	Console()->Chain("cl_chillerbot_hud", ConchainChillerbotHud, this);
@@ -789,17 +788,6 @@ void CChillerBotUX::OnConsoleInit()
 	Console()->Chain("cl_show_last_killer", ConchainShowLastKiller, this);
 	Console()->Chain("cl_show_last_ping", ConchainShowLastPing, this);
 	Console()->Chain("cl_skin_stealer", ConchainSkinStealer, this);
-}
-
-void CChillerBotUX::ConDummyConnectIfNotConnected(IConsole::IResult *pResult, void *pUserData)
-{
-	CChillerBotUX *pSelf = (CChillerBotUX *)pUserData;
-	if(pSelf->m_pClient->Client()->DummyConnecting())
-		return;
-	if(pSelf->m_pClient->Client()->DummyConnected())
-		return;
-
-	pSelf->m_pClient->Client()->DummyConnect();
 }
 
 void CChillerBotUX::ConForceQuit(IConsole::IResult *pResult, void *pUserData)
