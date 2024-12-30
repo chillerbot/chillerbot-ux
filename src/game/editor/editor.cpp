@@ -5162,6 +5162,10 @@ void CEditor::RenderFileDialog()
 		Ui()->DoLabel(&PathBox, aBuf, 10.0f, TEXTALIGN_ML);
 	}
 
+	// filebox
+	static CListBox s_ListBox;
+	s_ListBox.SetActive(!Ui()->IsPopupOpen());
+
 	const auto &&UpdateFileNameInput = [this]() {
 		if(m_FilesSelectedIndex >= 0 && !m_vpFilteredFileList[m_FilesSelectedIndex]->m_IsDir)
 		{
@@ -5172,12 +5176,24 @@ void CEditor::RenderFileDialog()
 		else
 			m_FileDialogFileNameInput.Clear();
 	};
+	const auto &&UpdateSelectedIndex = [&]() {
+		m_FilesSelectedIndex = -1;
+		m_aFilesSelectedName[0] = '\0';
+		// find first valid entry, if it exists
+		for(size_t i = 0; i < m_vpFilteredFileList.size(); i++)
+		{
+			if(str_comp_nocase(m_vpFilteredFileList[i]->m_aName, m_FileDialogFileNameInput.GetString()) == 0)
+			{
+				m_FilesSelectedIndex = i;
+				str_copy(m_aFilesSelectedName, m_vpFilteredFileList[i]->m_aName);
+				break;
+			}
+		}
+		if(m_FilesSelectedIndex >= 0)
+			s_ListBox.ScrollToSelected();
+	};
 
-	// filebox
-	static CListBox s_ListBox;
-	s_ListBox.SetActive(!Ui()->IsPopupOpen());
-
-	if(m_FileDialogStorageType == IStorage::TYPE_SAVE)
+	if(m_FileDialogSaveAction)
 	{
 		Ui()->DoLabel(&FileBoxLabel, "Filename:", 10.0f, TEXTALIGN_ML);
 		if(DoEditBox(&m_FileDialogFileNameInput, &FileBox, 10.0f))
@@ -5191,24 +5207,17 @@ void CEditor::RenderFileDialog()
 					--i;
 				}
 			}
-			m_FilesSelectedIndex = -1;
-			m_aFilesSelectedName[0] = '\0';
-			// find first valid entry, if it exists
-			for(size_t i = 0; i < m_vpFilteredFileList.size(); i++)
-			{
-				if(str_comp_nocase(m_vpFilteredFileList[i]->m_aName, m_FileDialogFileNameInput.GetString()) == 0)
-				{
-					m_FilesSelectedIndex = i;
-					str_copy(m_aFilesSelectedName, m_vpFilteredFileList[i]->m_aName);
-					break;
-				}
-			}
-			if(m_FilesSelectedIndex >= 0)
-				s_ListBox.ScrollToSelected();
+			UpdateSelectedIndex();
 		}
 
 		if(m_FileDialogOpening)
+		{
 			Ui()->SetActiveItem(&m_FileDialogFileNameInput);
+			if(!m_FileDialogFileNameInput.IsEmpty())
+			{
+				UpdateSelectedIndex();
+			}
+		}
 	}
 	else
 	{
@@ -5218,6 +5227,10 @@ void CEditor::RenderFileDialog()
 		{
 			Ui()->SetActiveItem(&m_FileDialogFilterInput);
 			m_FileDialogFilterInput.SelectAll();
+		}
+		if(m_FileDialogOpening)
+		{
+			UpdateFileNameInput();
 		}
 		if(Ui()->DoClearableEditBox(&m_FileDialogFilterInput, &FileBox, 10.0f))
 		{
@@ -5491,8 +5504,8 @@ void CEditor::RenderFileDialog()
 			str_format(m_aFileSaveName, sizeof(m_aFileSaveName), "%s/%s", m_pFileDialogPath, m_FileDialogFileNameInput.GetString());
 			if(!str_endswith(m_aFileSaveName, FILETYPE_EXTENSIONS[m_FileDialogFileType]))
 				str_append(m_aFileSaveName, FILETYPE_EXTENSIONS[m_FileDialogFileType]);
-			const bool SaveAction = m_FileDialogStorageType == IStorage::TYPE_SAVE;
-			if(SaveAction && Storage()->FileExists(m_aFileSaveName, StorageType))
+
+			if(m_FileDialogSaveAction && Storage()->FileExists(m_aFileSaveName, StorageType))
 			{
 				if(m_pfnFileDialogFunc == &CallbackSaveMap)
 					m_PopupEventType = POPEVENT_SAVE;
@@ -5506,7 +5519,7 @@ void CEditor::RenderFileDialog()
 					dbg_assert(false, "m_pfnFileDialogFunc unhandled for saving");
 				m_PopupEventActivated = true;
 			}
-			else if(m_pfnFileDialogFunc && (SaveAction || m_FilesSelectedIndex >= 0))
+			else if(m_pfnFileDialogFunc && (m_FileDialogSaveAction || m_FilesSelectedIndex >= 0))
 			{
 				m_pfnFileDialogFunc(m_aFileSaveName, StorageType, m_pFileDialogUser);
 			}
@@ -5726,6 +5739,7 @@ void CEditor::InvokeFileDialog(int StorageType, int FileType, const char *pTitle
 	{
 		m_FileDialogMultipleStorages = false;
 	}
+	m_FileDialogSaveAction = m_FileDialogStorageType == IStorage::TYPE_SAVE;
 
 	Ui()->ClosePopupMenus();
 	m_pFileDialogTitle = pTitle;

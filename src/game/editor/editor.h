@@ -392,6 +392,7 @@ public:
 
 		m_FileDialogStorageType = 0;
 		m_FileDialogLastPopulatedStorageType = 0;
+		m_FileDialogSaveAction = false;
 		m_pFileDialogTitle = nullptr;
 		m_pFileDialogButtonText = nullptr;
 		m_pFileDialogUser = nullptr;
@@ -638,6 +639,7 @@ public:
 
 	int m_FileDialogStorageType;
 	int m_FileDialogLastPopulatedStorageType;
+	bool m_FileDialogSaveAction;
 	const char *m_pFileDialogTitle;
 	const char *m_pFileDialogButtonText;
 	bool (*m_pfnFileDialogFunc)(const char *pFileName, int StorageType, void *pUser);
