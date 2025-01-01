@@ -151,6 +151,11 @@ void CCityHelper::OnMessage(int MsgType, void *pRawMsg)
 			Offset = sizeof("Кошелёк [");
 		}
 		if(!pMoney)
+		{
+			pMoney = str_find(pMsg->m_pMessage, "Кошелек [");
+			Offset = sizeof("Кошелек [");
+		}
+		if(!pMoney)
 			return;
 		// sizeof counts the null terminator too
 		Offset--;
