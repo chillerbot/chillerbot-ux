@@ -101,7 +101,6 @@ public:
 		Success &= CreateFolder("ghosts", TYPE_SAVE);
 		Success &= CreateFolder("teehistorian", TYPE_SAVE);
 
-
 		Success &= CreateFolder("chillerbot", TYPE_SAVE);
 		Success &= CreateFolder("chillerbot/warlist", TYPE_SAVE);
 		Success &= CreateFolder("chillerbot/term_hist", TYPE_SAVE);
