@@ -123,13 +123,6 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 			delete GameServer()->m_apSavedTees[m_pPlayer->GetCid()];
 			GameServer()->m_apSavedTees[m_pPlayer->GetCid()] = nullptr;
 		}
-
-		if(GameServer()->m_apSavedTeleTees[m_pPlayer->GetCid()])
-		{
-			m_pPlayer->m_LastTeleTee = *GameServer()->m_apSavedTeleTees[m_pPlayer->GetCid()];
-			delete GameServer()->m_apSavedTeleTees[m_pPlayer->GetCid()];
-			GameServer()->m_apSavedTeleTees[m_pPlayer->GetCid()] = nullptr;
-		}
 	}
 
 	return true;
@@ -1087,8 +1080,7 @@ void CCharacter::SnapCharacter(int SnappingClient, int Id)
 	{
 		Health = m_Health;
 		Armor = m_Armor;
-		if(m_Core.m_aWeapons[m_Core.m_ActiveWeapon].m_Ammo > 0)
-			AmmoCount = (m_FreezeTime == 0) ? m_Core.m_aWeapons[m_Core.m_ActiveWeapon].m_Ammo : 0;
+		AmmoCount = (m_FreezeTime == 0) ? m_Core.m_aWeapons[m_Core.m_ActiveWeapon].m_Ammo : 0;
 	}
 
 	if(GetPlayer()->IsAfk() || GetPlayer()->IsPaused())

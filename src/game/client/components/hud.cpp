@@ -76,6 +76,8 @@ void CHud::OnReset()
 	m_ServerRecord = -1.0f;
 	m_aPlayerRecord[0] = -1.0f;
 	m_aPlayerRecord[1] = -1.0f;
+	m_aPlayerSpeed[0] = 0;
+	m_aPlayerSpeed[1] = 0;
 	m_aLastPlayerSpeedChange[0] = ESpeedChange::NONE;
 	m_aLastPlayerSpeedChange[1] = ESpeedChange::NONE;
 
@@ -742,11 +744,11 @@ void CHud::RenderAmmoHealthAndArmor(const CNetObj_Character *pCharacter)
 			Graphics()->TextureSet(m_pClient->m_GameSkin.m_aSpriteWeaponProjectiles[CurWeapon]);
 			if(AmmoOffsetY > 0)
 			{
-				Graphics()->RenderQuadContainerEx(m_HudQuadContainerIndex, m_aAmmoOffset[CurWeapon] + QuadOffsetSixup, minimum(pCharacter->m_AmmoCount, 10), 0, AmmoOffsetY);
+				Graphics()->RenderQuadContainerEx(m_HudQuadContainerIndex, m_aAmmoOffset[CurWeapon] + QuadOffsetSixup, clamp(pCharacter->m_AmmoCount, 0, 10), 0, AmmoOffsetY);
 			}
 			else
 			{
-				Graphics()->RenderQuadContainer(m_HudQuadContainerIndex, m_aAmmoOffset[CurWeapon] + QuadOffsetSixup, minimum(pCharacter->m_AmmoCount, 10));
+				Graphics()->RenderQuadContainer(m_HudQuadContainerIndex, m_aAmmoOffset[CurWeapon] + QuadOffsetSixup, clamp(pCharacter->m_AmmoCount, 0, 10));
 			}
 		}
 	}
