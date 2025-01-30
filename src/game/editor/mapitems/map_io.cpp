@@ -16,12 +16,6 @@
 #include "sound.h"
 #include <engine/shared/config.h>
 
-template<typename T>
-static int MakeVersion(int i, const T &v)
-{
-	return (i << 16) + sizeof(T);
-}
-
 // compatibility with old sound layers
 struct CSoundSource_DEPRECATED
 {
@@ -855,15 +849,6 @@ bool CEditorMap::Load(const char *pFileName, int StorageType, const std::functio
 						void *pData = DataFile.GetData(pTilemapItem->m_Data);
 						unsigned int Size = DataFile.GetDataSize(pTilemapItem->m_Data);
 						pTiles->ExtractTiles(pTilemapItem->m_Version, (CTile *)pData, Size);
-
-						if(pTiles->m_Game && pTilemapItem->m_Version == MakeVersion(1, *pTilemapItem))
-						{
-							for(int i = 0; i < pTiles->m_Width * pTiles->m_Height; i++)
-							{
-								if(pTiles->m_pTiles[i].m_Index)
-									pTiles->m_pTiles[i].m_Index += ENTITY_OFFSET;
-							}
-						}
 						DataFile.UnloadData(pTilemapItem->m_Data);
 					}
 				}

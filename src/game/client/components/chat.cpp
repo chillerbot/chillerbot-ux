@@ -132,7 +132,7 @@ void CChat::Reset()
 	m_aCompletionBuffer[0] = 0;
 	m_PlaceholderOffset = 0;
 	m_PlaceholderLength = 0;
-	m_pHistoryEntry = 0x0;
+	m_pHistoryEntry = nullptr;
 	m_PendingChatCounter = 0;
 	m_LastChatSend = 0;
 	m_CurrentLine = 0;
@@ -301,7 +301,7 @@ bool CChat::OnInput(const IInput::CEvent &Event)
 				{
 					PlayerName = m_pClient->m_aClients[PlayerInfo->m_ClientId].m_aName;
 					FoundInput = str_utf8_find_nocase(PlayerName, m_aCompletionBuffer);
-					if(FoundInput != 0)
+					if(FoundInput != nullptr)
 					{
 						m_aPlayerCompletionList[m_PlayerCompletionListLength].ClientId = PlayerInfo->m_ClientId;
 						// The score for suggesting a player name is determined by the distance of the search input to the beginning of the player name
@@ -318,7 +318,7 @@ bool CChat::OnInput(const IInput::CEvent &Event)
 
 		if(m_aCompletionBuffer[0] == '/' && !m_vCommands.empty())
 		{
-			CCommand *pCompletionCommand = 0;
+			CCommand *pCompletionCommand = nullptr;
 
 			const size_t NumCommands = m_vCommands.size();
 
@@ -383,7 +383,7 @@ bool CChat::OnInput(const IInput::CEvent &Event)
 		else
 		{
 			// find next possible name
-			const char *pCompletionString = 0;
+			const char *pCompletionString = nullptr;
 			if(m_PlayerCompletionListLength > 0)
 			{
 				// We do this in a loop, if a player left the game during the repeated pressing of Tab, they are skipped
@@ -582,7 +582,6 @@ bool CChat::LineShouldHighlight(const char *pLine, const char *pName)
 	return false;
 }
 
-#define SAVES_FILE "ddnet-saves.txt"
 const char *SAVES_HEADER[] = {
 	"Time",
 	"Player",
@@ -656,7 +655,7 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 	// trim right and set maximum length to 256 utf8-characters
 	int Length = 0;
 	const char *pStr = pLine;
-	const char *pEnd = 0;
+	const char *pEnd = nullptr;
 	while(*pStr)
 	{
 		const char *pStrOld = pStr;
@@ -665,9 +664,9 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 		// check if unicode is not empty
 		if(!str_utf8_isspace(Code))
 		{
-			pEnd = 0;
+			pEnd = nullptr;
 		}
-		else if(pEnd == 0)
+		else if(pEnd == nullptr)
 			pEnd = pStrOld;
 
 		if(++Length >= MAX_LINE_LENGTH)
@@ -676,7 +675,7 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 			break;
 		}
 	}
-	if(pEnd != 0)
+	if(pEnd != nullptr)
 		*(const_cast<char *>(pEnd)) = 0;
 
 	if(*pLine == 0)
@@ -774,12 +773,12 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 	// check for highlighted name
 	if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 	{
-		if(ClientId >= 0 && ClientId != m_pClient->m_aLocalIds[0] && (!m_pClient->Client()->DummyConnected() || ClientId != m_pClient->m_aLocalIds[1]))
+		if(ClientId >= 0 && ClientId != m_pClient->m_aLocalIds[0] && ClientId != m_pClient->m_aLocalIds[1])
 		{
-			// main character
-			Highlighted |= LineShouldHighlight(pLine, m_pClient->m_aClients[m_pClient->m_aLocalIds[0]].m_aName);
-			// dummy
-			Highlighted |= m_pClient->Client()->DummyConnected() && LineShouldHighlight(pLine, m_pClient->m_aClients[m_pClient->m_aLocalIds[1]].m_aName);
+			for(int LocalId : m_pClient->m_aLocalIds)
+			{
+				Highlighted |= LocalId >= 0 && LineShouldHighlight(pLine, m_pClient->m_aClients[LocalId].m_aName);
+			}
 		}
 	}
 	else

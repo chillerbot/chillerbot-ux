@@ -196,7 +196,7 @@ CMapLayers::STileLayerVisuals::~STileLayerVisuals()
 {
 	delete[] m_pTilesOfLayer;
 
-	m_pTilesOfLayer = NULL;
+	m_pTilesOfLayer = nullptr;
 }
 
 static bool AddTile(std::vector<SGraphicTile> &vTmpTiles, std::vector<SGraphicTileTexureCoords> &vTmpTileTexCoords, unsigned char Index, unsigned char Flags, int x, int y, bool DoTextureCoords, bool FillSpeedup = false, int AngleRotate = -1, const ivec2 &Offset = ivec2{0, 0}, int Scale = 32)
@@ -205,7 +205,7 @@ static bool AddTile(std::vector<SGraphicTile> &vTmpTiles, std::vector<SGraphicTi
 	{
 		vTmpTiles.emplace_back();
 		SGraphicTile &Tile = vTmpTiles.back();
-		SGraphicTileTexureCoords *pTileTex = NULL;
+		SGraphicTileTexureCoords *pTileTex = nullptr;
 		if(DoTextureCoords)
 		{
 			vTmpTileTexCoords.emplace_back();
@@ -682,8 +682,8 @@ void CMapLayers::RefreshTileBuffers(const std::function<void()> &RenderLoading)
 						vtmpTileTexCoords.insert(vtmpTileTexCoords.end(), vtmpBorderRightTilesTexCoords.begin(), vtmpBorderRightTilesTexCoords.end());
 
 						//setup params
-						float *pTmpTiles = vtmpTiles.empty() ? NULL : (float *)vtmpTiles.data();
-						unsigned char *pTmpTileTexCoords = vtmpTileTexCoords.empty() ? NULL : (unsigned char *)vtmpTileTexCoords.data();
+						float *pTmpTiles = vtmpTiles.empty() ? nullptr : (float *)vtmpTiles.data();
+						unsigned char *pTmpTileTexCoords = vtmpTileTexCoords.empty() ? nullptr : (unsigned char *)vtmpTileTexCoords.data();
 
 						Visuals.m_BufferContainerIndex = -1;
 						size_t UploadDataSize = vtmpTileTexCoords.size() * sizeof(SGraphicTileTexureCoords) + vtmpTiles.size() * sizeof(SGraphicTile);
@@ -709,7 +709,7 @@ void CMapLayers::RefreshTileBuffers(const std::function<void()> &RenderLoading)
 							pAttr->m_DataTypeCount = 2;
 							pAttr->m_Type = GRAPHICS_TYPE_FLOAT;
 							pAttr->m_Normalized = false;
-							pAttr->m_pOffset = 0;
+							pAttr->m_pOffset = nullptr;
 							pAttr->m_FuncType = 0;
 							if(DoTextureCoords)
 							{
@@ -798,7 +798,7 @@ void CMapLayers::RefreshTileBuffers(const std::function<void()> &RenderLoading)
 
 				if(UploadDataSize > 0)
 				{
-					void *pUploadData = NULL;
+					void *pUploadData = nullptr;
 					if(Textured)
 						pUploadData = vtmpQuadsTextured.data();
 					else
@@ -814,7 +814,7 @@ void CMapLayers::RefreshTileBuffers(const std::function<void()> &RenderLoading)
 					pAttr->m_DataTypeCount = 4;
 					pAttr->m_Type = GRAPHICS_TYPE_FLOAT;
 					pAttr->m_Normalized = false;
-					pAttr->m_pOffset = 0;
+					pAttr->m_pOffset = nullptr;
 					pAttr->m_FuncType = 0;
 					ContainerInfo.m_vAttributes.emplace_back();
 					pAttr = &ContainerInfo.m_vAttributes.back();

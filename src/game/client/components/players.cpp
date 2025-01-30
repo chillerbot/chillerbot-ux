@@ -269,12 +269,12 @@ void CPlayers::RenderHookCollLine(
 				}
 
 				int Tele;
-				int Hit = Collision()->IntersectLineTeleHook(OldPos, NewPos, &FinishPos, 0x0, &Tele);
+				int Hit = Collision()->IntersectLineTeleHook(OldPos, NewPos, &FinishPos, nullptr, &Tele);
 				if(!DoBreak && Hit == TILE_TELEINHOOK)
 				{
 					if(Collision()->TeleOuts(Tele - 1).size() != 1)
 					{
-						Hit = Collision()->IntersectLineTeleHook(OldPos, NewPos, &FinishPos, 0x0);
+						Hit = Collision()->IntersectLineTeleHook(OldPos, NewPos, &FinishPos, nullptr);
 					}
 					else
 					{
@@ -794,7 +794,7 @@ void CPlayers::RenderPlayer(
 		Graphics()->QuadsSetRotation(0);
 	}
 
-	if(g_Config.m_ClAfkEmote && m_pClient->m_aClients[ClientId].m_Afk && !(Client()->DummyConnected() && ClientId == m_pClient->m_aLocalIds[!g_Config.m_ClDummy]))
+	if(g_Config.m_ClAfkEmote && m_pClient->m_aClients[ClientId].m_Afk && ClientId != m_pClient->m_aLocalIds[!g_Config.m_ClDummy])
 	{
 		int CurEmoticon = (SPRITE_ZZZ - SPRITE_OOP);
 		Graphics()->TextureSet(GameClient()->m_EmoticonsSkin.m_aSpriteEmoticons[CurEmoticon]);

@@ -172,6 +172,17 @@ void CMenus::RenderSettingsGeneral(CUIRect MainView)
 		}
 		GameClient()->m_Tooltips.DoToolTip(&s_SettingsButtonId, &SettingsButton, Localize("Open the settings file"));
 
+		CUIRect SavesButton;
+		Left.HSplitBottom(20.0f, &Left, &SavesButton);
+		Left.HSplitBottom(5.0f, &Left, nullptr);
+		static CButtonContainer s_SavesButtonId;
+		if(DoButton_Menu(&s_SavesButtonId, Localize("Saves file"), 0, &SavesButton))
+		{
+			Storage()->GetCompletePath(IStorage::TYPE_SAVE, SAVES_FILE, aBuf, sizeof(aBuf));
+			Client()->ViewFile(aBuf);
+		}
+		GameClient()->m_Tooltips.DoToolTip(&s_SavesButtonId, &SavesButton, Localize("Open the saves file"));
+
 		CUIRect ConfigButton;
 		Left.HSplitBottom(20.0f, &Left, &ConfigButton);
 		Left.HSplitBottom(5.0f, &Left, nullptr);
@@ -945,7 +956,7 @@ void CMenus::DoSettingsControlsButtons(int Start, int Stop, CUIRect View)
 				m_pClient->m_Binds.Bind(NewId, Key.m_pCommand, false, NewModifierCombination);
 		}
 
-		View.HSplitTop(2.0f, 0, &View);
+		View.HSplitTop(2.0f, nullptr, &View);
 	}
 }
 
@@ -1338,7 +1349,7 @@ void CMenus::RenderSettingsControls(CUIRect MainView)
 	// misc settings
 	{
 		MiscSettings.HSplitTop(Margin, nullptr, &MiscSettings);
-		MiscSettings.HSplitTop(300.0f, &MiscSettings, 0);
+		MiscSettings.HSplitTop(300.0f, &MiscSettings, nullptr);
 		if(s_ScrollRegion.AddRect(MiscSettings))
 		{
 			MiscSettings.Draw(ColorRGBA(1, 1, 1, 0.25f), IGraphics::CORNER_ALL, 10.0f);
@@ -1408,7 +1419,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	CUIRect ModeList, ModeLabel;
 	MainView.VSplitLeft(350.0f, &MainView, &ModeList);
 	ModeList.HSplitTop(24.0f, &ModeLabel, &ModeList);
-	MainView.VSplitLeft(340.0f, &MainView, 0);
+	MainView.VSplitLeft(340.0f, &MainView, nullptr);
 
 	// display mode list
 	static CListBox s_ListBox;
