@@ -117,13 +117,11 @@ public:
 	virtual void OnReset();
 
 	// game
-	void DoWarmup(int Seconds);
+	virtual void DoWarmup(int Seconds);
 
 	void StartRound();
 	void EndRound();
 	void ChangeMap(const char *pToMap);
-
-	bool IsForceBalanced();
 
 	/*
 
