@@ -17,8 +17,9 @@
 #include <engine/shared/config.h>
 
 // compatibility with old sound layers
-struct CSoundSource_DEPRECATED
+class CSoundSourceDeprecated
 {
+public:
 	CPoint m_Position;
 	int m_Loop;
 	int m_TimeDelay; // in s
@@ -923,13 +924,13 @@ bool CEditorMap::Load(const char *pFileName, int StorageType, const std::functio
 					IntsToStr(pSoundsItem->m_aName, std::size(pSoundsItem->m_aName), pSounds->m_aName, std::size(pSounds->m_aName));
 
 					// load data
-					CSoundSource_DEPRECATED *pData = (CSoundSource_DEPRECATED *)DataFile.GetDataSwapped(pSoundsItem->m_Data);
+					CSoundSourceDeprecated *pData = (CSoundSourceDeprecated *)DataFile.GetDataSwapped(pSoundsItem->m_Data);
 					pGroup->AddLayer(pSounds);
 					pSounds->m_vSources.resize(pSoundsItem->m_NumSources);
 
 					for(int i = 0; i < pSoundsItem->m_NumSources; i++)
 					{
-						CSoundSource_DEPRECATED *pOldSource = &pData[i];
+						CSoundSourceDeprecated *pOldSource = &pData[i];
 
 						CSoundSource &Source = pSounds->m_vSources[i];
 						Source.m_Position = pOldSource->m_Position;

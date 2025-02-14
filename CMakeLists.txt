@@ -2334,6 +2334,7 @@ if(CLIENT)
     graphics_threaded.h
     input.cpp
     input.h
+    keynames.cpp
     keynames.h
     notifications.cpp
     notifications.h
@@ -3083,6 +3084,7 @@ if(GTEST_FOUND OR DOWNLOAD_GTEST)
     secure_random.cpp
     serverbrowser.cpp
     serverinfo.cpp
+    shell_execute.cpp
     snapshot.cpp
     str.cpp
     strip_path_and_extension.cpp
@@ -3118,7 +3120,7 @@ if(GTEST_FOUND OR DOWNLOAD_GTEST)
     $<TARGET_OBJECTS:rust-bridge-shared>
     ${DEPS}
   )
-  target_link_libraries(${TARGET_TESTRUNNER} ${MYSQL_LIBRARIES} ${PNG_LIBRARIES} ${GTEST_LIBRARIES} ${LIBS} rust_engine_shared ${TARGET_ANTIBOT})
+  target_link_libraries(${TARGET_TESTRUNNER} ${PNG_LIBRARIES} ${GTEST_LIBRARIES} ${LIBS_SERVER})
   target_include_directories(${TARGET_TESTRUNNER} SYSTEM PRIVATE ${GTEST_INCLUDE_DIRS})
 
   list(APPEND TARGETS_OWN ${TARGET_TESTRUNNER})
