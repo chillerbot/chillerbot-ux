@@ -193,6 +193,15 @@ bool CLangParser::IsGreeting(const char *pMsg)
 	return false;
 }
 
+bool CLangParser::IsGreetingQq(const char *pMsg)
+{
+	if(FindWord(pMsg, "q"))
+		return true;
+	if(FindWord(pMsg, "qq"))
+		return true;
+	return false;
+}
+
 bool CLangParser::IsBye(const char *pMsg)
 {
 	const char aByes[][128] = {

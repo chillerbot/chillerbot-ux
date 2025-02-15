@@ -35,6 +35,7 @@ public:
 	bool IsAskToAskGerman(const char *pMessage, const char *pMessageAuthor = 0, char *pResponse = 0, int SizeOfResponse = 0);
 
 	bool IsGreeting(const char *pMsg);
+	bool IsGreetingQq(const char *pMsg);
 	bool IsBye(const char *pMsg);
 	bool IsInsult(const char *pMsg);
 	bool IsQuestionWhy(const char *pMsg);

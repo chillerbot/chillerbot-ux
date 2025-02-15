@@ -171,6 +171,11 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "hi %s", m_pMessageAuthor);
 		return true;
 	}
+	if(LangParser().IsGreetingQq(m_pMessage) && MsgLen < NameLen + 10)
+	{
+		str_format(m_pResponse, m_SizeOfResponse, "%s qq", m_pMessageAuthor);
+		return true;
+	}
 	if(LangParser().IsBye(m_pMessage))
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "bye %s", m_pMessageAuthor);
