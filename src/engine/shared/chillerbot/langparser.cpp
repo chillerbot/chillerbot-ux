@@ -38,6 +38,30 @@ int CLangParser::StrFindIndex(const char *pHaystack, const char *pNeedle)
 	return -1;
 }
 
+const char *CLangParser::FindWord(const char *pText, const char *pWord)
+{
+	const char *pHL = str_find_nocase(pText, pWord);
+	while(pHL)
+	{
+		int Length = str_length(pWord);
+
+		bool BoundaryStart = pText == pHL || pHL[-1] == ' ';
+		bool BoundaryEnd =
+			pHL[Length] == 0 ||
+			pHL[Length] == ' ' ||
+			pHL[Length] == '!' ||
+			pHL[Length] == '?' ||
+			pHL[Length] == '.' ||
+			pHL[Length] == ',' ||
+			pHL[Length] == '1' ||
+			pHL[Length] == pHL[Length - 1];
+		if(BoundaryStart && BoundaryEnd)
+			return pHL;
+		pHL = str_find_nocase(pHL + 1, pWord);
+	}
+	return nullptr;
+}
+
 bool CLangParser::IsAskToAskGerman(const char *pMessage, const char *pMessageAuthor, char *pResponse, int SizeOfResponse)
 {
 	if(pResponse)
@@ -163,15 +187,8 @@ bool CLangParser::IsGreeting(const char *pMsg)
 		"selam"};
 	for(const auto &aGreeting : aGreetings)
 	{
-		const char *pHL = str_find_nocase(pMsg, aGreeting);
-		while(pHL)
-		{
-			int Length = str_length(aGreeting);
-
-			if((pMsg == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '1' || pHL[Length] == pHL[Length - 1]))
-				return true;
-			pHL = str_find_nocase(pHL + 1, aGreeting);
-		}
+		if(FindWord(pMsg, aGreeting))
+			return true;
 	}
 	return false;
 }
@@ -188,22 +205,15 @@ bool CLangParser::IsBye(const char *pMsg)
 		"bye"};
 	for(const auto &aBye : aByes)
 	{
-		const char *pHL = str_find_nocase(pMsg, aBye);
-		while(pHL)
-		{
-			int Length = str_length(aBye);
-
-			if((pMsg == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '1' || pHL[Length] == pHL[Length - 1]))
-				return true;
-			pHL = str_find_nocase(pHL + 1, aBye);
-		}
+		if(FindWord(pMsg, aBye))
+			return true;
 	}
 	return false;
 }
 
 bool CLangParser::IsInsult(const char *pMsg)
 {
-	const char aByes[][128] = {
+	const char aInsults[][128] = {
 		"DELETE THE GAME",
 		"GAYASS",
 		"NIGGER",
@@ -215,17 +225,10 @@ bool CLangParser::IsInsult(const char *pMsg)
 		"fuck your",
 		"fucking idiot",
 		"piece of shit"};
-	for(const auto &aBye : aByes)
+	for(const auto &aInsult : aInsults)
 	{
-		const char *pHL = str_find_nocase(pMsg, aBye);
-		while(pHL)
-		{
-			int Length = str_length(aBye);
-
-			if((pMsg == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '1' || pHL[Length] == pHL[Length - 1]))
-				return true;
-			pHL = str_find_nocase(pHL + 1, aBye);
-		}
+		if(FindWord(pMsg, aInsult))
+			return true;
 	}
 	// /me
 	if(str_startswith(pMsg, "### '"))
@@ -253,15 +256,8 @@ bool CLangParser::IsQuestionWhy(const char *pMsg)
 		"why"};
 	for(const auto &pWhy : aWhys)
 	{
-		const char *pHL = str_find_nocase(pMsg, pWhy);
-		while(pHL)
-		{
-			int Length = str_length(pWhy);
-
-			if((pMsg == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '?' || pHL[Length] == pHL[Length - 1]))
-				return true;
-			pHL = str_find_nocase(pHL + 1, pWhy);
-		}
+		if(FindWord(pMsg, pWhy))
+			return true;
 	}
 	return false;
 }
@@ -287,15 +283,8 @@ bool CLangParser::IsQuestionHow(const char *pMsg)
 		"howwww"};
 	for(const auto &pHow : aHows)
 	{
-		const char *pHL = str_find_nocase(pMsg, pHow);
-		while(pHL)
-		{
-			int Length = str_length(pHow);
-
-			if((pMsg == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '?' || pHL[Length] == pHL[Length - 1]))
-				return true;
-			pHL = str_find_nocase(pHL + 1, pHow);
-		}
+		if(FindWord(pMsg, pHow))
+			return true;
 	}
 	return false;
 }
@@ -311,15 +300,8 @@ bool CLangParser::IsQuestionWhichWhat(const char *pMsg)
 		"what"};
 	for(const auto &pHow : aHows)
 	{
-		const char *pHL = str_find_nocase(pMsg, pHow);
-		while(pHL)
-		{
-			int Length = str_length(pHow);
-
-			if((pMsg == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '?' || pHL[Length] == pHL[Length - 1]))
-				return true;
-			pHL = str_find_nocase(pHL + 1, pHow);
-		}
+		if(FindWord(pMsg, pHow))
+			return true;
 	}
 	return false;
 }
@@ -339,15 +321,8 @@ bool CLangParser::IsQuestionWhoWhichWhat(const char *pMsg)
 		"what"};
 	for(const auto &pHow : aHows)
 	{
-		const char *pHL = str_find_nocase(pMsg, pHow);
-		while(pHL)
-		{
-			int Length = str_length(pHow);
-
-			if((pMsg == pHL || pHL[-1] == ' ') && (pHL[Length] == 0 || pHL[Length] == ' ' || pHL[Length] == '.' || pHL[Length] == '!' || pHL[Length] == ',' || pHL[Length] == '?' || pHL[Length] == pHL[Length - 1]))
-				return true;
-			pHL = str_find_nocase(pHL + 1, pHow);
-		}
+		if(FindWord(pMsg, pHow))
+			return true;
 	}
 	return false;
 }
