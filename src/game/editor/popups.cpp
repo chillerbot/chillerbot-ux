@@ -277,17 +277,17 @@ CUi::EPopupMenuFunctionResult CEditor::PopupMenuSettings(void *pContext, CUIRect
 		Selector.VSplitMid(&No, &Yes);
 
 		pEditor->Ui()->DoLabel(&Label, "Allow unused", 10.0f, TEXTALIGN_ML);
-		if(pEditor->m_AllowPlaceUnusedTiles != -1)
+		if(pEditor->m_AllowPlaceUnusedTiles != EUnusedEntities::ALLOWED_IMPLICIT)
 		{
 			static int s_ButtonNo = 0;
 			static int s_ButtonYes = 0;
-			if(pEditor->DoButton_Ex(&s_ButtonNo, "No", !pEditor->m_AllowPlaceUnusedTiles, &No, 0, "[Ctrl+U] Disallow placing unused tiles.", IGraphics::CORNER_L))
+			if(pEditor->DoButton_Ex(&s_ButtonNo, "No", pEditor->m_AllowPlaceUnusedTiles == EUnusedEntities::NOT_ALLOWED, &No, 0, "[Ctrl+U] Disallow placing unused tiles.", IGraphics::CORNER_L))
 			{
-				pEditor->m_AllowPlaceUnusedTiles = false;
+				pEditor->m_AllowPlaceUnusedTiles = EUnusedEntities::NOT_ALLOWED;
 			}
-			if(pEditor->DoButton_Ex(&s_ButtonYes, "Yes", pEditor->m_AllowPlaceUnusedTiles, &Yes, 0, "[Ctrl+U] Allow placing unused tiles.", IGraphics::CORNER_R))
+			if(pEditor->DoButton_Ex(&s_ButtonYes, "Yes", pEditor->m_AllowPlaceUnusedTiles == EUnusedEntities::ALLOWED_EXPLICIT, &Yes, 0, "[Ctrl+U] Allow placing unused tiles.", IGraphics::CORNER_R))
 			{
-				pEditor->m_AllowPlaceUnusedTiles = true;
+				pEditor->m_AllowPlaceUnusedTiles = EUnusedEntities::ALLOWED_EXPLICIT;
 			}
 		}
 	}
@@ -2526,6 +2526,64 @@ int CEditor::PopupSelectConfigAutoMapResult()
 	return s_AutoMapConfigCurrent;
 }
 
+static int s_AutoMapReferenceSelected = -1;
+static int s_AutoMapReferenceCurrent = -1;
+
+CUi::EPopupMenuFunctionResult CEditor::PopupSelectAutoMapReference(void *pContext, CUIRect View, bool Active)
+{
+	CEditor *pEditor = static_cast<CEditor *>(pContext);
+	std::shared_ptr<CLayerTiles> pLayer = std::static_pointer_cast<CLayerTiles>(pEditor->GetSelectedLayer(0));
+
+	const float ButtonHeight = 12.0f;
+	const float ButtonMargin = 2.0f;
+
+	static CListBox s_ListBox;
+	s_ListBox.DoStart(ButtonHeight, std::size(g_apAutoMapReferenceNames) + 1, 1, 4, s_AutoMapReferenceCurrent + 1, &View, false);
+	s_ListBox.DoAutoSpacing(ButtonMargin);
+
+	for(int i = 0; i < static_cast<int>(std::size(g_apAutoMapReferenceNames)) + 1; i++)
+	{
+		static int s_NoneButton = 0;
+		CListboxItem Item = s_ListBox.DoNextItem(i == 0 ? (void *)&s_NoneButton : g_apAutoMapReferenceNames[i - 1], (i - 1) == s_AutoMapReferenceCurrent, 3.0f);
+		if(!Item.m_Visible)
+			continue;
+
+		CUIRect Label;
+		Item.m_Rect.VMargin(5.0f, &Label);
+
+		SLabelProperties Props;
+		Props.m_MaxWidth = Label.w;
+		Props.m_EllipsisAtEnd = true;
+		pEditor->Ui()->DoLabel(&Label, i == 0 ? "None" : g_apAutoMapReferenceNames[i - 1], EditorFontSizes::MENU, TEXTALIGN_ML, Props);
+	}
+
+	int NewSelected = s_ListBox.DoEnd() - 1;
+	if(NewSelected != s_AutoMapReferenceCurrent)
+		s_AutoMapReferenceSelected = NewSelected;
+
+	return CUi::POPUP_KEEP_OPEN;
+}
+
+void CEditor::PopupSelectAutoMapReferenceInvoke(int Current, float x, float y)
+{
+	static SPopupMenuId s_PopupSelectAutoMapReferenceId;
+	s_AutoMapReferenceSelected = -1;
+	s_AutoMapReferenceCurrent = Current;
+	std::shared_ptr<CLayerTiles> pLayer = std::static_pointer_cast<CLayerTiles>(GetSelectedLayer(0));
+	// Width for buttons is 120, 15 is the scrollbar width, 2 is the margin between both.
+	Ui()->DoPopupMenu(&s_PopupSelectAutoMapReferenceId, x, y, 120.0f + 15.0f + 2.0f, 26.0f + 14.0f * std::size(g_apAutoMapReferenceNames) + 1, this, PopupSelectAutoMapReference);
+}
+
+int CEditor::PopupSelectAutoMapReferenceResult()
+{
+	if(s_AutoMapReferenceSelected == -100)
+		return -100;
+
+	s_AutoMapReferenceCurrent = s_AutoMapReferenceSelected;
+	s_AutoMapReferenceSelected = -100;
+	return s_AutoMapReferenceCurrent;
+}
+
 // DDRace
 
 CUi::EPopupMenuFunctionResult CEditor::PopupTele(void *pContext, CUIRect View, bool Active)
@@ -2887,7 +2945,7 @@ CUi::EPopupMenuFunctionResult CEditor::PopupEntities(void *pContext, CUIRect Vie
 				}
 
 				pEditor->m_SelectEntitiesImage = pEditor->m_vSelectEntitiesFiles[i];
-				pEditor->m_AllowPlaceUnusedTiles = pEditor->m_SelectEntitiesImage == "DDNet" ? 0 : -1;
+				pEditor->m_AllowPlaceUnusedTiles = pEditor->m_SelectEntitiesImage == "DDNet" ? EUnusedEntities::NOT_ALLOWED : EUnusedEntities::ALLOWED_IMPLICIT;
 				pEditor->m_PreventUnusedTilesWasWarned = false;
 
 				pEditor->Graphics()->UnloadTexture(&pEditor->m_EntitiesTexture);
