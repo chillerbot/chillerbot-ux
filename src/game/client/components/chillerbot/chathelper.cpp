@@ -406,15 +406,15 @@ int CChatHelper::IsSpam(int ClientId, int Team, const char *pMsg)
 		return SPAM_NONE;
 	int MsgLen = str_length(pMsg);
 	int NameLen = 0;
-	const char *pName = m_pClient->m_aClients[m_pClient->m_aLocalIds[0]].m_aName;
-	const char *pDummyName = m_pClient->m_aClients[m_pClient->m_aLocalIds[1]].m_aName;
+	const char *pName = PlayerName();
+	const char *pDummyName = DummyName();
 	bool Highlighted = false;
-	if(LineShouldHighlight(pMsg, pName))
+	if(LineShouldHighlight(pMsg, pName) && pName[0])
 	{
 		Highlighted = true;
 		NameLen = str_length(pName);
 	}
-	else if(m_pClient->Client()->DummyConnected() && LineShouldHighlight(pMsg, pDummyName))
+	else if(m_pClient->Client()->DummyConnected() && LineShouldHighlight(pMsg, pDummyName) && pDummyName)
 	{
 		Highlighted = true;
 		NameLen = str_length(pDummyName);
@@ -586,4 +586,22 @@ bool CChatHelper::OnAutocomplete(CLineInput *pInput, const char *pCompletionBuff
 	pInput->Set(aBuf); // TODO: Use Add instead
 	pInput->SetCursorOffset(PlaceholderOffset + PlaceholderLength);
 	return true;
+}
+
+const char *CChatHelper::PlayerName()
+{
+	int ClientId = GameClient()->m_aLocalIds[0];
+	if(ClientId == -1)
+		return "";
+	return GameClient()->m_aClients[ClientId].m_aName;
+}
+
+const char *CChatHelper::DummyName()
+{
+	int ClientId = GameClient()->m_aLocalIds[1];
+	if(!GameClient()->Client()->DummyConnected())
+		return "";
+	if(ClientId == -1)
+		return "";
+	return GameClient()->m_aClients[ClientId].m_aName;
 }

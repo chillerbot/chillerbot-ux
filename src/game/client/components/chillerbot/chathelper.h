@@ -229,6 +229,15 @@ public:
 	void SayBuffer(const char *pMsg, int Team, bool StayAfk = false);
 	bool FilterChat(int ClientId, int Team, const char *pLine);
 	bool OnAutocomplete(CLineInput *pInput, const char *pCompletionBuffer, int PlaceholderOffset, int PlaceholderLength, int *pOldChatStringLength, int *pCompletionChosen, bool ReverseTAB);
+
+	// always returns a valid string
+	// might be "" if the local client id is -1
+	// this can happen during connection a few ticks
+	const char *PlayerName();
+
+	// always returns a valid string
+	// might be "" if the dummy is not connected yet
+	const char *DummyName();
 };
 
 #endif
