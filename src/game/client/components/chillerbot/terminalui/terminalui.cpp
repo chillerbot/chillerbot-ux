@@ -1174,7 +1174,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 		m_NewInput = true;
 	}
 	else if(Key == 'k')
-		m_pClient->SendKill(g_Config.m_ClDummy);
+		m_pClient->SendKill();
 	else if(Key == ' ')
 	{
 		m_Input.m_Jump = 1;
