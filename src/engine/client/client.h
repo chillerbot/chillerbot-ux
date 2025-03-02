@@ -353,7 +353,8 @@ public:
 	void SnapSetStaticsize7(int ItemType, int Size) override;
 
 	void Render();
-	void DebugRender();
+	void RenderDebug();
+	void RenderGraphs();
 
 	void Restart() override;
 	void Quit() override;
