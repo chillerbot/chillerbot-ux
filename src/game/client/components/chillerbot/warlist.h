@@ -175,11 +175,11 @@ public:
 	bool IsWarClan(int ClientId);
 	bool IsTeamClan(int ClientId);
 	bool IsWarClanmate(int ClientId);
-	ColorRGBA GetNameplateColor(int ClientId);
+	ColorRGBA GetNameplateColor(int ClientId, ColorRGBA DDNetColor);
 	void ReloadList();
 
-	int NumEnemies() { return m_WarDirs + m_TraitorDirs; }
-	int NumTeam() { return m_TeamDirs; };
+	int NumEnemies() const { return m_WarDirs + m_TraitorDirs; }
+	int NumTeam() const { return m_TeamDirs; };
 };
 
 #endif

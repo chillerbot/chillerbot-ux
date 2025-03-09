@@ -13,8 +13,8 @@
 #include <memory>
 #include <vector>
 
-#include <game/client/prediction/entities/character.h>
 #include <game/client/components/chillerbot/warlist.h>
+#include <game/client/prediction/entities/character.h>
 
 #include "nameplates.h"
 
@@ -636,7 +636,7 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 
 	Data.m_Color.a = Alpha;
 
-	Data.m_Color = m_pClient->m_WarList.GetNameplateColor(pPlayerInfo->m_ClientId); // chillerbot-ux
+	Data.m_Color = m_pClient->m_WarList.GetNameplateColor(pPlayerInfo->m_ClientId, Data.m_Color); // chillerbot-ux
 
 	int ShowDirectionConfig = g_Config.m_ClShowDirection;
 #if defined(CONF_VIDEORECORDER)

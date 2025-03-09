@@ -3,8 +3,10 @@
 #include <vector>
 
 #include <base/color.h>
+#include <base/log.h>
 #include <base/system.h>
 #include <engine/config.h>
+#include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
 #include <engine/storage.h>
 #include <engine/textrender.h>
@@ -423,10 +425,10 @@ bool CWarList::IsWarClanmate(int ClientId)
 	return false;
 }
 
-ColorRGBA CWarList::GetNameplateColor(int ClientId)
+ColorRGBA CWarList::GetNameplateColor(int ClientId, ColorRGBA DDNetColor)
 {
 	if(!g_Config.m_ClWarList)
-		return ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
+		return DDNetColor;
 
 	if(IsWar(ClientId))
 		return ColorRGBA(7.0f, 0.2f, 0.2f, 1.0f);
@@ -441,7 +443,7 @@ ColorRGBA CWarList::GetNameplateColor(int ClientId)
 	else if(IsWarClanmate(ClientId))
 		return ColorRGBA(7.0f, 0.5f, 0.2f, 1.0f);
 	else
-		return ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
+		return DDNetColor;
 }
 
 bool CWarList::RemoveTeamNameFromVector(const char *pDir, const char *pName)
@@ -844,6 +846,9 @@ void CWarList::ConchainWarList(IConsole::IResult *pResult, void *pUserData, ICon
 	{
 		pSelf->m_pClient->m_ChillerBotUX.EnableComponent("war list");
 		pSelf->ReloadList();
+
+		if(g_Config.m_ClNamePlatesTeamcolors)
+			log_warn("warlist", "warning both chillerbot-ux warlist and ddnet cl_nameplates_teamcolors want to set name colors");
 	}
 	else
 		pSelf->m_pClient->m_ChillerBotUX.DisableComponent("war list");
