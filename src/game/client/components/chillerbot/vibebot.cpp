@@ -107,7 +107,7 @@ void CVibeBot::OnConsoleInit()
 	// Console()->Register("vibe", "s[sleepy|wtf|happy|music]?i[dummy]", CFGFLAG_CLIENT, ConVibe, this, "Set vibebot mode ('vibebots' for list)");
 	// Console()->Register("vibes", "", CFGFLAG_CLIENT, ConVibes, this, "Shows all vibebots (set via vibebot <name>)");
 	// Console()->Register("unvibe", "", CFGFLAG_CLIENT, ConUnVibe, this, "Turn off vibebot");
-	Console()->Register("emotebot", "s[sleepy|wtf|happy|music]?i[delay]?i[dummy]", CFGFLAG_CLIENT, ConEmoteBot, this, "Automatically send emotes");
+	Console()->Register("emotebot", "s[happy|ghost|sleepy|wtf|music]?i[delay]?i[dummy]", CFGFLAG_CLIENT, ConEmoteBot, this, "Automatically send emotes");
 }
 
 void CVibeBot::ConEmoteBot(IConsole::IResult *pResult, void *pUserData)
@@ -116,6 +116,8 @@ void CVibeBot::ConEmoteBot(IConsole::IResult *pResult, void *pUserData)
 	int Mode = EB_OFF;
 	if(!str_comp(pResult->GetString(0), "happy"))
 		Mode = E_HAPPY;
+	else if(!str_comp(pResult->GetString(0), "ghost"))
+		Mode = E_GHOST;
 	else if(!str_comp(pResult->GetString(0), "sleepy"))
 		Mode = E_SLEEPY;
 	else if(!str_comp(pResult->GetString(0), "wtf"))
@@ -138,6 +140,8 @@ void CVibeBot::ConVibe(IConsole::IResult *pResult, void *pUserData)
 	int Mode = VB_OFF;
 	if(!str_comp(pResult->GetString(0), "happy"))
 		Mode = VB_HAPPY;
+	else if(!str_comp(pResult->GetString(0), "ghost"))
+		Mode = VB_GHOST;
 	else if(!str_comp(pResult->GetString(0), "sleepy"))
 		Mode = VB_SLEEPY;
 	else if(!str_comp(pResult->GetString(0), "wtf"))
@@ -165,6 +169,7 @@ void CVibeBot::ConVibes(IConsole::IResult *pResult, void *pUserData)
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "vibebot", "--- vibebot ---");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "vibebot", "off: off");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "vibebot", "happy: happy emote and casual eye move");
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "vibebot", "ghost: ghost emote and casual eye move");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "vibebot", "music: music emote and casual eye move");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "vibebot", "sleepy: zzZ emote and casual eye move");
 }
@@ -254,6 +259,8 @@ void CVibeBot::OnRender()
 		AimTick();
 		if(m_Mode[Dummy] == VB_HAPPY)
 			VibeEmote(E_HAPPY);
+		if(m_Mode[Dummy] == VB_GHOST)
+			VibeEmote(E_GHOST);
 		else if(m_Mode[Dummy] == VB_SLEEPY)
 			VibeEmote(E_SLEEPY);
 		else if(m_Mode[Dummy] == VB_WTF)

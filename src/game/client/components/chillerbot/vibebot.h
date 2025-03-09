@@ -30,6 +30,7 @@ private:
 	enum
 	{
 		E_MUSIC = 5,
+		E_GHOST = 7,
 		E_SLEEPY = 12,
 		E_WTF = 13,
 		E_HAPPY = 14,
@@ -61,6 +62,7 @@ public:
 	{
 		VB_OFF,
 		VB_HAPPY,
+		VB_GHOST,
 		VB_MUSIC,
 		VB_SLEEPY,
 		VB_WTF,
