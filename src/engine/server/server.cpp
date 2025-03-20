@@ -2642,13 +2642,7 @@ void CServer::PumpNetwork(bool PacketWaiting)
 						CPacker Packer;
 						GetServerInfoSixup(&Packer, SrvBrwsToken, RateLimitServerInfoConnless());
 
-						CNetChunk Response;
-						Response.m_ClientId = -1;
-						Response.m_Address = Packet.m_Address;
-						Response.m_Flags = NETSENDFLAG_CONNLESS;
-						Response.m_pData = Packer.Data();
-						Response.m_DataSize = Packer.Size();
-						m_NetServer.SendConnlessSixup(&Response, ResponseToken);
+						CNetBase::SendPacketConnlessWithToken7(m_NetServer.Socket(), &Packet.m_Address, Packer.Data(), Packer.Size(), ResponseToken, m_NetServer.GetToken(Packet.m_Address));
 					}
 					else if(Type != -1)
 					{
@@ -4056,6 +4050,17 @@ void CServer::ConchainAnnouncementFileName(IConsole::IResult *pResult, void *pUs
 	}
 }
 
+void CServer::ConchainInputFifo(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+{
+	CServer *pSelf = (CServer *)pUserData;
+	pfnCallback(pResult, pCallbackUserData);
+	if(pSelf->m_Fifo.IsInit())
+	{
+		pSelf->m_Fifo.Shutdown();
+		pSelf->m_Fifo.Init(pSelf->Console(), pSelf->Config()->m_SvInputFifo, CFGFLAG_SERVER);
+	}
+}
+
 #if defined(CONF_FAMILY_UNIX)
 void CServer::ConchainConnLoggingServerChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
@@ -4139,6 +4144,8 @@ void CServer::RegisterCommands()
 	Console()->Chain("stdout_output_level", ConchainStdoutOutputLevel, this);
 
 	Console()->Chain("sv_announcement_filename", ConchainAnnouncementFileName, this);
+
+	Console()->Chain("sv_input_fifo", ConchainInputFifo, this);
 
 #if defined(CONF_FAMILY_UNIX)
 	Console()->Chain("sv_conn_logging_server", ConchainConnLoggingServerChange, this);
