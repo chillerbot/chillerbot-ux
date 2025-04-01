@@ -228,6 +228,7 @@ private:
 	class IEditor *m_pEditor;
 	class IFriends *m_pFriends;
 	class IFriends *m_pFoes;
+	class IDiscord *m_pDiscord;
 #if defined(CONF_AUTOUPDATE)
 	class IUpdater *m_pUpdater;
 #endif
@@ -460,7 +461,6 @@ public:
 		char m_aClan[MAX_CLAN_LENGTH];
 		int m_Country;
 		char m_aSkinName[MAX_SKIN_LENGTH];
-		int m_SkinColor;
 		int m_Team;
 		int m_Emoticon;
 		float m_EmoticonStartFraction;
@@ -488,7 +488,7 @@ public:
 		CCharacterCore m_Predicted;
 		CCharacterCore m_PrevPredicted;
 
-		std::shared_ptr<CManagedTeeRenderInfo> m_pSkinInfo; // this is what the server reports
+		std::shared_ptr<CManagedTeeRenderInfo> m_pSkinInfo = nullptr; // this is what the server reports
 		CTeeRenderInfo m_RenderInfo; // this is what we use
 
 		float m_Angle;

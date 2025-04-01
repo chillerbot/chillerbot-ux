@@ -3678,7 +3678,8 @@ void CEditor::DoMapEditor(CUIRect View)
 		Graphics()->LinesEnd();
 	}
 
-	MapView()->ProofMode()->RenderScreenSizes();
+	if(!m_ShowPicker)
+		MapView()->ProofMode()->RenderScreenSizes();
 
 	if(!m_ShowPicker && m_ShowTileInfo != SHOW_TILE_OFF && m_ShowEnvelopePreview != SHOWENV_NONE && GetSelectedLayer(0) && GetSelectedLayer(0)->m_Type == LAYERTYPE_QUADS)
 	{
@@ -4244,6 +4245,13 @@ void CEditor::RenderLayers(CUIRect LayersBox)
 
 						if(m_vSelectedLayers.size() > 1)
 						{
+							// move right clicked layer to first index to render correct popup
+							if(m_vSelectedLayers[0] != i)
+							{
+								auto Position = std::find(m_vSelectedLayers.begin(), m_vSelectedLayers.end(), i);
+								std::swap(m_vSelectedLayers[0], *Position);
+							}
+
 							bool AllTile = true;
 							for(size_t j = 0; AllTile && j < m_vSelectedLayers.size(); j++)
 							{
@@ -4721,6 +4729,11 @@ bool CEditor::ReplaceSound(const char *pFileName, int StorageType, bool CheckDup
 	}
 
 	std::shared_ptr<CEditorSound> pSound = m_Map.m_vpSounds[m_SelectedSound];
+
+	if(m_ToolbarPreviewSound == pSound->m_SoundId)
+	{
+		m_ToolbarPreviewSound = SoundId;
+	}
 
 	// unload sample
 	Sound()->UnloadSample(pSound->m_SoundId);
@@ -8583,6 +8596,66 @@ void CEditor::RenderGameEntities(const std::shared_ptr<CLayerTiles> &pTiles)
 	}
 }
 
+void CEditor::RenderSwitchEntities(const std::shared_ptr<CLayerTiles> &pTiles)
+{
+	const CGameClient *pGameClient = (CGameClient *)Kernel()->RequestInterface<IGameClient>();
+	const float TileSize = 32.f;
+
+	std::function<unsigned char(int, int, unsigned char &)> GetIndex;
+	if(pTiles->m_Switch)
+	{
+		CLayerSwitch *pSwitchLayer = ((CLayerSwitch *)(pTiles.get()));
+		GetIndex = [pSwitchLayer](int y, int x, unsigned char &Number) -> unsigned char {
+			if(x < 0 || y < 0 || x >= pSwitchLayer->m_Width || y >= pSwitchLayer->m_Height)
+				return 0;
+			Number = pSwitchLayer->m_pSwitchTile[y * pSwitchLayer->m_Width + x].m_Number;
+			return pSwitchLayer->m_pSwitchTile[y * pSwitchLayer->m_Width + x].m_Type - ENTITY_OFFSET;
+		};
+	}
+	else
+	{
+		GetIndex = [pTiles](int y, int x, unsigned char &Number) -> unsigned char {
+			if(x < 0 || y < 0 || x >= pTiles->m_Width || y >= pTiles->m_Height)
+				return 0;
+			Number = 0;
+			return pTiles->m_pTiles[y * pTiles->m_Width + x].m_Index - ENTITY_OFFSET;
+		};
+	}
+
+	ivec2 aOffsets[] = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
+
+	const ColorRGBA OuterColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClLaserDoorOutlineColor));
+	const ColorRGBA InnerColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClLaserDoorInnerColor));
+	const float TicksHead = Client()->GlobalTime() * Client()->GameTickSpeed();
+
+	for(int y = 0; y < pTiles->m_Height; y++)
+	{
+		for(int x = 0; x < pTiles->m_Width; x++)
+		{
+			unsigned char Number = 0;
+			const unsigned char Index = GetIndex(y, x, Number);
+
+			if(Index == ENTITY_DOOR)
+			{
+				for(size_t i = 0; i < sizeof(aOffsets) / sizeof(ivec2); ++i)
+				{
+					unsigned char NumberDoorLength = 0;
+					unsigned char IndexDoorLength = GetIndex(y + aOffsets[i].y, x + aOffsets[i].x, NumberDoorLength);
+					if(IndexDoorLength >= ENTITY_LASER_SHORT && IndexDoorLength <= ENTITY_LASER_LONG)
+					{
+						float XOff = std::cos(i * pi / 4.0f);
+						float YOff = std::sin(i * pi / 4.0f);
+						int Length = (IndexDoorLength - ENTITY_LASER_SHORT + 1) * 3;
+						vec2 Pos(x + 0.5f, y + 0.5f);
+						vec2 To(x + XOff * Length + 0.5f, y + YOff * Length + 0.5f);
+						pGameClient->m_Items.RenderLaser(To * TileSize, Pos * TileSize, OuterColor, InnerColor, 1.0f, TicksHead, (int)LASERTYPE_DOOR);
+					}
+				}
+			}
+		}
+	}
+}
+
 void CEditor::Reset(bool CreateDefault)
 {
 	Ui()->ClosePopupMenus();
@@ -9304,7 +9377,8 @@ void CEditor::RedoLastAction()
 
 void CEditor::AdjustBrushSpecialTiles(bool UseNextFree, int Adjust)
 {
-	// Adjust m_Number field of tune, switch and tele tiles by `Adjust` if `UseNextFree` is false
+	// Adjust m_Angle of speedup or m_Number field of tune, switch and tele tiles by `Adjust` if `UseNextFree` is false
+	// If `Adjust` is 0 and `UseNextFree` is false, then update numbers of brush tiles to global values
 	// If true, then use the next free number instead
 
 	auto &&AdjustNumber = [Adjust](auto &Number, short Limit = 255) {
@@ -9390,18 +9464,29 @@ void CEditor::AdjustBrushSpecialTiles(bool UseNextFree, int Adjust)
 				}
 			}
 		}
-		else if(pLayerTiles->m_Speedup && !UseNextFree && Adjust != 0)
+		else if(pLayerTiles->m_Speedup)
 		{
-			std::shared_ptr<CLayerSpeedup> pSpeedupLayer = std::static_pointer_cast<CLayerSpeedup>(pLayer);
-			for(int y = 0; y < pSpeedupLayer->m_Height; y++)
+			if(!UseNextFree)
 			{
-				for(int x = 0; x < pSpeedupLayer->m_Width; x++)
+				std::shared_ptr<CLayerSpeedup> pSpeedupLayer = std::static_pointer_cast<CLayerSpeedup>(pLayer);
+				for(int y = 0; y < pSpeedupLayer->m_Height; y++)
 				{
-					int i = y * pSpeedupLayer->m_Width + x;
-					if(!IsValidSpeedupTile(pSpeedupLayer->m_pTiles[i].m_Index))
-						continue;
+					for(int x = 0; x < pSpeedupLayer->m_Width; x++)
+					{
+						int i = y * pSpeedupLayer->m_Width + x;
+						if(!IsValidSpeedupTile(pSpeedupLayer->m_pTiles[i].m_Index))
+							continue;
 
-					AdjustNumber(pSpeedupLayer->m_pSpeedupTile[i].m_Angle, 359);
+						if(Adjust != 0)
+						{
+							AdjustNumber(pSpeedupLayer->m_pSpeedupTile[i].m_Angle, 359);
+						}
+						else
+						{
+							pSpeedupLayer->m_pSpeedupTile[i].m_Angle = m_SpeedupAngle;
+							pSpeedupLayer->m_SpeedupAngle = m_SpeedupAngle;
+						}
+					}
 				}
 			}
 		}
