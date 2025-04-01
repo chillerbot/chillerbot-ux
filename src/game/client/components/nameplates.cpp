@@ -14,7 +14,6 @@
 #include <vector>
 
 #include <game/client/components/chillerbot/warlist.h>
-#include <game/client/prediction/entities/character.h>
 
 #include "nameplates.h"
 
