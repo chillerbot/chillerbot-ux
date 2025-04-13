@@ -69,6 +69,7 @@
 #include "components/chillerbot/chillpw.h"
 #include "components/chillerbot/city.h"
 #include "components/chillerbot/edit_map.h"
+#include "components/chillerbot/mmotee.h"
 #include "components/chillerbot/playerpics.h"
 #include "components/chillerbot/remotecontrol.h"
 #include "components/chillerbot/stresser.h"
@@ -205,6 +206,7 @@ public:
 	CEditMap m_EditMap;
 	CTerminalUI m_TerminalUI;
 	CStresser m_Stresser;
+	CMmoTee m_MmoTee;
 
 private:
 	std::vector<class CComponent *> m_vpAll;

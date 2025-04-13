@@ -28,6 +28,7 @@ MACRO_CONFIG_INT(ClShowLastPing, cl_show_last_ping, 0, 0, 1, CFGFLAG_CLIENT | CF
 MACRO_CONFIG_INT(ClRenderLaserHead, cl_render_laser_head, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Render laser bubbles")
 MACRO_CONFIG_STR(ClPasswordFile, cl_password_file, 512, "chillerbot/chillpw_secret.txt", CFGFLAG_CLIENT | CFGFLAG_SAVE, "File to load passwords for autologin")
 MACRO_CONFIG_INT(ClShowWallet, cl_show_wallet, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show your city mod money in the hud")
+MACRO_CONFIG_INT(ClMmoTee, cl_mmotee, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Hide MMOTEE chat messages to avoid chat spam")
 MACRO_CONFIG_INT(ClWeaponHud, cl_weapon_hud, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Render additional weapon hud")
 MACRO_CONFIG_INT(ClAlwaysReconnect, cl_always_reconnect, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Reconnect to last server after some time no matter what")
 MACRO_CONFIG_INT(ClSendOnlineTime, cl_send_online_time, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Notify zillyhuhn.com when you are online")

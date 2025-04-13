@@ -2381,6 +2381,8 @@ if(CLIENT)
     components/chillerbot/city.h
     components/chillerbot/edit_map.cpp
     components/chillerbot/edit_map.h
+    components/chillerbot/mmotee.cpp
+    components/chillerbot/mmotee.h
     components/chillerbot/playerpics.cpp
     components/chillerbot/playerpics.h
     components/chillerbot/remotecontrol.cpp

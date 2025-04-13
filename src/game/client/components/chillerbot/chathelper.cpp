@@ -518,6 +518,8 @@ bool CChatHelper::FilterChat(int ClientId, int Team, const char *pLine)
 		}
 		return true;
 	}
+	if(m_pClient->m_MmoTee.FilterChat(ClientId, Team, pLine))
+		return true;
 	return false;
 }
 

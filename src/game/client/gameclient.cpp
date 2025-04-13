@@ -185,6 +185,7 @@ void CGameClient::OnConsoleInit()
 					      &m_EditMap,
 					      &m_TerminalUI,
 					      &m_Stresser,
+					      &m_MmoTee,
 					      /* &m_ChillConsole, */
 					      &m_Unix,
 					      /* >>> chillerbot-ux */
