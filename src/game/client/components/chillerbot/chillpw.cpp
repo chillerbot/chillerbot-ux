@@ -1,5 +1,6 @@
 // ChillerDragon 2020 - chillerbot ux
 
+#include <base/log.h>
 #include <base/system.h>
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
@@ -99,6 +100,9 @@ void CChillPw::ConStatus()
 {
 	char aBuf[512];
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillpw", "~~~ chillpw status ~~~");
+	if(!g_Config.m_ClChillpw)
+		log_warn("chillpw", "chillpw is currently deactivated! activate it using cl_chillpw 1");
+
 	str_format(aBuf, sizeof(aBuf), "file: %s", g_Config.m_ClPasswordFile);
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillpw", aBuf);
 	str_format(aBuf, sizeof(aBuf), "loaded passwords: %d", m_NumLoadedPasswords);
@@ -133,6 +137,8 @@ void CChillPw::ConStatus()
 
 void CChillPw::ConDumpHost()
 {
+	if(!g_Config.m_ClChillpw)
+		log_warn("chillpw", "chillpw is currently deactivated! activate it using cl_chillpw 1");
 	for(int i = 0; i < MAX_PASSWORDS; i++)
 	{
 		if(!IsCurrentAddr(m_aaHostnames[i]))
@@ -159,6 +165,8 @@ void CChillPw::ConChillpw(IConsole::IResult *pResult, void *pUserData)
 void CChillPw::OnRender()
 {
 	if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
+		return;
+	if(!g_Config.m_ClChillpw)
 		return;
 
 	if(Client()->DummyConnecting())
