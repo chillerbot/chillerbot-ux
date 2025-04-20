@@ -2963,6 +2963,7 @@ if(TOOLS)
     map_replace_area.cpp
     map_replace_image.cpp
     map_resave.cpp
+    map_test.cpp
     packetgen.cpp
     stun.cpp
     twping.cpp
