@@ -79,6 +79,11 @@ bool CMmoTee::FilterChat(int ClientId, int Team, const char *pLine)
 			// m_pClient->m_Chat.AddLine(-2, 0, "Farmed Corn");
 			return true;
 		}
+		else if(str_startswith(pObtained, "Strawberries x"))
+		{
+			// m_pClient->m_Chat.AddLine(-2, 0, "Farmed Strawberries");
+			return true;
+		}
 	}
 
 	return false;
