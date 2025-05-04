@@ -19,6 +19,7 @@ public:
 private:
 	void OnMapLoad() override;
 	void OnRender() override;
+	void OnMessage(int MsgType, void *pRawMsg) override;
 	void OnInit() override;
 	void OnConsoleInit() override;
 

@@ -13,10 +13,11 @@
 
 void CChillPw::OnMapLoad()
 {
-	m_LoginOffset[0] = 0;
-	m_LoginOffset[1] = 0;
-	m_ChatDelay[0] = time_get() + time_freq() * 2;
-	m_ChatDelay[1] = time_get() + time_freq() * 2;
+	for(int i = 0; i < NUM_DUMMIES; i++)
+	{
+		m_LoginOffset[i] = 0;
+		m_ChatDelay[i] = time_get() + time_freq() * 2;
+	}
 
 	mem_zero(m_aaCurrentServerAddrs, sizeof(m_aaCurrentServerAddrs));
 	mem_zero(m_aaCurrentServerAddrsNoPort, sizeof(m_aaCurrentServerAddrsNoPort));
@@ -191,6 +192,24 @@ void CChillPw::OnRender()
 		else
 		{
 			m_ChatDelay[i] = 0;
+		}
+	}
+}
+
+void CChillPw::OnMessage(int MsgType, void *pRawMsg)
+{
+	if(MsgType == NETMSGTYPE_SV_CHAT)
+	{
+		CNetMsg_Sv_Chat *pMsg = (CNetMsg_Sv_Chat *)pRawMsg;
+		// TODO: could parse the delay in seconds here to set retry timer perfectly
+		if(pMsg->m_ClientId == -1 && str_startswith(pMsg->m_pMessage, "This server has an initial chat delay, you will be able to talk in"))
+		{
+			for(int i = 0; i < NUM_DUMMIES; i++)
+			{
+				m_LoginOffset[i] = 0;
+				m_ChatDelay[i] = time_get() + time_freq() * 4;
+			}
+			m_pClient->m_Chat.AddLine(-2, 0, "[chillpw] retrying later, because of initial chat delay.");
 		}
 	}
 }
