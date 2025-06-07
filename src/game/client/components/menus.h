@@ -74,21 +74,22 @@ class CMenus : public CComponent
 	static ColorRGBA ms_ColorTabbarActive;
 	static ColorRGBA ms_ColorTabbarHover;
 
-	int DoButton_FontIcon(CButtonContainer *pButtonContainer, const char *pText, int Checked, const CUIRect *pRect, const unsigned Flags, int Corners = IGraphics::CORNER_ALL, bool Enabled = true);
-	int DoButton_Toggle(const void *pId, int Checked, const CUIRect *pRect, bool Active, const unsigned Flags = BUTTONFLAG_LEFT);
-	int DoButton_Menu(CButtonContainer *pButtonContainer, const char *pText, int Checked, const CUIRect *pRect, const unsigned Flags = BUTTONFLAG_LEFT, const char *pImageName = nullptr, int Corners = IGraphics::CORNER_ALL, float Rounding = 5.0f, float FontFactor = 0.0f, ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, 0.5f));
+	int DoButton_Toggle(const void *pId, int Checked, const CUIRect *pRect, bool Active, unsigned Flags = BUTTONFLAG_LEFT);
+	int DoButton_Menu(CButtonContainer *pButtonContainer, const char *pText, int Checked, const CUIRect *pRect, unsigned Flags = BUTTONFLAG_LEFT, const char *pImageName = nullptr, int Corners = IGraphics::CORNER_ALL, float Rounding = 5.0f, float FontFactor = 0.0f, ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, 0.5f));
 	int DoButton_MenuTab(CButtonContainer *pButtonContainer, const char *pText, int Checked, const CUIRect *pRect, int Corners, SUIAnimator *pAnimator = nullptr, const ColorRGBA *pDefaultColor = nullptr, const ColorRGBA *pActiveColor = nullptr, const ColorRGBA *pHoverColor = nullptr, float EdgeRounding = 10.0f, const SCommunityIcon *pCommunityIcon = nullptr);
 
-	int DoButton_CheckBox_Common(const void *pId, const char *pText, const char *pBoxText, const CUIRect *pRect, const unsigned Flags);
+	int DoButton_CheckBox_Common(const void *pId, const char *pText, const char *pBoxText, const CUIRect *pRect, unsigned Flags);
 	int DoButton_CheckBox(const void *pId, const char *pText, int Checked, const CUIRect *pRect);
 	int DoButton_CheckBoxAutoVMarginAndSet(const void *pId, const char *pText, int *pValue, CUIRect *pRect, float VMargin);
 	int DoButton_CheckBox_Number(const void *pId, const char *pText, int Checked, const CUIRect *pRect);
 
 	bool DoLine_RadioMenu(CUIRect &View, const char *pLabel, std::vector<CButtonContainer> &vButtonContainers, const std::vector<const char *> &vLabels, const std::vector<int> &vValues, int &Value);
 
+	CUi::SColorPickerPopupContext m_ColorPickerPopupContext;
 	ColorHSLA DoLine_ColorPicker(CButtonContainer *pResetId, float LineSize, float LabelSize, float BottomMargin, CUIRect *pMainRect, const char *pText, unsigned int *pColorValue, ColorRGBA DefaultColor, bool CheckBoxSpacing = true, int *pCheckBoxValue = nullptr, bool Alpha = false);
 	ColorHSLA DoButton_ColorPicker(const CUIRect *pRect, unsigned int *pHslaColor, bool Alpha);
-	void DoLaserPreview(const CUIRect *pRect, ColorHSLA OutlineColor, ColorHSLA InnerColor, const int LaserType);
+
+	void DoLaserPreview(const CUIRect *pRect, ColorHSLA OutlineColor, ColorHSLA InnerColor, int LaserType);
 	int DoButton_GridHeader(const void *pId, const char *pText, int Checked, const CUIRect *pRect);
 	int DoButton_Favorite(const void *pButtonId, const void *pParentId, bool Checked, const CUIRect *pRect);
 
@@ -307,7 +308,7 @@ protected:
 
 		int NumMarkers() const
 		{
-			return clamp<int>(bytes_be_to_uint(m_TimelineMarkers.m_aNumTimelineMarkers), 0, MAX_TIMELINE_MARKERS);
+			return std::clamp<int>(bytes_be_to_uint(m_TimelineMarkers.m_aNumTimelineMarkers), 0, MAX_TIMELINE_MARKERS);
 		}
 
 		int Length() const
@@ -467,6 +468,8 @@ protected:
 	vec2 m_DemoControlsPositionOffset = vec2(0.0f, 0.0f);
 	float m_LastPauseChange = -1.0f;
 	float m_LastSpeedChange = -1.0f;
+	static constexpr int DEFAULT_SKIP_DURATION_INDEX = 3;
+	int m_SkipDurationIndex = DEFAULT_SKIP_DURATION_INDEX;
 	static bool DemoFilterChat(const void *pData, int Size, void *pUser);
 	bool FetchHeader(CDemoItem &Item);
 	void FetchAllHeaders();
@@ -480,6 +483,8 @@ protected:
 	void RenderDemoBrowserButtons(CUIRect ButtonsView, bool WasListboxItemActivated);
 	void PopupConfirmDeleteDemo();
 	void PopupConfirmDeleteFolder();
+	static void ConchainDemoPlay(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+	static void ConchainDemoSpeed(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
 	// found in menus_start.cpp
 	void RenderStartMenu(CUIRect MainView);
@@ -557,12 +562,12 @@ protected:
 		SHA256_DIGEST m_Sha256;
 
 		CAbstractCommunityIconJob(CMenus *pMenus, const char *pCommunityId, int StorageType);
-		virtual ~CAbstractCommunityIconJob(){};
 
 	public:
 		const char *CommunityId() const { return m_aCommunityId; }
 		bool Success() const { return m_Success; }
 		const SHA256_DIGEST &Sha256() const { return m_Sha256; }
+		virtual ~CAbstractCommunityIconJob() = default;
 	};
 
 	class CCommunityIconLoadJob : public IJob, public CAbstractCommunityIconJob
@@ -669,12 +674,12 @@ public:
 	void RenderLoading(const char *pCaption, const char *pContent, int IncreaseCounter);
 	void FinishLoading();
 
-	bool IsInit() { return m_IsInit; }
+	bool IsInit() const { return m_IsInit; }
 
 	bool IsActive() const { return m_MenuActive; }
 	void SetActive(bool Active);
 
-	void RunServer(const char **ppArguments = nullptr, const size_t NumArguments = 0);
+	void RunServer(const char **ppArguments = nullptr, size_t NumArguments = 0);
 	void KillServer();
 	bool IsServerRunning() const;
 

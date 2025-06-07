@@ -7,14 +7,14 @@ endif()
 
 file(STRINGS src/game/version.h VERSION_LINE
   LIMIT_COUNT 1
-  REGEX "^#define GAME_RELEASE_VERSION "
+  REGEX "^#define GAME_RELEASE_VERSION_INTERNAL "
 )
 
-if(VERSION_LINE MATCHES "\"([0-9]+)\\.([0-9]+)\\.([0-9]+)\"")
+if(VERSION_LINE MATCHES "([0-9]+)\\.([0-9]+)\\.([0-9]+)")
   set(VERSION_MAJOR ${CMAKE_MATCH_1})
   set(VERSION_MINOR ${CMAKE_MATCH_2})
   set(VERSION_PATCH ${CMAKE_MATCH_3})
-elseif(VERSION_LINE MATCHES "\"([0-9]+)\\.([0-9]+)\"")
+elseif(VERSION_LINE MATCHES "([0-9]+)\\.([0-9]+)")
   set(VERSION_MAJOR ${CMAKE_MATCH_1})
   set(VERSION_MINOR ${CMAKE_MATCH_2})
   set(VERSION_PATCH "0")
@@ -715,6 +715,7 @@ if(TARGET_OS STREQUAL "windows")
   set(PLATFORM_LIBS)
   list(APPEND PLATFORM_LIBS shlwapi) # PathIsRelativeW
   list(APPEND PLATFORM_LIBS version ws2_32) # Windows sockets
+  list(APPEND PLATFORM_LIBS advapi32) # Reg* and Crypt* functions
   list(APPEND PLATFORM_LIBS bcrypt userenv) # for Rust (https://github.com/rust-lang/rust/issues/91974)
   list(APPEND PLATFORM_LIBS ole32) # CoInitialize(Ex)
   list(APPEND PLATFORM_LIBS shell32)
@@ -2192,6 +2193,7 @@ set_src(GAME_SHARED GLOB src/game
   mapitems_ex_types.h
   prng.cpp
   prng.h
+  race_state.h
   teamscore.cpp
   teamscore.h
   tuning.h
@@ -2502,6 +2504,8 @@ if(CLIENT)
     prediction/entities/laser.h
     prediction/entities/pickup.cpp
     prediction/entities/pickup.h
+    prediction/entities/plasma.cpp
+    prediction/entities/plasma.h
     prediction/entities/projectile.cpp
     prediction/entities/projectile.h
     prediction/entity.cpp
@@ -3104,6 +3108,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     test.cpp
     test.h
     thread.cpp
+    time.cpp
     timestamp.cpp
     unix.cpp
     uuid.cpp
@@ -3715,7 +3720,7 @@ foreach(target ${TARGETS_OWN})
     target_compile_definitions(${target} PRIVATE CONF_INFORM_UPDATE)
   endif()
   if(STEAM)
-    target_compile_definitions(${target} PRIVATE PLATFORM_SUFFIX="-steam")
+    target_compile_definitions(${target} PRIVATE PLATFORM_SUFFIX=-steam)
   endif()
   if(DISCORD)
     target_compile_definitions(${target} PRIVATE CONF_DISCORD)
@@ -3724,7 +3729,7 @@ foreach(target ${TARGETS_OWN})
     endif()
   endif()
   if(VERSION)
-    target_compile_definitions(${target} PRIVATE GAME_RELEASE_VERSION="${VERSION}")
+    target_compile_definitions(${target} PRIVATE GAME_RELEASE_VERSION_INTERNAL=${VERSION})
   endif()
   if(TARGET_OS STREQUAL "android")
     if(ANDROID_PACKAGE_NAME)
