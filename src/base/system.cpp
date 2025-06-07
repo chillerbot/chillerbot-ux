@@ -2668,8 +2668,11 @@ void swap_endian(void *data, unsigned elem_size, unsigned num)
 	}
 }
 
-int net_socket_read_wait(NETSOCKET sock, int time)
+int net_socket_read_wait(NETSOCKET sock, std::chrono::nanoseconds nanoseconds)
 {
+	const int64_t microseconds = std::chrono::duration_cast<std::chrono::microseconds>(nanoseconds).count();
+	dbg_assert(microseconds >= 0, "Negative wait duration %" PRId64 " not allowed", microseconds);
+
 	fd_set readfds;
 	FD_ZERO(&readfds);
 
@@ -2695,18 +2698,11 @@ int net_socket_read_wait(NETSOCKET sock, int time)
 		return 0;
 	}
 
-	/* don't care about writefds and exceptfds */
-	if(time < 0)
-	{
-		select(maxfd + 1, &readfds, nullptr, nullptr, nullptr);
-	}
-	else
-	{
-		struct timeval tv;
-		tv.tv_sec = time / 1000000;
-		tv.tv_usec = time % 1000000;
-		select(maxfd + 1, &readfds, nullptr, nullptr, &tv);
-	}
+	struct timeval tv;
+	tv.tv_sec = microseconds / 1000000;
+	tv.tv_usec = microseconds % 1000000;
+	// don't care about writefds and exceptfds
+	select(maxfd + 1, &readfds, nullptr, nullptr, &tv);
 
 	if(sock->ipv4sock >= 0 && FD_ISSET(sock->ipv4sock, &readfds))
 		return 1;
@@ -4881,12 +4877,6 @@ void os_locale_str(char *locale, size_t length)
 std::chrono::nanoseconds time_get_nanoseconds()
 {
 	return std::chrono::nanoseconds(time_get_impl());
-}
-
-int net_socket_read_wait(NETSOCKET sock, std::chrono::nanoseconds nanoseconds)
-{
-	using namespace std::chrono_literals;
-	return ::net_socket_read_wait(sock, (nanoseconds / std::chrono::nanoseconds(1us).count()).count());
 }
 
 #if defined(CONF_FAMILY_WINDOWS)
