@@ -202,6 +202,26 @@ bool CLangParser::IsGreetingQq(const char *pMsg)
 	return false;
 }
 
+bool CLangParser::IsGreetingRus(const char *pMsg)
+{
+	const char aWords[][128] = {
+		"Здравствуйте",
+		"zdravstvuyte",
+		"Доброе утро",
+		"dobroye utro",
+		"Добрый день",
+		"dobriy den",
+		"Привет",
+		"привет",
+		"privet"};
+	for(const auto &aWord : aWords)
+	{
+		if(FindWord(pMsg, aWord))
+			return true;
+	}
+	return false;
+}
+
 bool CLangParser::IsBye(const char *pMsg)
 {
 	const char aByes[][128] = {

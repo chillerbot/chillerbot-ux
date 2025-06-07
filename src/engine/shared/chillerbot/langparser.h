@@ -36,6 +36,7 @@ public:
 
 	bool IsGreeting(const char *pMsg);
 	bool IsGreetingQq(const char *pMsg);
+	bool IsGreetingRus(const char *pMsg);
 	bool IsBye(const char *pMsg);
 	bool IsInsult(const char *pMsg);
 	bool IsQuestionWhy(const char *pMsg);
