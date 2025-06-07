@@ -176,7 +176,8 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "%s qq", m_pMessageAuthor);
 		return true;
 	}
-	if(LangParser().IsGreetingRus(m_pMessage) && MsgLen < NameLen + 10)
+	// "Здравствуйте" => 25 bytes
+	if(LangParser().IsGreetingRus(m_pMessage) && MsgLen < NameLen + 26)
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "%s привет", m_pMessageAuthor);
 		return true;
