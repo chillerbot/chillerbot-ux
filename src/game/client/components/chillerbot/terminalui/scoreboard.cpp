@@ -72,7 +72,7 @@ void CTerminalUI::RenderScoreboard(int Team, CTermWindow *pWin)
 				str_time((int64_t)abs(pInfo->m_Score) * 100, TIME_HOURS, aScore, sizeof(aScore));
 		}
 		else
-			str_format(aScore, sizeof(aScore), "%d", clamp(pInfo->m_Score, -999, 99999));
+			str_format(aScore, sizeof(aScore), "%d", std::clamp(pInfo->m_Score, -999, 99999));
 
 		static const int NAME_COL_SIZE = 20;
 		static const int CLAN_COL_SIZE = 20;

@@ -759,7 +759,7 @@ int CTerminalUI::GetInput()
 				aLeft[m_InputCursor > 0 ? m_InputCursor - 1 : m_InputCursor] = '\0';
 				str_format(g_aInputStr, sizeof(g_aInputStr), "%s%s", aLeft, aRight);
 			}
-			m_InputCursor = clamp(m_InputCursor - 1, 0, str_length(g_aInputStr));
+			m_InputCursor = std::clamp(m_InputCursor - 1, 0, str_length(g_aInputStr));
 			wclear(g_InputWin.m_pCursesWin);
 			InputDraw();
 			g_InputWin.DrawBorders();
@@ -770,7 +770,7 @@ int CTerminalUI::GetInput()
 		{
 			g_InputWin.NextMenuItem();
 			// could be used for cursor movement
-			m_InputCursor = clamp(m_InputCursor - 1, 0, str_length(g_aInputStr));
+			m_InputCursor = std::clamp(m_InputCursor - 1, 0, str_length(g_aInputStr));
 			UpdateCursor();
 			return 0;
 		}
@@ -778,7 +778,7 @@ int CTerminalUI::GetInput()
 		{
 			g_InputWin.PrevMenuItem();
 			// could be used for cursor movement
-			m_InputCursor = clamp(m_InputCursor + 1, 0, str_length(g_aInputStr));
+			m_InputCursor = std::clamp(m_InputCursor + 1, 0, str_length(g_aInputStr));
 			UpdateCursor();
 			return 0;
 		}
@@ -862,9 +862,9 @@ int CTerminalUI::GetInput()
 			// update history index after using it because index 0 is already the last item
 			int OldHistory = m_InputHistory[InputMode()];
 			if(c == 258) // down arrow
-				m_InputHistory[InputMode()] = clamp(m_InputHistory[InputMode()] - 1, 0, (int)(INPUT_HISTORY_MAX_LEN));
+				m_InputHistory[InputMode()] = std::clamp(m_InputHistory[InputMode()] - 1, 0, (int)(INPUT_HISTORY_MAX_LEN));
 			else if(c == 259) // up arrow
-				m_InputHistory[InputMode()] = clamp(m_InputHistory[InputMode()] + 1, 0, (int)(INPUT_HISTORY_MAX_LEN));
+				m_InputHistory[InputMode()] = std::clamp(m_InputHistory[InputMode()] + 1, 0, (int)(INPUT_HISTORY_MAX_LEN));
 
 			// stop scrolling and roll back when reached an empty history element
 			if(m_aaInputHistory[InputMode()][m_InputHistory[InputMode()]][0] == '\0')
@@ -1268,7 +1268,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	{
 		m_Input.m_TargetY = maximum(m_Input.m_TargetY - 10, -20);
 		if(m_RenderServerList && m_NumServers)
-			m_SelectedServer = clamp(m_SelectedServer - 1, 0, m_NumServers - 1);
+			m_SelectedServer = std::clamp(m_SelectedServer - 1, 0, m_NumServers - 1);
 		else
 			scroll_curses_log(1);
 		gs_NeedLogDraw = true;
@@ -1278,7 +1278,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	{
 		m_Input.m_TargetY = maximum(m_Input.m_TargetY + 10, 20);
 		if(m_RenderServerList && m_NumServers)
-			m_SelectedServer = clamp(m_SelectedServer + 1, 0, m_NumServers - 1);
+			m_SelectedServer = std::clamp(m_SelectedServer + 1, 0, m_NumServers - 1);
 		else
 			scroll_curses_log(-1);
 		gs_NeedLogDraw = true;

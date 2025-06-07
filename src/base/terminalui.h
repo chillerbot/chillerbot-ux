@@ -92,7 +92,7 @@ public:
 	{
 		if(!IsMenu())
 			return;
-		m_SelectedMenuItem = clamp(m_SelectedMenuItem + 1, 0, (int)(NUM_MENU_ITEMS - 1));
+		m_SelectedMenuItem = std::clamp(m_SelectedMenuItem + 1, 0, (int)(NUM_MENU_ITEMS - 1));
 		DrawBorders();
 		refresh();
 	}
@@ -100,7 +100,7 @@ public:
 	{
 		if(!IsMenu())
 			return;
-		m_SelectedMenuItem = clamp(m_SelectedMenuItem - 1, 0, (int)NUM_MENU_ITEMS);
+		m_SelectedMenuItem = std::clamp(m_SelectedMenuItem - 1, 0, (int)NUM_MENU_ITEMS);
 		DrawBorders();
 		refresh();
 	}

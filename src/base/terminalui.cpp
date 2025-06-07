@@ -54,7 +54,7 @@ int set_curses_log_scroll(int offset)
 {
 	int _x, y;
 	getmaxyx(g_LogWindow.m_pCursesWin, y, _x);
-	offset = clamp(offset, 0, gs_LogNumFilled - y);
+	offset = std::clamp(offset, 0, gs_LogNumFilled - y);
 	gs_LogScroll = offset;
 	return gs_LogScroll;
 }
