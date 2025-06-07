@@ -988,7 +988,7 @@ void CChillerBotUX::DumpPlayers(const char *pSearch)
 			}
 		}
 		else
-			str_format(aBuf, sizeof(aBuf), "|%10d|", clamp(pInfo->m_Score, -999, 99999));
+			str_format(aBuf, sizeof(aBuf), "|%10d|", std::clamp(pInfo->m_Score, -999, 99999));
 		str_append(aLine, aBuf, sizeof(aLine));
 
 		// id | name
@@ -1006,7 +1006,7 @@ void CChillerBotUX::DumpPlayers(const char *pSearch)
 		str_append(aLine, aBuf, sizeof(aLine));
 
 		// ping
-		str_format(aBuf, sizeof(aBuf), "%3d|", clamp(pInfo->m_Latency, 0, 999));
+		str_format(aBuf, sizeof(aBuf), "%3d|", std::clamp(pInfo->m_Latency, 0, 999));
 		str_append(aLine, aBuf, sizeof(aLine));
 
 		// team
