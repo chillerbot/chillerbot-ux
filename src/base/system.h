@@ -1062,11 +1062,8 @@ int net_udp_recv(NETSOCKET sock, NETADDR *addr, unsigned char **data);
  * @ingroup Network-UDP
  *
  * @param sock Socket to close.
- *
- * @return `0` on success.
- * @return `-1` on error.
  */
-int net_udp_close(NETSOCKET sock);
+void net_udp_close(NETSOCKET sock);
 
 /**
  * @defgroup Network-TCP
@@ -1168,10 +1165,8 @@ int net_tcp_recv(NETSOCKET sock, void *data, int maxsize);
  * @ingroup Network-TCP
  *
  * @param sock Socket to close.
- *
- * @return `0` on success. Negative value on failure.
  */
-int net_tcp_close(NETSOCKET sock);
+void net_tcp_close(NETSOCKET sock);
 
 #if defined(CONF_FAMILY_UNIX)
 /**
@@ -3070,11 +3065,5 @@ bool shell_unregister_application(const char *executable, bool *updated);
  */
 void shell_update();
 #endif
-
-template<>
-struct std::hash<NETADDR>
-{
-	size_t operator()(const NETADDR &Addr) const noexcept;
-};
 
 #endif

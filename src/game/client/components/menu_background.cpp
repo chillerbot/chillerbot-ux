@@ -307,9 +307,6 @@ bool CMenuBackground::Render()
 	if(!m_Loaded)
 		return false;
 
-	if(Client()->State() == IClient::STATE_ONLINE || Client()->State() == IClient::STATE_DEMOPLAYBACK)
-		return false;
-
 	m_Camera.m_Zoom = 0.7f;
 
 	float DistToCenter = distance(m_Camera.m_Center, m_RotationCenter);
@@ -360,11 +357,6 @@ bool CMenuBackground::Render()
 CCamera *CMenuBackground::GetCurCamera()
 {
 	return &m_Camera;
-}
-
-const char *CMenuBackground::LoadingTitle() const
-{
-	return Localize("Loading background map");
 }
 
 void CMenuBackground::ChangePosition(int PositionNumber)
