@@ -57,6 +57,7 @@ void CChillerBotUX::OnRender()
 				str_append(aUrl, aEscaped, sizeof(aUrl));
 
 				m_pAliveGet = HttpGet(aUrl);
+				m_pAliveGet->LogProgress(HTTPLOG::NONE);
 				m_pAliveGet->Timeout(CTimeout{10000, 0, 500, 10});
 				m_pAliveGet->IpResolve(IPRESOLVE::V4);
 				Http()->Run(m_pAliveGet);
