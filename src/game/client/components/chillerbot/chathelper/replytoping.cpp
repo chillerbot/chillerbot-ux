@@ -301,6 +301,63 @@ bool CReplyToPing::Reply()
 	}
 	if(WhatOs())
 		return true;
+
+	// fake?
+	if(MsgLen < NameLen + 12 && (str_find_nocase(m_pMessage, "fake?") ||
+					    str_find_nocase(m_pMessage, "you fake") ||
+					    str_find_nocase(m_pMessage, "u fake") ||
+					    str_find_nocase(m_pMessage, "feker")))
+	{
+		str_format(m_pResponse, m_SizeOfResponse, "%s yes i am fake", m_pMessageAuthor);
+		return true;
+	}
+
+	// real?
+	if(MsgLen < NameLen + 12 && (str_find_nocase(m_pMessage, "real?") ||
+					    str_find_nocase(m_pMessage, "you real") ||
+					    str_find_nocase(m_pMessage, "u real") ||
+					    str_find_nocase(m_pMessage, "you reel") ||
+					    str_find_nocase(m_pMessage, "u reel") ||
+					    str_find_nocase(m_pMessage, "reel?")))
+	{
+		str_format(m_pResponse, m_SizeOfResponse, "%s: no u", m_pMessageAuthor);
+		return true;
+	}
+
+	// when new map?
+	if(MsgLen < NameLen + 16 && (str_find_nocase(m_pMessage, "when new map?") ||
+					    str_find_nocase(m_pMessage, "when make new map") ||
+					    str_find_nocase(m_pMessage, "when new gores map") ||
+					    str_find_nocase(m_pMessage, "when new ddrace map")))
+	{
+		str_format(m_pResponse, m_SizeOfResponse, "%s new map this summer (maybe)", m_pMessageAuthor);
+		return true;
+	}
+
+	// when new youtube?
+	if(MsgLen < NameLen + 20 && (str_find_nocase(m_pMessage, "when new yt") ||
+					    str_find_nocase(m_pMessage, "when youtub") ||
+					    str_find_nocase(m_pMessage, "when new youtub") ||
+					    str_find_nocase(m_pMessage, "new video") ||
+					    str_find_nocase(m_pMessage, "when video") ||
+					    str_find_nocase(m_pMessage, "new vidio") ||
+					    str_find_nocase(m_pMessage, "when vidio") ||
+					    str_find_nocase(m_pMessage, "new vido") ||
+					    str_find_nocase(m_pMessage, "when vido") ||
+					    str_find_nocase(m_pMessage, "new jutub") ||
+					    str_find_nocase(m_pMessage, "when jutub")))
+	{
+		str_format(m_pResponse, m_SizeOfResponse, "%s new yt next years summer (maybe)", m_pMessageAuthor);
+		return true;
+	}
+
+	// you legend
+	if(MsgLen < NameLen + 16 && str_find_nocase(m_pMessage, "legend"))
+	{
+		str_format(m_pResponse, m_SizeOfResponse, "you are legend %s", m_pMessageAuthor);
+		return true;
+	}
+
 	// weeb
 	if(str_find_nocase(m_pMessage, "uwu"))
 	{
