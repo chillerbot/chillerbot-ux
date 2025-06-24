@@ -1,5 +1,6 @@
 // ChillerDragon 2021 - chillerbot ux
 
+#include <engine/shared/linereader.h>
 #include <game/generated/protocol.h>
 
 #include <game/client/components/chat.h>
@@ -22,19 +23,19 @@ void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	// is this the "do you know someone who uses a bot?" message?
 	// that gets sent by the server before we know our own client id
 	// or are we dropping some interesting messages here?
-	if(m_pClient->m_aLocalIds[0] < 0 || m_pClient->m_aLocalIds[0] >= MAX_CLIENTS)
+	if(GameClient()->m_aLocalIds[0] < 0 || GameClient()->m_aLocalIds[0] >= MAX_CLIENTS)
 		return;
 
 	char aName[64];
-	str_copy(aName, m_pClient->m_aClients[ClientId].m_aName, sizeof(aName));
-	if(ClientId == 63 && !str_comp_num(m_pClient->m_aClients[ClientId].m_aName, " ", 2))
+	str_copy(aName, GameClient()->m_aClients[ClientId].m_aName, sizeof(aName));
+	if(ClientId == 63 && !str_comp_num(GameClient()->m_aClients[ClientId].m_aName, " ", 2))
 	{
-		m_pClient->m_ChatHelper.Get128Name(pMsg, aName);
+		GameClient()->m_ChatHelper.Get128Name(pMsg, aName);
 	}
 	// ignore own and dummys messages
-	if(!str_comp(aName, m_pClient->m_aClients[m_pClient->m_aLocalIds[0]].m_aName))
+	if(!str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName))
 		return;
-	if(Client()->DummyConnected() && !str_comp(aName, m_pClient->m_aClients[m_pClient->m_aLocalIds[1]].m_aName))
+	if(Client()->DummyConnected() && !str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName))
 		return;
 	if(Team != 3) // whisper only
 		return;
@@ -60,17 +61,17 @@ void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	if(Num == 0)
 	{
 		str_format(aBuf, sizeof(aBuf), "Error: %s missing token (usage: '/whisper name token command')", aName);
-		m_pClient->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
+		GameClient()->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
 		return;
 	}
 	else if(Num == 1 && IsFDDRace)
 	{
 		str_format(aBuf, sizeof(aBuf), "Error: %s missing command (usage: '/whisper name token command')", aName);
-		m_pClient->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
+		GameClient()->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
 		return;
 	}
 	if(!str_comp(aMsg[IsFDDRace ? 1 : 0], g_Config.m_ClRemoteControlTokenAdmin))
-		m_pClient->Console()->ExecuteLine(aMsg[IsFDDRace ? 2 : 1]);
+		GameClient()->Console()->ExecuteLine(aMsg[IsFDDRace ? 2 : 1]);
 	else if(!str_comp(aMsg[IsFDDRace ? 1 : 0], g_Config.m_ClRemoteControlToken))
 		ExecuteWhitelisted(aMsg[IsFDDRace ? 2 : 1]);
 	else
@@ -85,7 +86,7 @@ void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 			sizeof(aBuf),
 			"Error: %s failed to remote control (invalid token)",
 			aName);
-		m_pClient->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
+		GameClient()->m_ChatHelper.SayBuffer(aBuf, Team == 1 ? CChatHelper::BUFFER_CHAT_TEAM : CChatHelper::BUFFER_CHAT_ALL);
 		return;
 	}
 }
@@ -124,7 +125,7 @@ void CRemoteControl::ExecuteWhitelisted(const char *pCommand, const char *pWhite
 		{
 			str_format(aBuf, sizeof(aBuf), "executing whitelisted command '%s'", pCommand);
 			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", aBuf);
-			m_pClient->Console()->ExecuteLine(pCommand);
+			GameClient()->Console()->ExecuteLine(pCommand);
 			return;
 		}
 	}

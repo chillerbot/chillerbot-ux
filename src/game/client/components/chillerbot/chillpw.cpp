@@ -209,7 +209,7 @@ void CChillPw::OnMessage(int MsgType, void *pRawMsg)
 				m_LoginOffset[i] = 0;
 				m_ChatDelay[i] = time_get() + time_freq() * 4;
 			}
-			m_pClient->m_Chat.AddLine(-2, 0, "[chillpw] retrying later, because of initial chat delay.");
+			GameClient()->m_Chat.AddLine(-2, 0, "[chillpw] retrying later, because of initial chat delay.");
 		}
 	}
 }

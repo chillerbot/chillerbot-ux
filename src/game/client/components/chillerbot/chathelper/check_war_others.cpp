@@ -36,7 +36,7 @@ bool CReplyToPing::WhyWar(const char *pVictim, bool IsCheck)
 	// aVictim also has to hold the full own name to match the chop off
 	char aVictim[MAX_NAME_LENGTH + 3 + MAX_NAME_LENGTH];
 	str_copy(aVictim, pVictim, sizeof(aVictim));
-	if(!ChatHelper()->GameClient()->m_WarList.IsWarlist(aVictim) && !ChatHelper()->GameClient()->m_WarList.IsTraitorlist(aVictim))
+	if(!GameClient()->m_WarList.IsWarlist(aVictim) && !GameClient()->m_WarList.IsTraitorlist(aVictim))
 	{
 		HasWar = false;
 		while(str_endswith(aVictim, "?")) // cut off the question marks from the victim name
@@ -46,12 +46,12 @@ bool CReplyToPing::WhyWar(const char *pVictim, bool IsCheck)
 		// cut off own name from the victime name if question in this format "why do you war foo (your name)"
 		char aOwnName[MAX_NAME_LENGTH + 3];
 		// main tee
-		str_format(aOwnName, sizeof(aOwnName), " %s", ChatHelper()->GameClient()->m_aClients[ChatHelper()->GameClient()->m_aLocalIds[0]].m_aName);
+		str_format(aOwnName, sizeof(aOwnName), " %s", GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName);
 		if(str_endswith_nocase(aVictim, aOwnName))
 			aVictim[str_length(aVictim) - str_length(aOwnName)] = '\0';
-		if(ChatHelper()->GameClient()->Client()->DummyConnected())
+		if(GameClient()->Client()->DummyConnected())
 		{
-			str_format(aOwnName, sizeof(aOwnName), " %s", ChatHelper()->GameClient()->m_aClients[ChatHelper()->GameClient()->m_aLocalIds[1]].m_aName);
+			str_format(aOwnName, sizeof(aOwnName), " %s", GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName);
 			if(str_endswith_nocase(aVictim, aOwnName))
 				aVictim[str_length(aVictim) - str_length(aOwnName)] = '\0';
 		}
@@ -103,9 +103,9 @@ bool CReplyToPing::WhyWar(const char *pVictim, bool IsCheck)
 		str_copy(aVictim, m_pMessageAuthor, sizeof(aVictim));
 
 	char aWarReason[128];
-	if(HasWar || ChatHelper()->GameClient()->m_WarList.IsWarlist(aVictim) || ChatHelper()->GameClient()->m_WarList.IsTraitorlist(aVictim))
+	if(HasWar || GameClient()->m_WarList.IsWarlist(aVictim) || GameClient()->m_WarList.IsTraitorlist(aVictim))
 	{
-		ChatHelper()->GameClient()->m_WarList.GetWarReason(aVictim, aWarReason, sizeof(aWarReason));
+		GameClient()->m_WarList.GetWarReason(aVictim, aWarReason, sizeof(aWarReason));
 		if(aWarReason[0])
 			str_format(m_pResponse, m_SizeOfResponse, "%s: %s has war because: %s", m_pMessageAuthor, aVictim, aWarReason);
 		else
@@ -114,18 +114,18 @@ bool CReplyToPing::WhyWar(const char *pVictim, bool IsCheck)
 	}
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		auto &Client = ChatHelper()->GameClient()->m_aClients[i];
+		auto &Client = GameClient()->m_aClients[i];
 		if(!Client.m_Active)
 			continue;
 		if(str_comp(Client.m_aName, aVictim))
 			continue;
 
-		if(ChatHelper()->GameClient()->m_WarList.IsWarClanlist(Client.m_aClan))
+		if(GameClient()->m_WarList.IsWarClanlist(Client.m_aClan))
 		{
 			str_format(m_pResponse, m_SizeOfResponse, "%s i war %s because his clan %s is on my warlist.", m_pMessageAuthor, aVictim, Client.m_aClan);
 			return true;
 		}
-		if(ChatHelper()->GameClient()->m_WarList.IsWarClanmate(i))
+		if(GameClient()->m_WarList.IsWarClanmate(i))
 		{
 			str_format(m_pResponse, m_SizeOfResponse, "%s i might kill %s because I war member from his clan %s", m_pMessageAuthor, aVictim, Client.m_aClan);
 			return true;
@@ -382,18 +382,18 @@ bool CReplyToPing::NameIsWar()
 			bool FoundName = false;
 			if(Strict)
 			{
-				for(const auto &Client : ChatHelper()->GameClient()->m_aClients)
+				for(const auto &Client : GameClient()->m_aClients)
 				{
 					if(!Client.m_Active)
 						continue;
 					if(!str_comp(Client.m_aName, aStrippedMsg))
 					{
-						if(ChatHelper()->GameClient()->m_WarList.IsTeamlist(Client.m_aName))
+						if(GameClient()->m_WarList.IsTeamlist(Client.m_aName))
 						{
 							str_format(m_pResponse, m_SizeOfResponse, "%s: '%s' is on my friend list.", m_pMessageAuthor, Client.m_aName);
 							return true;
 						}
-						if(ChatHelper()->GameClient()->m_WarList.IsTeamClanlist(Client.m_aClan))
+						if(GameClient()->m_WarList.IsTeamClanlist(Client.m_aClan))
 						{
 							str_format(m_pResponse, m_SizeOfResponse, "%s: '%s's clan %s is on my friend list.", m_pMessageAuthor, Client.m_aName, Client.m_aClan);
 							return true;

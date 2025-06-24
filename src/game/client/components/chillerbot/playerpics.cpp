@@ -105,7 +105,7 @@ void CPlayerPics::Render(const char *pName, const vec4 *pColor, float x, float y
 	{
 		float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 		Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-		RenderTools()->MapScreenToGroup(m_pClient->m_Camera.m_Center.x, m_pClient->m_Camera.m_Center.y, Layers()->GameGroup(), m_pClient->m_Camera.m_Zoom);
+		RenderTools()->MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 		Graphics()->TextureSet(pFlag->m_Texture);
 		Graphics()->QuadsBegin();
 		Graphics()->SetColor(pColor->r, pColor->g, pColor->b, pColor->a);
@@ -125,7 +125,7 @@ void CPlayerPics::RenderNameplate(
 
 	vec2 Position;
 	if(ClientId >= 0 && ClientId < MAX_CLIENTS)
-		Position = m_pClient->m_aClients[ClientId].m_RenderPos;
+		Position = GameClient()->m_aClients[ClientId].m_RenderPos;
 	else
 		Position = mix(vec2(pPrevChar->m_X, pPrevChar->m_Y), vec2(pPlayerChar->m_X, pPlayerChar->m_Y), Client()->IntraGameTick(g_Config.m_ClDummy));
 
@@ -141,7 +141,7 @@ void CPlayerPics::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pP
 	// render playerpic
 	if(!pPlayerInfo->m_Local || g_Config.m_ClNamePlatesOwn)
 	{
-		const char *pName = m_pClient->m_aClients[pPlayerInfo->m_ClientId].m_aName;
+		const char *pName = GameClient()->m_aClients[pPlayerInfo->m_ClientId].m_aName;
 		if(g_Config.m_ClRenderPic)
 		{
 			// render player pics
@@ -155,7 +155,7 @@ void CPlayerPics::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pP
 		TextRender()->SetRenderFlags(0);
 
 		char aWarReason[128];
-		m_pClient->m_WarList.GetWarReason(pName, aWarReason, sizeof(aWarReason));
+		GameClient()->m_WarList.GetWarReason(pName, aWarReason, sizeof(aWarReason));
 		if(g_Config.m_ClNameplatesWarReason && aWarReason[0])
 		{
 			if(str_comp(aWarReason, m_aNamePlates[ClientId].m_aWarReason) != 0 || FontSizeClan != m_aNamePlates[ClientId].m_WarReasonTextFontSize)
@@ -173,7 +173,7 @@ void CPlayerPics::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pP
 				// create nameplates at standard zoom
 				float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 				Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-				RenderTools()->MapScreenToGroup(m_pClient->m_Camera.m_Center.x, m_pClient->m_Camera.m_Center.y, Layers()->GameGroup(), m_pClient->m_Camera.m_Zoom);
+				RenderTools()->MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 
 				m_aNamePlates[ClientId].m_WarReasonTextWidth = TextRender()->TextWidth(FontSizeClan, aWarReason, -1, -1.0f);
 
@@ -208,33 +208,33 @@ void CPlayerPics::OnRender()
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		const CNetObj_PlayerInfo *pInfo = m_pClient->m_Snap.m_apPlayerInfos[i];
+		const CNetObj_PlayerInfo *pInfo = GameClient()->m_Snap.m_apPlayerInfos[i];
 		if(!pInfo)
 		{
 			continue;
 		}
 
 		vec2 *pRenderPos;
-		if(m_pClient->m_aClients[i].m_SpecCharPresent)
+		if(GameClient()->m_aClients[i].m_SpecCharPresent)
 		{
 			// Each player can also have a spec char whose nameplate is displayed independently
-			pRenderPos = &m_pClient->m_aClients[i].m_SpecChar;
+			pRenderPos = &GameClient()->m_aClients[i].m_SpecChar;
 			// don't render offscreen
 			if(!(pRenderPos->x < ScreenX0) && !(pRenderPos->x > ScreenX1) && !(pRenderPos->y < ScreenY0) && !(pRenderPos->y > ScreenY1))
 			{
-				RenderNameplatePos(m_pClient->m_aClients[i].m_SpecChar, pInfo, 0.4f, true);
+				RenderNameplatePos(GameClient()->m_aClients[i].m_SpecChar, pInfo, 0.4f, true);
 			}
 		}
-		if(m_pClient->m_Snap.m_aCharacters[i].m_Active)
+		if(GameClient()->m_Snap.m_aCharacters[i].m_Active)
 		{
 			// Only render nameplates for active characters
-			pRenderPos = &m_pClient->m_aClients[i].m_RenderPos;
+			pRenderPos = &GameClient()->m_aClients[i].m_RenderPos;
 			// don't render offscreen
 			if(!(pRenderPos->x < ScreenX0) && !(pRenderPos->x > ScreenX1) && !(pRenderPos->y < ScreenY0) && !(pRenderPos->y > ScreenY1))
 			{
 				RenderNameplate(
-					&m_pClient->m_Snap.m_aCharacters[i].m_Prev,
-					&m_pClient->m_Snap.m_aCharacters[i].m_Cur,
+					&GameClient()->m_Snap.m_aCharacters[i].m_Prev,
+					&GameClient()->m_Snap.m_aCharacters[i].m_Cur,
 					pInfo);
 			}
 		}

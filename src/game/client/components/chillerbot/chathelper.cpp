@@ -13,6 +13,11 @@
 
 #include "chathelper.h"
 
+CGameClient *CChatHelper::GameClientUnprotected()
+{
+	return GameClient();
+}
+
 CChatHelper::CChatHelper()
 {
 	mem_zero(m_aaChatFilter, sizeof(m_aaChatFilter));
@@ -39,7 +44,7 @@ int CChatHelper::ChatCommandGetROffset(const char *pCmd)
 
 void CChatHelper::OnInit()
 {
-	m_pChillerBot = &m_pClient->m_ChillerBotUX;
+	m_pChillerBot = &GameClient()->m_ChillerBotUX;
 
 	m_aGreetName[0] = '\0';
 	m_NextGreetClear = 0;
@@ -77,7 +82,7 @@ void CChatHelper::OnRender()
 				if(m_aaaSendBuffer[Team][0][0])
 				{
 					// the BUFFER_ enum overlaps with 0 for public chat and 1 for team chat chat.cpp api
-					m_pClient->m_Chat.SendChat(Team, m_aaaSendBuffer[Team][0]);
+					GameClient()->m_Chat.SendChat(Team, m_aaaSendBuffer[Team][0]);
 					for(int i = 0; i < MAX_CHAT_BUFFER_LEN - 1; i++)
 						str_copy(m_aaaSendBuffer[Team][i], m_aaaSendBuffer[Team][i + 1], sizeof(m_aaaSendBuffer[Team][i]));
 					m_aaaSendBuffer[Team][MAX_CHAT_BUFFER_LEN - 1][0] = '\0';
@@ -91,7 +96,7 @@ void CChatHelper::OnRender()
 void CChatHelper::SayBuffer(const char *pMsg, int Team, bool StayAfk)
 {
 	if(StayAfk)
-		m_pClient->m_ChillerBotUX.m_IgnoreChatAfk++;
+		GameClient()->m_ChillerBotUX.m_IgnoreChatAfk++;
 	// append at end
 	for(auto &Buf : m_aaaSendBuffer[Team])
 	{
@@ -137,7 +142,7 @@ void CChatHelper::ConReplyToLastPing(IConsole::IResult *pResult, void *pUserData
 		{
 			if(aResponse[0])
 			{
-				pSelf->m_pClient->m_Chat.SendChat(Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL, aResponse);
+				pSelf->GameClient()->m_Chat.SendChat(Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL, aResponse);
 				// pSelf->SayBuffer(aResponse, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL);
 				break;
 			}
@@ -214,7 +219,7 @@ void CChatHelper::SayFormat(const char *pMsg)
 	aBuf[BufI] = '\0';
 	// fallback nullterm at buffer end
 	aBuf[sizeof(aBuf) - 1] = '\0';
-	m_pClient->m_Chat.SendChat(0, aBuf);
+	GameClient()->m_Chat.SendChat(0, aBuf);
 }
 
 bool CChatHelper::HowToJoinClan(const char *pClan, char *pResponse, int SizeOfResponse)
@@ -241,10 +246,10 @@ void CChatHelper::DoGreet()
 	{
 		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), "hi %s", m_aGreetName);
-		m_pClient->m_Chat.SendChat(0, aBuf);
+		GameClient()->m_Chat.SendChat(0, aBuf);
 		return;
 	}
-	m_pClient->m_Chat.SendChat(0, "hi");
+	GameClient()->m_Chat.SendChat(0, "hi");
 }
 
 int CChatHelper::Get128Name(const char *pMsg, char *pName)
@@ -272,25 +277,25 @@ void CChatHelper::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	// check for highlighted name
 	if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 	{
-		if(m_pClient->m_aLocalIds[0] == -1)
+		if(GameClient()->m_aLocalIds[0] == -1)
 			return;
-		if(m_pClient->Client()->DummyConnected() && m_pClient->m_aLocalIds[1] == -1)
+		if(GameClient()->Client()->DummyConnected() && GameClient()->m_aLocalIds[1] == -1)
 			return;
-		if(ClientId >= 0 && ClientId != m_pClient->m_aLocalIds[0] && (!m_pClient->Client()->DummyConnected() || ClientId != m_pClient->m_aLocalIds[1]))
+		if(ClientId >= 0 && ClientId != GameClient()->m_aLocalIds[0] && (!GameClient()->Client()->DummyConnected() || ClientId != GameClient()->m_aLocalIds[1]))
 		{
 			// main character
-			Highlighted |= LineShouldHighlight(pMsg, m_pClient->m_aClients[m_pClient->m_aLocalIds[0]].m_aName);
+			Highlighted |= LineShouldHighlight(pMsg, GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName);
 			// dummy
-			Highlighted |= m_pClient->Client()->DummyConnected() && LineShouldHighlight(pMsg, m_pClient->m_aClients[m_pClient->m_aLocalIds[1]].m_aName);
+			Highlighted |= GameClient()->Client()->DummyConnected() && LineShouldHighlight(pMsg, GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName);
 		}
 	}
 	else
 	{
-		if(m_pClient->m_Snap.m_LocalClientId == -1)
+		if(GameClient()->m_Snap.m_LocalClientId == -1)
 			return;
 		// on demo playback use local id from snap directly,
 		// since m_aLocalIds isn't valid there
-		Highlighted |= m_pClient->m_Snap.m_LocalClientId >= 0 && LineShouldHighlight(pMsg, m_pClient->m_aClients[m_pClient->m_Snap.m_LocalClientId].m_aName);
+		Highlighted |= GameClient()->m_Snap.m_LocalClientId >= 0 && LineShouldHighlight(pMsg, GameClient()->m_aClients[GameClient()->m_Snap.m_LocalClientId].m_aName);
 	}
 
 	if(Team == 3) // whisper recv
@@ -298,16 +303,16 @@ void CChatHelper::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	if(!Highlighted)
 		return;
 	char aName[64];
-	str_copy(aName, m_pClient->m_aClients[ClientId].m_aName, sizeof(aName));
-	if(ClientId == 63 && !str_comp_num(m_pClient->m_aClients[ClientId].m_aName, " ", 2))
+	str_copy(aName, GameClient()->m_aClients[ClientId].m_aName, sizeof(aName));
+	if(ClientId == 63 && !str_comp_num(GameClient()->m_aClients[ClientId].m_aName, " ", 2))
 	{
 		Get128Name(pMsg, aName);
-		// dbg_msg("chillerbot", "fixname 128 player '%s' -> '%s'", m_pClient->m_aClients[ClientId].m_aName, aName);
+		// dbg_msg("chillerbot", "fixname 128 player '%s' -> '%s'", GameClient()->m_aClients[ClientId].m_aName, aName);
 	}
 	// ignore own and dummys messages
-	if(!str_comp(aName, m_pClient->m_aClients[m_pClient->m_aLocalIds[0]].m_aName))
+	if(!str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName))
 		return;
-	if(Client()->DummyConnected() && !str_comp(aName, m_pClient->m_aClients[m_pClient->m_aLocalIds[1]].m_aName))
+	if(Client()->DummyConnected() && !str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName))
 		return;
 	if(m_LangParser.IsGreeting(pMsg))
 	{
@@ -319,7 +324,7 @@ void CChatHelper::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	if(!str_comp(m_aLastPings[0].m_aMessage, pMsg))
 		return;
 	char aBuf[2048];
-	PushPing(aName, m_pClient->m_aClients[ClientId].m_aClan, pMsg, Team);
+	PushPing(aName, GameClient()->m_aClients[ClientId].m_aClan, pMsg, Team);
 	int64_t AfkTill = m_pChillerBot->GetAfkTime();
 	if(m_pChillerBot->IsAfk())
 	{
@@ -344,13 +349,13 @@ void CChatHelper::OnChatMessage(int ClientId, int Team, const char *pMsg)
 		{
 			SayBuffer(aBuf, Team == 1 ? BUFFER_CHAT_TEAM : BUFFER_CHAT_ALL, true);
 		}
-		str_format(m_aLastAfkPing, sizeof(m_aLastAfkPing), "%s: %s", m_pClient->m_aClients[ClientId].m_aName, pMsg);
+		str_format(m_aLastAfkPing, sizeof(m_aLastAfkPing), "%s: %s", GameClient()->m_aClients[ClientId].m_aName, pMsg);
 		m_pChillerBot->SetComponentNoteLong("afk", m_aLastAfkPing);
 		return;
 	}
 	if(g_Config.m_ClShowLastPing)
 	{
-		str_format(aBuf, sizeof(aBuf), "%s: %s", m_pClient->m_aClients[ClientId].m_aName, pMsg);
+		str_format(aBuf, sizeof(aBuf), "%s: %s", GameClient()->m_aClients[ClientId].m_aName, pMsg);
 		m_pChillerBot->SetComponentNoteLong("last ping", aBuf);
 	}
 	if(g_Config.m_ClTabbedOutMsg)
@@ -414,7 +419,7 @@ int CChatHelper::IsSpam(int ClientId, int Team, const char *pMsg)
 		Highlighted = true;
 		NameLen = str_length(pName);
 	}
-	else if(m_pClient->Client()->DummyConnected() && LineShouldHighlight(pMsg, pDummyName) && pDummyName)
+	else if(GameClient()->Client()->DummyConnected() && LineShouldHighlight(pMsg, pDummyName) && pDummyName)
 	{
 		Highlighted = true;
 		NameLen = str_length(pDummyName);
@@ -426,17 +431,17 @@ int CChatHelper::IsSpam(int ClientId, int Team, const char *pMsg)
 	if(!Highlighted)
 		return SPAM_NONE;
 	char aName[64];
-	str_copy(aName, m_pClient->m_aClients[ClientId].m_aName, sizeof(aName));
-	if(ClientId == 63 && !str_comp_num(m_pClient->m_aClients[ClientId].m_aName, " ", 2))
+	str_copy(aName, GameClient()->m_aClients[ClientId].m_aName, sizeof(aName));
+	if(ClientId == 63 && !str_comp_num(GameClient()->m_aClients[ClientId].m_aName, " ", 2))
 	{
 		Get128Name(pMsg, aName);
 		MsgLen -= str_length(aName) + 2;
-		// dbg_msg("chillerbot", "fixname 128 player '%s' -> '%s'", m_pClient->m_aClients[ClientId].m_aName, aName);
+		// dbg_msg("chillerbot", "fixname 128 player '%s' -> '%s'", GameClient()->m_aClients[ClientId].m_aName, aName);
 	}
 	// ignore own and dummys messages
-	if(!str_comp(aName, m_pClient->m_aClients[m_pClient->m_aLocalIds[0]].m_aName))
+	if(!str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName))
 		return SPAM_NONE;
-	if(Client()->DummyConnected() && !str_comp(aName, m_pClient->m_aClients[m_pClient->m_aLocalIds[1]].m_aName))
+	if(Client()->DummyConnected() && !str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName))
 		return SPAM_NONE;
 
 	// ping without further context
@@ -492,15 +497,15 @@ bool CChatHelper::FilterChat(int ClientId, int Team, const char *pLine)
 		if(!m_pChillerBot->IsAfk())
 		{
 			char aName[64];
-			str_copy(aName, m_pClient->m_aClients[ClientId].m_aName, sizeof(aName));
-			if(ClientId == 63 && !str_comp_num(m_pClient->m_aClients[ClientId].m_aName, " ", 2))
+			str_copy(aName, GameClient()->m_aClients[ClientId].m_aName, sizeof(aName));
+			if(ClientId == 63 && !str_comp_num(GameClient()->m_aClients[ClientId].m_aName, " ", 2))
 			{
 				Get128Name(pLine, aName);
-				// dbg_msg("chillerbot", "fixname 128 player '%s' -> '%s'", m_pClient->m_aClients[ClientId].m_aName, aName);
+				// dbg_msg("chillerbot", "fixname 128 player '%s' -> '%s'", GameClient()->m_aClients[ClientId].m_aName, aName);
 			}
 			char aResponse[1024];
-			// if(m_pReplyToPing->ReplyToLastPing(aName, m_pClient->m_aClients[ClientId].m_aClan, pLine, aResponse, sizeof(aResponse)))
-			CReplyToPing ReplyToPing = CReplyToPing(this, aName, m_pClient->m_aClients[ClientId].m_aClan, pLine, aResponse, sizeof(aResponse));
+			// if(m_pReplyToPing->ReplyToLastPing(aName, GameClient()->m_aClients[ClientId].m_aClan, pLine, aResponse, sizeof(aResponse)))
+			CReplyToPing ReplyToPing = CReplyToPing(this, aName, GameClient()->m_aClients[ClientId].m_aClan, pLine, aResponse, sizeof(aResponse));
 			if(ReplyToPing.Reply())
 			{
 				if(aResponse[0])
@@ -518,7 +523,7 @@ bool CChatHelper::FilterChat(int ClientId, int Team, const char *pLine)
 		}
 		return true;
 	}
-	if(m_pClient->m_MmoTee.FilterChat(ClientId, Team, pLine))
+	if(GameClient()->m_MmoTee.FilterChat(ClientId, Team, pLine))
 		return true;
 	return false;
 }

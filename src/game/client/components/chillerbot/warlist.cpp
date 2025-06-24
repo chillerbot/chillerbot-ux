@@ -58,7 +58,7 @@ void CWarList::ReloadList()
 	str_format(aBuf, sizeof(aBuf), "team: %d war: %d", m_TeamDirs, (m_WarDirs + m_TraitorDirs));
 	// TODO: fix on initial load
 	// 		 maybe https://github.com/chillerbot/chillerbot-ux/issues/22 is needed
-	m_pClient->m_ChillerBotUX.SetComponentNoteLong("war list", aBuf);
+	GameClient()->m_ChillerBotUX.SetComponentNoteLong("war list", aBuf);
 }
 
 void CWarList::GetWarlistPathByNeedle(const char *pSearch, int Size, char *pPath)
@@ -307,8 +307,8 @@ bool CWarList::IsWar(const char *pName, const char *pClan)
 
 bool CWarList::IsWar(int ClientId)
 {
-	const char *pName = m_pClient->m_aClients[ClientId].m_aName;
-	const char *pClan = m_pClient->m_aClients[ClientId].m_aClan;
+	const char *pName = GameClient()->m_aClients[ClientId].m_aName;
+	const char *pClan = GameClient()->m_aClients[ClientId].m_aClan;
 	if(!str_comp(pName, m_aWarPlayers[ClientId].m_aName))
 	{
 		return m_aWarPlayers[ClientId].m_IsWar;
@@ -326,8 +326,8 @@ bool CWarList::IsWar(int ClientId)
 
 bool CWarList::IsTeam(int ClientId)
 {
-	const char *pName = m_pClient->m_aClients[ClientId].m_aName;
-	const char *pClan = m_pClient->m_aClients[ClientId].m_aClan;
+	const char *pName = GameClient()->m_aClients[ClientId].m_aName;
+	const char *pClan = GameClient()->m_aClients[ClientId].m_aClan;
 	if(!str_comp(pName, m_aWarPlayers[ClientId].m_aName))
 	{
 		return m_aWarPlayers[ClientId].m_IsTeam;
@@ -345,8 +345,8 @@ bool CWarList::IsTeam(int ClientId)
 
 bool CWarList::IsTraitor(int ClientId)
 {
-	const char *pName = m_pClient->m_aClients[ClientId].m_aName;
-	const char *pClan = m_pClient->m_aClients[ClientId].m_aClan;
+	const char *pName = GameClient()->m_aClients[ClientId].m_aName;
+	const char *pClan = GameClient()->m_aClients[ClientId].m_aClan;
 	if(!str_comp(pName, m_aWarPlayers[ClientId].m_aName))
 	{
 		return m_aWarPlayers[ClientId].m_IsTraitor;
@@ -364,8 +364,8 @@ bool CWarList::IsTraitor(int ClientId)
 
 bool CWarList::IsWarClan(int ClientId)
 {
-	const char *pName = m_pClient->m_aClients[ClientId].m_aName;
-	const char *pClan = m_pClient->m_aClients[ClientId].m_aClan;
+	const char *pName = GameClient()->m_aClients[ClientId].m_aName;
+	const char *pClan = GameClient()->m_aClients[ClientId].m_aClan;
 	if(!pClan[0])
 		return false;
 	if(!str_comp(pClan, m_aWarPlayers[ClientId].m_aClan))
@@ -385,8 +385,8 @@ bool CWarList::IsWarClan(int ClientId)
 
 bool CWarList::IsTeamClan(int ClientId)
 {
-	const char *pName = m_pClient->m_aClients[ClientId].m_aName;
-	const char *pClan = m_pClient->m_aClients[ClientId].m_aClan;
+	const char *pName = GameClient()->m_aClients[ClientId].m_aName;
+	const char *pClan = GameClient()->m_aClients[ClientId].m_aClan;
 	if(!pClan[0])
 		return false;
 	if(!str_comp(pClan, m_aWarPlayers[ClientId].m_aClan))
@@ -406,8 +406,8 @@ bool CWarList::IsTeamClan(int ClientId)
 
 bool CWarList::IsWarClanmate(int ClientId)
 {
-	const char *pName = m_pClient->m_aClients[ClientId].m_aName;
-	const char *pClan = m_pClient->m_aClients[ClientId].m_aClan;
+	const char *pName = GameClient()->m_aClients[ClientId].m_aName;
+	const char *pClan = GameClient()->m_aClients[ClientId].m_aClan;
 	if(!pClan[0])
 		return false;
 	if(!str_comp(pClan, m_aWarPlayers[ClientId].m_aClan))
@@ -844,14 +844,14 @@ void CWarList::ConchainWarList(IConsole::IResult *pResult, void *pUserData, ICon
 	pfnCallback(pResult, pCallbackUserData);
 	if(pResult->GetInteger(0))
 	{
-		pSelf->m_pClient->m_ChillerBotUX.EnableComponent("war list");
+		pSelf->GameClient()->m_ChillerBotUX.EnableComponent("war list");
 		pSelf->ReloadList();
 
 		if(g_Config.m_ClNamePlatesTeamcolors)
 			log_warn("warlist", "warning both chillerbot-ux warlist and ddnet cl_nameplates_teamcolors want to set name colors");
 	}
 	else
-		pSelf->m_pClient->m_ChillerBotUX.DisableComponent("war list");
+		pSelf->GameClient()->m_ChillerBotUX.DisableComponent("war list");
 }
 
 void CWarList::OnRender()
@@ -905,7 +905,7 @@ bool CWarList::AddWar(const char *pFolder, const char *pName)
 	if(!File)
 	{
 		str_format(aBuf, sizeof(aBuf), "failed to open war list file '%s'", aFilename);
-		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 		return false;
 	}
 
@@ -915,7 +915,7 @@ bool CWarList::AddWar(const char *pFolder, const char *pName)
 
 	str_format(aBuf, sizeof(aBuf), "Added '%s' to the folder %s", pName, pFolder);
 	ReloadList();
-	m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+	GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 	return true;
 }
 
@@ -928,7 +928,7 @@ bool CWarList::AddTeam(const char *pFolder, const char *pName)
 	if(!File)
 	{
 		str_format(aBuf, sizeof(aBuf), "failed to open war list file '%s'", aFilename);
-		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 		return false;
 	}
 
@@ -938,7 +938,7 @@ bool CWarList::AddTeam(const char *pFolder, const char *pName)
 
 	str_format(aBuf, sizeof(aBuf), "Added '%s' to the folder %s", pName, pFolder);
 	ReloadList();
-	m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+	GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 	return true;
 }
 
@@ -997,7 +997,7 @@ bool CWarList::SearchName(const char *pName, bool AllowPartialMatch, bool Silent
 		if(pLine)
 		{
 			str_format(aBuf, sizeof(aBuf), "[%s] names: %s", pFilename, pLine);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 		}
 
 		Found = true;
@@ -1007,7 +1007,7 @@ bool CWarList::SearchName(const char *pName, bool AllowPartialMatch, bool Silent
 		if(!Silent)
 		{
 			str_format(aBuf, sizeof(aBuf), "Name '%s' not found", pName);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 		}
 		return false;
 	}
@@ -1018,7 +1018,7 @@ bool CWarList::OnChatCmd(char Prefix, int ClientId, int Team, const char *pCmd, 
 {
 	if(!g_Config.m_ClWarList)
 		return false;
-	if(ClientId != m_pClient->m_Snap.m_LocalClientId)
+	if(ClientId != GameClient()->m_Snap.m_LocalClientId)
 		return false;
 
 	if(g_Config.m_ClWarListAdvanced)

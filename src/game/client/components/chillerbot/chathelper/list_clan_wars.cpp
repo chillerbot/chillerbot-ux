@@ -33,7 +33,7 @@ bool CReplyToPing::ListClanWars()
 		if(str_find_nocase(m_pMessage, "war") || str_find_nocase(m_pMessage, "enemy") || str_find_nocase(m_pMessage, "kill") || str_find_nocase(m_pMessage, "against") || str_find_nocase(m_pMessage, "bad"))
 		{
 			char aClans[256];
-			ChatHelper()->GameClient()->m_WarList.GetWarClansStr(aClans, sizeof(aClans));
+			GameClient()->m_WarList.GetWarClansStr(aClans, sizeof(aClans));
 			if(aClans[0])
 				str_format(m_pResponse, m_SizeOfResponse, "%s I war those clans: %s", m_pMessageAuthor, aClans);
 			else

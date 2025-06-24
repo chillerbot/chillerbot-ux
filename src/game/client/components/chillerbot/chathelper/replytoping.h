@@ -21,6 +21,8 @@ class CReplyToPing
 {
 	class CChatHelper *m_pChatHelper;
 	class CChatHelper *ChatHelper() { return m_pChatHelper; }
+	class CGameClient *GameClient();
+
 	class CLangParser &LangParser();
 
 	const char *m_pMessageAuthor;

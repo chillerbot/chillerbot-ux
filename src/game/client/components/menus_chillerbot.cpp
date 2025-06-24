@@ -58,7 +58,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		if(DoButton_CheckBox(&g_Config.m_ClFinishRename, "Rename on finish", g_Config.m_ClFinishRename, &Checkbox))
 		{
 			g_Config.m_ClFinishRename ^= 1;
-			m_pClient->m_ChillerBotUX.UpdateComponents();
+			GameClient()->m_ChillerBotUX.UpdateComponents();
 		}
 	}
 
@@ -80,7 +80,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		if(DoButton_CheckBox(&g_Config.m_ClAutoReply, "Auto reply", g_Config.m_ClAutoReply, &Checkbox))
 		{
 			g_Config.m_ClAutoReply ^= 1;
-			m_pClient->m_ChillerBotUX.UpdateComponents();
+			GameClient()->m_ChillerBotUX.UpdateComponents();
 		}
 	}
 
@@ -93,7 +93,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		if(DoButton_CheckBox(&g_Config.m_ClChillerbotHud, "show component hud", g_Config.m_ClChillerbotHud, &Checkbox))
 		{
 			g_Config.m_ClChillerbotHud ^= 1;
-			m_pClient->m_ChillerBotUX.UpdateComponents();
+			GameClient()->m_ChillerBotUX.UpdateComponents();
 		}
 	}
 	// war list
@@ -103,8 +103,8 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		if(DoButton_CheckBox(&g_Config.m_ClWarList, "war list", g_Config.m_ClWarList, &Checkbox))
 		{
 			g_Config.m_ClWarList ^= 1;
-			m_pClient->m_ChillerBotUX.UpdateComponents();
-			m_pClient->m_WarList.ReloadList();
+			GameClient()->m_ChillerBotUX.UpdateComponents();
+			GameClient()->m_WarList.ReloadList();
 		}
 	}
 	// notify tile change
@@ -124,7 +124,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		{
 			g_Config.m_ClShowLastKiller ^= 1;
 			g_Config.m_ClChillerbotHud = 1;
-			m_pClient->m_ChillerBotUX.UpdateComponents();
+			GameClient()->m_ChillerBotUX.UpdateComponents();
 		}
 	}
 	// render laser head
@@ -148,7 +148,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 	{
 		MainView.HSplitTop(20.0f, &Button, &MainView);
 		Button.VSplitLeft(120.0f, &Label, &Button);
-		str_format(aBuf, sizeof(aBuf), "chillerbot-ux playtime: %d hours", m_pClient->m_ChillerBotUX.GetPlayTimeHours());
+		str_format(aBuf, sizeof(aBuf), "chillerbot-ux playtime: %d hours", GameClient()->m_ChillerBotUX.GetPlayTimeHours());
 		Ui()->DoLabel(&Label, aBuf, 14.0f, -1);
 	}
 }

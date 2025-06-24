@@ -44,12 +44,18 @@ void CCityHelper::OnConsoleInit()
 
 void CCityHelper::ConchainShowWallet(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
-	CWarList *pSelf = (CWarList *)pUserData;
+	CCityHelper *pSelf = (CCityHelper *)pUserData;
 	pfnCallback(pResult, pCallbackUserData);
 	if(pResult->GetInteger(0))
 		pSelf->GameClient()->m_ChillerBotUX.EnableComponent("money");
 	else
 		pSelf->GameClient()->m_ChillerBotUX.DisableComponent("money");
+}
+
+// TODO: remove this it is unused
+CGameClient *CCityHelper::GameClientUnprotected()
+{
+	return GameClient();
 }
 
 void CCityHelper::PrintWalletToChat(int ClientId, const char *pWhisper)
@@ -79,10 +85,10 @@ void CCityHelper::PrintWalletToChat(int ClientId, const char *pWhisper)
 	if(pWhisper && pWhisper[0])
 	{
 		str_format(aBuf, sizeof(aBuf), "/whisper \"%s\" %s", pWhisper, aWallet);
-		m_pClient->m_Chat.SendChat(0, aBuf);
+		GameClient()->m_Chat.SendChat(0, aBuf);
 	}
 	else
-		m_pClient->m_Chat.SendChat(0, aWallet);
+		GameClient()->m_Chat.SendChat(0, aWallet);
 }
 
 int CCityHelper::WalletMoney(int ClientId)
@@ -108,7 +114,7 @@ void CCityHelper::SetWalletMoney(int Money, int ClientId)
 	{
 		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), "%d", m_WalletMoney[ClientId]);
-		m_pClient->m_ChillerBotUX.SetComponentNoteLong("money", aBuf);
+		GameClient()->m_ChillerBotUX.SetComponentNoteLong("money", aBuf);
 	}
 }
 
@@ -203,11 +209,11 @@ void CCityHelper::OnServerMsg(const char *pMsg)
 	if(n == 1)
 	{
 		int Owner = ClosestClientIdToPos(
-			vec2(m_pClient->m_LocalCharacterPos.x, m_pClient->m_LocalCharacterPos.y),
+			vec2(GameClient()->m_LocalCharacterPos.x, GameClient()->m_LocalCharacterPos.y),
 			g_Config.m_ClDummy);
 		if(Owner != -1)
 		{
-			const char *pName = m_pClient->m_aClients[Owner].m_aName;
+			const char *pName = GameClient()->m_aClients[Owner].m_aName;
 			std::pair<std::string, int> Pair;
 			Pair.first = std::string(pName);
 			Pair.second = Money;
@@ -239,7 +245,7 @@ void CCityHelper::OnServerMsg(const char *pMsg)
 	}
 	if(!str_comp(pMsg, "You don't have enough money in your wallet"))
 	{
-		m_pClient->m_ChatHelper.SayBuffer("/stats", CChatHelper::BUFFER_CHAT_ALL, true);
+		GameClient()->m_ChatHelper.SayBuffer("/stats", CChatHelper::BUFFER_CHAT_ALL, true);
 		return;
 	}
 	if(!str_comp(pMsg, "No such command: money."))
@@ -258,8 +264,8 @@ int CCityHelper::ClosestClientIdToPos(vec2 Pos, int Dummy)
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		int ClientId = m_pClient->m_aLocalIds[Dummy];
-		if(!m_pClient->m_Snap.m_aCharacters[i].m_Active)
+		int ClientId = GameClient()->m_aLocalIds[Dummy];
+		if(!GameClient()->m_Snap.m_aCharacters[i].m_Active)
 			continue;
 		if(ClientId == i)
 			continue;
@@ -269,7 +275,7 @@ int CCityHelper::ClosestClientIdToPos(vec2 Pos, int Dummy)
 
 		if(pPrevInfo && pInfo)
 		{
-			vec2 OtherPos = m_pClient->m_aClients[i].m_Predicted.m_Pos;
+			vec2 OtherPos = GameClient()->m_aClients[i].m_Predicted.m_Pos;
 			float len = distance(OtherPos, Pos);
 			if(len < ClosestRange || !ClosestRange)
 			{
@@ -288,19 +294,19 @@ void CCityHelper::OnChatMsg(int ClientId, int Team, const char *pMsg)
 	if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
 		return;
 
-	if(m_pClient->m_aLocalIds[0] == -1)
+	if(GameClient()->m_aLocalIds[0] == -1)
 		return;
 
 	// TODO: move this to chat helper? or do I want a new chat command system in each component? -.-
-	const char *pName = m_pClient->m_aClients[m_pClient->m_aLocalIds[0]].m_aName;
+	const char *pName = GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName;
 	const char *pDummyName = "";
-	if(m_pClient->Client()->DummyConnected() && m_pClient->m_aLocalIds[1] != -1)
-		pDummyName = m_pClient->m_aClients[m_pClient->m_aLocalIds[1]].m_aName;
+	if(GameClient()->Client()->DummyConnected() && GameClient()->m_aLocalIds[1] != -1)
+		pDummyName = GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName;
 	int NameLen = 0;
 
 	if(str_startswith(pMsg, pName))
 		NameLen = str_length(pName);
-	else if(m_pClient->Client()->DummyConnected() && str_startswith(pMsg, pDummyName))
+	else if(GameClient()->Client()->DummyConnected() && str_startswith(pMsg, pDummyName))
 		NameLen = str_length(pDummyName);
 
 	if(!NameLen && Team < 2)
@@ -315,10 +321,10 @@ void CCityHelper::OnChatMsg(int ClientId, int Team, const char *pMsg)
 	// if whisper respond in whisper
 	if(Team >= 2)
 	{
-		str_copy(aName, m_pClient->m_aClients[ClientId].m_aName, sizeof(aName));
-		if(IsFDDRace && ClientId == 63 && !str_comp_num(m_pClient->m_aClients[ClientId].m_aName, " ", 2))
+		str_copy(aName, GameClient()->m_aClients[ClientId].m_aName, sizeof(aName));
+		if(IsFDDRace && ClientId == 63 && !str_comp_num(GameClient()->m_aClients[ClientId].m_aName, " ", 2))
 		{
-			MsgOffset = m_pClient->m_ChatHelper.Get128Name(pMsg, aName);
+			MsgOffset = GameClient()->m_ChatHelper.Get128Name(pMsg, aName);
 			if(MsgOffset == -1)
 				MsgOffset = 0;
 		}
@@ -340,7 +346,7 @@ void CCityHelper::OnChatMsg(int ClientId, int Team, const char *pMsg)
 		return;
 	// char aBuf[128];
 	// str_format(aBuf, sizeof(aBuf), "cmd '%s'", aCmd);
-	// m_pClient->m_Chat.Say(0, aBuf);
+	// GameClient()->m_Chat.Say(0, aBuf);
 	if(!str_comp(aCmd, "wallet"))
 		PrintWalletToChat(g_Config.m_ClDummy, aName);
 }

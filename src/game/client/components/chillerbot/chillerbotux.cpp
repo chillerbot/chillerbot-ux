@@ -123,12 +123,12 @@ void CChillerBotUX::OnRender()
 	RenderDbgIntersect();
 	if(!m_ForceDir && m_LastForceDir)
 	{
-		m_pClient->m_Controls.m_aInputDirectionRight[g_Config.m_ClDummy] = 0;
-		m_pClient->m_Controls.m_aInputDirectionLeft[g_Config.m_ClDummy] = 0;
-		if(m_pClient->m_VibeBot.IsVibing(g_Config.m_ClDummy))
+		GameClient()->m_Controls.m_aInputDirectionRight[g_Config.m_ClDummy] = 0;
+		GameClient()->m_Controls.m_aInputDirectionLeft[g_Config.m_ClDummy] = 0;
+		if(GameClient()->m_VibeBot.IsVibing(g_Config.m_ClDummy))
 		{
-			m_pClient->m_Controls.m_aInputData[g_Config.m_ClDummy].m_Direction = 0;
-			m_pClient->m_VibeBot.m_aInputData[g_Config.m_ClDummy].m_Direction = 0;
+			GameClient()->m_Controls.m_aInputData[g_Config.m_ClDummy].m_Direction = 0;
+			GameClient()->m_VibeBot.m_aInputData[g_Config.m_ClDummy].m_Direction = 0;
 		}
 	}
 	m_LastForceDir = m_ForceDir;
@@ -166,8 +166,8 @@ bool CChillerBotUX::OnSendChat(int Team, const char *pLine)
 
 	ReturnFromAfk(aTrimmedLine);
 
-	int ClientId = m_pClient->m_aLocalIds[g_Config.m_ClDummy];
-	if(m_pClient->m_ChatCommand.OnChatMsg(ClientId, Team, aTrimmedLine))
+	int ClientId = GameClient()->m_aLocalIds[g_Config.m_ClDummy];
+	if(GameClient()->m_ChatCommand.OnChatMsg(ClientId, Team, aTrimmedLine))
 	{
 		if(g_Config.m_ClSilentChatCommands)
 			return false;
@@ -179,7 +179,7 @@ bool CChillerBotUX::OnSendChat(int Team, const char *pLine)
 bool CChillerBotUX::OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput)
 {
 #if defined(CONF_CURSES_CLIENT)
-	WouldSend = m_pClient->m_TerminalUI.OnSnapInput(WouldSend, pInput);
+	WouldSend = GameClient()->m_TerminalUI.OnSnapInput(WouldSend, pInput);
 #endif
 
 	// register your chillerbot-ux component below!
@@ -189,10 +189,10 @@ bool CChillerBotUX::OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput)
 
 void CChillerBotUX::OnStateChange(int NewState, int OldState)
 {
-	if(NewState == IClient::STATE_OFFLINE && m_pClient->Client()->ReconnectTime() == 0)
+	if(NewState == IClient::STATE_OFFLINE && GameClient()->Client()->ReconnectTime() == 0)
 	{
 		if(g_Config.m_ClAlwaysReconnect)
-			m_pClient->Client()->SetReconnectTime(time_get() + time_freq() * g_Config.m_ClReconnectTimeout + 10);
+			GameClient()->Client()->SetReconnectTime(time_get() + time_freq() * g_Config.m_ClReconnectTimeout + 10);
 	}
 }
 
@@ -226,14 +226,14 @@ void CChillerBotUX::SkinStealTick()
 	if(!GameClient()->m_Snap.m_pLocalCharacter)
 		return;
 
-	int LocalClientId = m_pClient->m_Snap.m_LocalClientId;
+	int LocalClientId = GameClient()->m_Snap.m_LocalClientId;
 	for(int ClientId = 0; ClientId < MAX_CLIENTS; ClientId++)
 	{
-		if(ClientId == LocalClientId || !m_pClient->m_Snap.m_aCharacters[ClientId].m_Active || !IsPlayerInfoAvailable(ClientId))
+		if(ClientId == LocalClientId || !GameClient()->m_Snap.m_aCharacters[ClientId].m_Active || !IsPlayerInfoAvailable(ClientId))
 			continue;
 
 		// only steal close by
-		vec2 *pRenderPos = &m_pClient->m_aClients[ClientId].m_RenderPos;
+		vec2 *pRenderPos = &GameClient()->m_aClients[ClientId].m_RenderPos;
 		vec2 Current = vec2(GameClient()->m_Snap.m_pLocalCharacter->m_X, GameClient()->m_Snap.m_pLocalCharacter->m_Y);
 		float dist = distance(*pRenderPos, Current);
 		if(dist > 32 * g_Config.m_ClSkinStealRadius)
@@ -246,7 +246,7 @@ void CChillerBotUX::SkinStealTick()
 			g_Config.m_ClPlayerColorBody = GameClient()->m_aClients[ClientId].m_ColorBody;
 			g_Config.m_ClPlayerColorFeet = GameClient()->m_aClients[ClientId].m_ColorFeet;
 		}
-		m_pClient->SendInfo(false);
+		GameClient()->SendInfo(false);
 		// only steal skin every 10 seconds to not get ratelimited
 		m_NextSkinSteal = time_get() + time_freq() * 10;
 		dbg_msg("chillerbot", "cl_skin_stealer yoinked skin '%s'", g_Config.m_ClPlayerSkin);
@@ -261,7 +261,7 @@ void CChillerBotUX::CheckEmptyTick()
 	static int s_LastPlayerCount = 0;
 	int PlayerCount = CountOnlinePlayers();
 	if(s_LastPlayerCount > PlayerCount && PlayerCount == 1)
-		m_pClient->Client()->Connect(m_pClient->Client()->ConnectAddressString());
+		GameClient()->Client()->Connect(GameClient()->Client()->ConnectAddressString());
 	else
 		s_LastPlayerCount = CountOnlinePlayers();
 }
@@ -273,8 +273,8 @@ void CChillerBotUX::ChangeTileNotifyTick()
 	if(!GameClient()->m_Snap.m_pLocalCharacter)
 		return;
 
-	float X = m_pClient->m_Snap.m_aCharacters[m_pClient->m_aLocalIds[g_Config.m_ClDummy]].m_Cur.m_X;
-	float Y = m_pClient->m_Snap.m_aCharacters[m_pClient->m_aLocalIds[g_Config.m_ClDummy]].m_Cur.m_Y;
+	float X = GameClient()->m_Snap.m_aCharacters[GameClient()->m_aLocalIds[g_Config.m_ClDummy]].m_Cur.m_X;
+	float Y = GameClient()->m_Snap.m_aCharacters[GameClient()->m_aLocalIds[g_Config.m_ClDummy]].m_Cur.m_Y;
 	int CurrentTile = Collision()->GetTileIndex(Collision()->GetPureMapIndex(X, Y));
 	if(m_LastTile != CurrentTile && m_LastNotification + time_freq() * 10 < time_get())
 	{
@@ -293,7 +293,7 @@ void CChillerBotUX::RenderWeaponHud()
 {
 	if(!g_Config.m_ClWeaponHud)
 		return;
-	if(CCharacter *pChar = m_pClient->m_GameWorld.GetCharacterById(m_pClient->m_aLocalIds[g_Config.m_ClDummy]))
+	if(CCharacter *pChar = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[g_Config.m_ClDummy]))
 	{
 		char aWeapons[1024];
 		aWeapons[0] = '\0';
@@ -314,12 +314,12 @@ void CChillerBotUX::RenderWeaponHud()
 
 void CChillerBotUX::RenderSpeedHud()
 {
-	if(!g_Config.m_ClShowSpeed || !m_pClient->m_Snap.m_pLocalCharacter || !m_pClient->m_Snap.m_pLocalPrevCharacter)
+	if(!g_Config.m_ClShowSpeed || !GameClient()->m_Snap.m_pLocalCharacter || !GameClient()->m_Snap.m_pLocalPrevCharacter)
 		return;
 
 	float Width = 300 * Graphics()->ScreenAspect();
 	Graphics()->MapScreen(0, 0, Width, 300);
-	// float Velspeed = length(vec2(m_pClient->m_Snap.m_pLocalCharacter->m_VelX / 256.0f, m_pClient->m_Snap.m_pLocalCharacter->m_VelY / 256.0f)) * 50;
+	// float Velspeed = length(vec2(GameClient()->m_Snap.m_pLocalCharacter->m_VelX / 256.0f, GameClient()->m_Snap.m_pLocalCharacter->m_VelY / 256.0f)) * 50;
 
 	const char *paStrings[] = {"Vel X:", "Vel Y:"};
 	const int Num = sizeof(paStrings) / sizeof(char *);
@@ -328,7 +328,7 @@ void CChillerBotUX::RenderSpeedHud()
 
 	static int s_LastVelX = 0;
 	static int s_LastVelXChange = 0;
-	int CurVelX = abs(m_pClient->m_Snap.m_pLocalCharacter->m_VelX);
+	int CurVelX = abs(GameClient()->m_Snap.m_pLocalCharacter->m_VelX);
 	if(s_LastVelX < CurVelX)
 		s_LastVelXChange = 1;
 	else if(s_LastVelX > CurVelX)
@@ -337,7 +337,7 @@ void CChillerBotUX::RenderSpeedHud()
 
 	static int s_LastVelY = 0;
 	static int s_LastVelYChange = 0;
-	int CurVelY = abs(m_pClient->m_Snap.m_pLocalCharacter->m_VelY);
+	int CurVelY = abs(GameClient()->m_Snap.m_pLocalCharacter->m_VelY);
 	if(s_LastVelY < CurVelY)
 		s_LastVelYChange = 1;
 	else if(s_LastVelY > CurVelY)
@@ -356,7 +356,7 @@ void CChillerBotUX::RenderSpeedHud()
 	else if(s_LastVelXChange == -1)
 		TextRender()->TextColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-	str_format(aBuf, sizeof(aBuf), "%.0f", m_pClient->m_Snap.m_pLocalCharacter->m_VelX / 32.f);
+	str_format(aBuf, sizeof(aBuf), "%.0f", GameClient()->m_Snap.m_pLocalCharacter->m_VelX / 32.f);
 	float w = TextRender()->TextWidth(Fontsize, aBuf, -1, -1.0f);
 	TextRender()->Text(x - w, y, Fontsize, aBuf, -1.0f);
 	y += LineHeight;
@@ -366,7 +366,7 @@ void CChillerBotUX::RenderSpeedHud()
 	else if(s_LastVelYChange == -1)
 		TextRender()->TextColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-	str_format(aBuf, sizeof(aBuf), "%.0f", m_pClient->m_Snap.m_pLocalCharacter->m_VelY / 32.f);
+	str_format(aBuf, sizeof(aBuf), "%.0f", GameClient()->m_Snap.m_pLocalCharacter->m_VelY / 32.f);
 	w = TextRender()->TextWidth(Fontsize, aBuf, -1, -1.0f);
 	TextRender()->Text(x - w, y, Fontsize, aBuf, -1.0f);
 	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -374,9 +374,9 @@ void CChillerBotUX::RenderSpeedHud()
 
 void CChillerBotUX::RenderEnabledComponents()
 {
-	if(m_pClient->m_Menus.IsActive())
+	if(GameClient()->m_Menus.IsActive())
 		return;
-	if(m_pClient->m_Voting.IsVoting())
+	if(GameClient()->m_Voting.IsVoting())
 		return;
 	if(!g_Config.m_ClChillerbotHud)
 		return;
@@ -475,26 +475,26 @@ void CChillerBotUX::RenderDbgIntersect()
 	if(!Config()->m_ClDbgIntersect)
 		return;
 
-	vec2 Position = m_pClient->m_aClients[m_pClient->m_Snap.m_LocalClientId].m_RenderPos;
+	vec2 Position = GameClient()->m_aClients[GameClient()->m_Snap.m_LocalClientId].m_RenderPos;
 	float Angle = 0.0f;
 	if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 	{
 		// just use the direct input if it's the local player we are rendering
-		Angle = angle(m_pClient->m_Controls.m_aMousePos[g_Config.m_ClDummy]);
+		Angle = angle(GameClient()->m_Controls.m_aMousePos[g_Config.m_ClDummy]);
 	}
 	vec2 Direction = direction(Angle);
 	vec2 ExDirection = Direction;
 
 	if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 	{
-		ExDirection = normalize(vec2((int)m_pClient->m_Controls.m_aMousePos[g_Config.m_ClDummy].x, (int)m_pClient->m_Controls.m_aMousePos[g_Config.m_ClDummy].y));
+		ExDirection = normalize(vec2((int)GameClient()->m_Controls.m_aMousePos[g_Config.m_ClDummy].x, (int)GameClient()->m_Controls.m_aMousePos[g_Config.m_ClDummy].y));
 
 		// fix direction if mouse is exactly in the center
-		if(!(int)m_pClient->m_Controls.m_aMousePos[g_Config.m_ClDummy].x && !(int)m_pClient->m_Controls.m_aMousePos[g_Config.m_ClDummy].y)
+		if(!(int)GameClient()->m_Controls.m_aMousePos[g_Config.m_ClDummy].x && !(int)GameClient()->m_Controls.m_aMousePos[g_Config.m_ClDummy].y)
 			ExDirection = vec2(1, 0);
 	}
 	vec2 InitPos = Position;
-	vec2 FinishPos = InitPos + ExDirection * (m_pClient->m_aTuning[g_Config.m_ClDummy].m_HookLength - 42.0f);
+	vec2 FinishPos = InitPos + ExDirection * (GameClient()->m_aTuning[g_Config.m_ClDummy].m_HookLength - 42.0f);
 
 	vec2 OutCol;
 	vec2 OutBeforeCol;
@@ -502,7 +502,7 @@ void CChillerBotUX::RenderDbgIntersect()
 
 	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 	Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-	RenderTools()->MapScreenToGroup(m_pClient->m_Camera.m_Center.x, m_pClient->m_Camera.m_Center.y, Layers()->GameGroup(), m_pClient->m_Camera.m_Zoom);
+	RenderTools()->MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 
 	if(Collision()->IntersectLine(InitPos, FinishPos, &OutCol, &OutBeforeCol))
 	{
@@ -538,7 +538,7 @@ void CChillerBotUX::CampHackTick()
 	{
 		float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 		Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-		RenderTools()->MapScreenToGroup(m_pClient->m_Camera.m_Center.x, m_pClient->m_Camera.m_Center.y, Layers()->GameGroup(), m_pClient->m_Camera.m_Zoom);
+		RenderTools()->MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 		Graphics()->DrawRect(m_CampHackX1, m_CampHackY1, 20.0f, 20.0f, ColorRGBA(0, 0, 0, 0.4f), IGraphics::CORNER_ALL, 3.0f);
 		Graphics()->DrawRect(m_CampHackX2, m_CampHackY2, 20.0f, 20.0f, ColorRGBA(0, 0, 0, 0.4f), IGraphics::CORNER_ALL, 3.0f);
 		if(m_CampHackX1 && m_CampHackX2 && m_CampHackY1 && m_CampHackY2)
@@ -558,24 +558,24 @@ void CChillerBotUX::CampHackTick()
 		return;
 	if(m_CampHackX1 > GameClient()->m_Snap.m_pLocalCharacter->m_X)
 	{
-		m_pClient->m_Controls.m_aInputDirectionRight[g_Config.m_ClDummy] = 1;
-		m_pClient->m_Controls.m_aInputDirectionLeft[g_Config.m_ClDummy] = 0;
+		GameClient()->m_Controls.m_aInputDirectionRight[g_Config.m_ClDummy] = 1;
+		GameClient()->m_Controls.m_aInputDirectionLeft[g_Config.m_ClDummy] = 0;
 		m_ForceDir = 1;
-		if(m_pClient->m_VibeBot.IsVibing(g_Config.m_ClDummy))
+		if(GameClient()->m_VibeBot.IsVibing(g_Config.m_ClDummy))
 		{
-			m_pClient->m_Controls.m_aInputData[g_Config.m_ClDummy].m_Direction = 1;
-			m_pClient->m_VibeBot.m_aInputData[g_Config.m_ClDummy].m_Direction = 1;
+			GameClient()->m_Controls.m_aInputData[g_Config.m_ClDummy].m_Direction = 1;
+			GameClient()->m_VibeBot.m_aInputData[g_Config.m_ClDummy].m_Direction = 1;
 		}
 	}
 	else if(m_CampHackX2 < GameClient()->m_Snap.m_pLocalCharacter->m_X)
 	{
-		m_pClient->m_Controls.m_aInputDirectionRight[g_Config.m_ClDummy] = 0;
-		m_pClient->m_Controls.m_aInputDirectionLeft[g_Config.m_ClDummy] = 1;
+		GameClient()->m_Controls.m_aInputDirectionRight[g_Config.m_ClDummy] = 0;
+		GameClient()->m_Controls.m_aInputDirectionLeft[g_Config.m_ClDummy] = 1;
 		m_ForceDir = -1;
-		if(m_pClient->m_VibeBot.IsVibing(g_Config.m_ClDummy))
+		if(GameClient()->m_VibeBot.IsVibing(g_Config.m_ClDummy))
 		{
-			m_pClient->m_Controls.m_aInputData[g_Config.m_ClDummy].m_Direction = -1;
-			m_pClient->m_VibeBot.m_aInputData[g_Config.m_ClDummy].m_Direction = -1;
+			GameClient()->m_Controls.m_aInputData[g_Config.m_ClDummy].m_Direction = -1;
+			GameClient()->m_VibeBot.m_aInputData[g_Config.m_ClDummy].m_Direction = -1;
 		}
 	}
 }
@@ -664,14 +664,14 @@ void CChillerBotUX::SelectCampArea(int Key)
 
 void CChillerBotUX::FinishRenameTick()
 {
-	if(!m_pClient->m_Snap.m_pLocalCharacter)
+	if(!GameClient()->m_Snap.m_pLocalCharacter)
 		return;
 	if(!g_Config.m_ClFinishRename)
 		return;
-	vec2 Pos = m_pClient->m_PredictedChar.m_Pos;
-	if(m_pClient->RaceHelper()->IsNearFinish(Pos))
+	vec2 Pos = GameClient()->m_PredictedChar.m_Pos;
+	if(GameClient()->RaceHelper()->IsNearFinish(Pos))
 	{
-		if(Client()->State() == IClient::STATE_ONLINE && !m_pClient->m_Menus.IsActive() && g_Config.m_ClEditor == 0)
+		if(Client()->State() == IClient::STATE_ONLINE && !GameClient()->m_Menus.IsActive() && g_Config.m_ClEditor == 0)
 		{
 			Graphics()->DrawRect(10.0f, 30.0f, 150.0f, 50.0f, ColorRGBA(0, 0, 0, 0.5f), IGraphics::CORNER_ALL, 10.0f);
 			TextRender()->Text(20.0f, 30.f, 20.0f, "chillerbot-ux", -1);
@@ -680,7 +680,7 @@ void CChillerBotUX::FinishRenameTick()
 		if(!m_IsNearFinish)
 		{
 			m_IsNearFinish = true;
-			m_pClient->SendFinishName();
+			GameClient()->SendFinishName();
 		}
 	}
 	else
@@ -691,7 +691,7 @@ void CChillerBotUX::FinishRenameTick()
 
 void CChillerBotUX::OnInit()
 {
-	m_pChatHelper = &m_pClient->m_ChatHelper;
+	m_pChatHelper = &GameClient()->m_ChatHelper;
 
 	m_AfkTill = 0;
 	m_AfkActivity = 0;
@@ -893,7 +893,7 @@ void CChillerBotUX::ConchainSkinStealer(IConsole::IResult *pResult, void *pUserD
 	else
 	{
 		pSelf->RestoreSkins();
-		pSelf->m_pClient->SendInfo(false);
+		pSelf->GameClient()->SendInfo(false);
 		pSelf->DisableComponent("skin stealer");
 	}
 }
@@ -971,14 +971,14 @@ void CChillerBotUX::DumpPlayers(const char *pSearch)
 	dbg_msg("dump_players", "+----------+--+----------------+----------------+---+-------+");
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		const CNetObj_PlayerInfo *pInfo = m_pClient->m_Snap.m_apInfoByDDTeamScore[i];
+		const CNetObj_PlayerInfo *pInfo = GameClient()->m_Snap.m_apInfoByDDTeamScore[i];
 		if(!pInfo)
 			continue;
 
 		bool IsMatch = !(pSearch && pSearch[0] != 0);
 		aLine[0] = '\0';
 		// score
-		if(m_pClient->m_GameInfo.m_TimeScore)
+		if(GameClient()->m_GameInfo.m_TimeScore)
 		{
 			if(pInfo->m_Score == -9999)
 				str_format(aBuf, sizeof(aBuf), "|%10s|", " ");
@@ -994,16 +994,16 @@ void CChillerBotUX::DumpPlayers(const char *pSearch)
 
 		// id | name
 		if(pSearch && pSearch[0] != 0)
-			if(str_find_nocase(m_pClient->m_aClients[pInfo->m_ClientId].m_aName, pSearch))
+			if(str_find_nocase(GameClient()->m_aClients[pInfo->m_ClientId].m_aName, pSearch))
 				IsMatch = true;
-		str_format(aBuf, sizeof(aBuf), "%2d|%16s|", pInfo->m_ClientId, m_pClient->m_aClients[pInfo->m_ClientId].m_aName);
+		str_format(aBuf, sizeof(aBuf), "%2d|%16s|", pInfo->m_ClientId, GameClient()->m_aClients[pInfo->m_ClientId].m_aName);
 		str_append(aLine, aBuf, sizeof(aLine));
 
 		// clan
 		if(pSearch && pSearch[0] != 0)
-			if(str_find_nocase(m_pClient->m_aClients[pInfo->m_ClientId].m_aClan, pSearch))
+			if(str_find_nocase(GameClient()->m_aClients[pInfo->m_ClientId].m_aClan, pSearch))
 				IsMatch = true;
-		str_format(aBuf, sizeof(aBuf), "%16s|", m_pClient->m_aClients[pInfo->m_ClientId].m_aClan);
+		str_format(aBuf, sizeof(aBuf), "%16s|", GameClient()->m_aClients[pInfo->m_ClientId].m_aClan);
 		str_append(aLine, aBuf, sizeof(aLine));
 
 		// ping
@@ -1011,17 +1011,17 @@ void CChillerBotUX::DumpPlayers(const char *pSearch)
 		str_append(aLine, aBuf, sizeof(aLine));
 
 		// team
-		int DDTeam = m_pClient->m_Teams.Team(pInfo->m_ClientId);
+		int DDTeam = GameClient()->m_Teams.Team(pInfo->m_ClientId);
 		int NextDDTeam = 0;
 
 		for(int j = i + 1; j < MAX_CLIENTS; j++)
 		{
-			const CNetObj_PlayerInfo *pInfo2 = m_pClient->m_Snap.m_apInfoByDDTeamScore[j];
+			const CNetObj_PlayerInfo *pInfo2 = GameClient()->m_Snap.m_apInfoByDDTeamScore[j];
 
 			if(!pInfo2)
 				continue;
 
-			NextDDTeam = m_pClient->m_Teams.Team(pInfo2->m_ClientId);
+			NextDDTeam = GameClient()->m_Teams.Team(pInfo2->m_ClientId);
 			break;
 		}
 
@@ -1029,12 +1029,12 @@ void CChillerBotUX::DumpPlayers(const char *pSearch)
 		{
 			for(int j = i - 1; j >= 0; j--)
 			{
-				const CNetObj_PlayerInfo *pInfo2 = m_pClient->m_Snap.m_apInfoByDDTeamScore[j];
+				const CNetObj_PlayerInfo *pInfo2 = GameClient()->m_Snap.m_apInfoByDDTeamScore[j];
 
 				if(!pInfo2)
 					continue;
 
-				OldDDTeam = m_pClient->m_Teams.Team(pInfo2->m_ClientId);
+				OldDDTeam = GameClient()->m_Teams.Team(pInfo2->m_ClientId);
 				break;
 			}
 		}
@@ -1043,7 +1043,7 @@ void CChillerBotUX::DumpPlayers(const char *pSearch)
 		{
 			if(NextDDTeam != DDTeam)
 			{
-				if(m_pClient->m_Snap.m_aTeamSize[0] > 8)
+				if(GameClient()->m_Snap.m_aTeamSize[0] > 8)
 					str_format(aBuf, sizeof(aBuf), "%7d|", DDTeam);
 				else
 					str_format(aBuf, sizeof(aBuf), "Team %2d|", DDTeam);
@@ -1102,27 +1102,27 @@ void CChillerBotUX::ConUnCampHack(IConsole::IResult *pResult, void *pUserData)
 	CChillerBotUX *pSelf = (CChillerBotUX *)pUserData;
 	g_Config.m_ClCampHack = 0;
 	pSelf->DisableComponent("camp hack");
-	pSelf->m_pClient->m_Controls.m_aInputDirectionRight[g_Config.m_ClDummy] = 0;
-	pSelf->m_pClient->m_Controls.m_aInputDirectionLeft[g_Config.m_ClDummy] = 0;
+	pSelf->GameClient()->m_Controls.m_aInputDirectionRight[g_Config.m_ClDummy] = 0;
+	pSelf->GameClient()->m_Controls.m_aInputDirectionLeft[g_Config.m_ClDummy] = 0;
 }
 
 void CChillerBotUX::ConLoadMap(IConsole::IResult *pResult, void *pUserData)
 {
 	CChillerBotUX *pSelf = (CChillerBotUX *)pUserData;
-	pSelf->m_pClient->Client()->ChillerBotLoadMap(pResult->GetString(0));
+	pSelf->GameClient()->Client()->ChillerBotLoadMap(pResult->GetString(0));
 }
 
 void CChillerBotUX::TraceSpikes()
 {
 	if(!g_Config.m_ClSpikeTracer)
 		return;
-	if(!m_pClient->m_Snap.m_pLocalCharacter)
+	if(!GameClient()->m_Snap.m_pLocalCharacter)
 		return;
 
-	// int CurrentX = (int)(m_pClient->m_Snap.m_aCharacters[m_pClient->m_aLocalIds[0]].m_Cur.m_X / 32);
-	// int CurrentY = (int)(m_pClient->m_Snap.m_aCharacters[m_pClient->m_aLocalIds[0]].m_Cur.m_Y / 32);
-	int CurrentX = (int)(m_pClient->m_Snap.m_pLocalCharacter->m_X / 32);
-	int CurrentY = (int)(m_pClient->m_Snap.m_pLocalCharacter->m_Y / 32);
+	// int CurrentX = (int)(GameClient()->m_Snap.m_aCharacters[GameClient()->m_aLocalIds[0]].m_Cur.m_X / 32);
+	// int CurrentY = (int)(GameClient()->m_Snap.m_aCharacters[GameClient()->m_aLocalIds[0]].m_Cur.m_Y / 32);
+	int CurrentX = (int)(GameClient()->m_Snap.m_pLocalCharacter->m_X / 32);
+	int CurrentY = (int)(GameClient()->m_Snap.m_pLocalCharacter->m_Y / 32);
 	int FromX = maximum(0, CurrentX - g_Config.m_ClSpikeTracer);
 	int ToX = minimum(Collision()->GetWidth(), CurrentX + g_Config.m_ClSpikeTracer);
 	int FromY = maximum(0, CurrentY - g_Config.m_ClSpikeTracer);
@@ -1132,7 +1132,7 @@ void CChillerBotUX::TraceSpikes()
 	float ScreenY0;
 	float ScreenY1;
 	Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-	RenderTools()->MapScreenToGroup(m_pClient->m_Camera.m_Center.x, m_pClient->m_Camera.m_Center.y, Layers()->GameGroup(), m_pClient->m_Camera.m_Zoom);
+	RenderTools()->MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 	for(int x = FromX; x < ToX; x++)
 	{
 		for(int y = FromY; y < ToY; y++)
@@ -1176,25 +1176,25 @@ void CChillerBotUX::OnMessage(int MsgType, void *pRawMsg)
 		Kill.m_VictimId = pMsg->m_Victim;
 		if(Kill.m_VictimId >= 0 && Kill.m_VictimId < MAX_CLIENTS)
 		{
-			Kill.m_VictimTeam = m_pClient->m_aClients[Kill.m_VictimId].m_Team;
-			Kill.m_VictimDDTeam = m_pClient->m_Teams.Team(Kill.m_VictimId);
-			str_copy(Kill.m_aVictimName, m_pClient->m_aClients[Kill.m_VictimId].m_aName, sizeof(Kill.m_aVictimName));
-			Kill.m_VictimRenderInfo = m_pClient->m_aClients[Kill.m_VictimId].m_RenderInfo;
+			Kill.m_VictimTeam = GameClient()->m_aClients[Kill.m_VictimId].m_Team;
+			Kill.m_VictimDDTeam = GameClient()->m_Teams.Team(Kill.m_VictimId);
+			str_copy(Kill.m_aVictimName, GameClient()->m_aClients[Kill.m_VictimId].m_aName, sizeof(Kill.m_aVictimName));
+			Kill.m_VictimRenderInfo = GameClient()->m_aClients[Kill.m_VictimId].m_RenderInfo;
 		}
 
 		Kill.m_KillerId = pMsg->m_Killer;
 		if(Kill.m_KillerId >= 0 && Kill.m_KillerId < MAX_CLIENTS)
 		{
-			Kill.m_KillerTeam = m_pClient->m_aClients[Kill.m_KillerId].m_Team;
-			str_copy(Kill.m_aKillerName, m_pClient->m_aClients[Kill.m_KillerId].m_aName, sizeof(Kill.m_aKillerName));
-			Kill.m_KillerRenderInfo = m_pClient->m_aClients[Kill.m_KillerId].m_RenderInfo;
+			Kill.m_KillerTeam = GameClient()->m_aClients[Kill.m_KillerId].m_Team;
+			str_copy(Kill.m_aKillerName, GameClient()->m_aClients[Kill.m_KillerId].m_aName, sizeof(Kill.m_aKillerName));
+			Kill.m_KillerRenderInfo = GameClient()->m_aClients[Kill.m_KillerId].m_RenderInfo;
 		}
 
 		Kill.m_Weapon = pMsg->m_Weapon;
 		Kill.m_ModeSpecial = pMsg->m_ModeSpecial;
 		Kill.m_Tick = Client()->GameTick(g_Config.m_ClDummy);
 
-		Kill.m_FlagCarrierBlue = m_pClient->m_Snap.m_pGameDataObj ? m_pClient->m_Snap.m_pGameDataObj->m_FlagCarrierBlue : -1;
+		Kill.m_FlagCarrierBlue = GameClient()->m_Snap.m_pGameDataObj ? GameClient()->m_Snap.m_pGameDataObj->m_FlagCarrierBlue : -1;
 
 		bool KillMsgValid = (Kill.m_VictimRenderInfo.m_CustomColoredSkin && Kill.m_VictimRenderInfo.m_ColorableRenderSkin.m_Body.IsValid()) || (!Kill.m_VictimRenderInfo.m_CustomColoredSkin && Kill.m_VictimRenderInfo.m_OriginalRenderSkin.m_Body.IsValid());
 		// if killer != victim, killer must be valid too
@@ -1203,7 +1203,7 @@ void CChillerBotUX::OnMessage(int MsgType, void *pRawMsg)
 		{
 			for(int i = 0; i < 2; i++)
 			{
-				if(m_pClient->m_aLocalIds[i] != Kill.m_VictimId)
+				if(GameClient()->m_aLocalIds[i] != Kill.m_VictimId)
 					continue;
 
 				str_copy(m_aLastKiller[i], Kill.m_aKillerName, sizeof(m_aLastKiller[i]));
@@ -1285,7 +1285,7 @@ void CChillerBotUX::ReturnFromAfk(const char *pChatMessage)
 	m_AfkActivity++;
 	if(m_AfkActivity < 200)
 		return;
-	m_pClient->m_Chat.AddLine(-2, 0, "[chillerbot-ux] welcome back :)");
+	GameClient()->m_Chat.AddLine(-2, 0, "[chillerbot-ux] welcome back :)");
 	m_AfkTill = 0;
 	DisableComponent("afk");
 }
@@ -1294,7 +1294,7 @@ int CChillerBotUX::CountOnlinePlayers()
 {
 	// Code from scoreboard. There is probably a better way to do this
 	int Num = 0;
-	for(const auto *pInfo : m_pClient->m_Snap.m_apInfoByDDTeamScore)
+	for(const auto *pInfo : GameClient()->m_Snap.m_apInfoByDDTeamScore)
 		if(pInfo)
 			Num++;
 	return Num;
@@ -1303,19 +1303,19 @@ int CChillerBotUX::CountOnlinePlayers()
 int CChillerBotUX::GetTotalJumps()
 {
 	int ClientId = GameClient()->m_aLocalIds[g_Config.m_ClDummy];
-	CCharacterCore *pCharacter = &m_pClient->m_aClients[ClientId].m_Predicted;
-	if(m_pClient->m_Snap.m_aCharacters[ClientId].m_HasExtendedDisplayInfo)
+	CCharacterCore *pCharacter = &GameClient()->m_aClients[ClientId].m_Predicted;
+	if(GameClient()->m_Snap.m_aCharacters[ClientId].m_HasExtendedDisplayInfo)
 		return maximum(minimum(abs(pCharacter->m_Jumps), 10), 0);
 	else
-		return abs(m_pClient->m_Snap.m_aCharacters[ClientId].m_ExtendedData.m_Jumps);
+		return abs(GameClient()->m_Snap.m_aCharacters[ClientId].m_ExtendedData.m_Jumps);
 }
 
 int CChillerBotUX::GetUnusedJumps()
 {
 	int ClientId = GameClient()->m_aLocalIds[g_Config.m_ClDummy];
-	CCharacterCore *pCharacter = &m_pClient->m_aClients[ClientId].m_Predicted;
+	CCharacterCore *pCharacter = &GameClient()->m_aClients[ClientId].m_Predicted;
 	int TotalJumpsToDisplay = 0, AvailableJumpsToDisplay = 0;
-	if(m_pClient->m_Snap.m_aCharacters[ClientId].m_HasExtendedDisplayInfo)
+	if(GameClient()->m_Snap.m_aCharacters[ClientId].m_HasExtendedDisplayInfo)
 	{
 		bool Grounded = false;
 		if(Collision()->CheckPoint(pCharacter->m_Pos.x + CCharacterCore::PhysicalSize() / 2,
@@ -1361,7 +1361,7 @@ int CChillerBotUX::GetUnusedJumps()
 	}
 	else
 	{
-		AvailableJumpsToDisplay = abs(m_pClient->m_Snap.m_aCharacters[ClientId].m_ExtendedData.m_Jumps);
+		AvailableJumpsToDisplay = abs(GameClient()->m_Snap.m_aCharacters[ClientId].m_ExtendedData.m_Jumps);
 	}
 	return AvailableJumpsToDisplay;
 }

@@ -33,7 +33,7 @@ bool CReplyToPing::Where()
 		str_find_nocase(m_pMessage, "where u") ||
 		str_find_nocase(m_pMessage, "wo bist"))
 	{
-		for(auto &Client : ChatHelper()->GameClient()->m_aClients)
+		for(auto &Client : GameClient()->m_aClients)
 		{
 			if(!Client.m_Active)
 				continue;
@@ -41,7 +41,7 @@ bool CReplyToPing::Where()
 				continue;
 
 			// TODO: dont get current dummy but the pinged dummy
-			CCharacter *pChar = ChatHelper()->GameClient()->m_GameWorld.GetCharacterById(ChatHelper()->GameClient()->m_aLocalIds[g_Config.m_ClDummy]);
+			CCharacter *pChar = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[g_Config.m_ClDummy]);
 			if(!pChar)
 				continue;
 			vec2 Self = pChar->m_Pos;
@@ -53,12 +53,12 @@ bool CReplyToPing::Where()
 			// since it does not matter in this case
 			if(DistX > 50 * 32 && DistY > 50 * 32)
 			{
-				if(ChatHelper()->GameClient()->m_Snap.m_pLocalCharacter && ChatHelper()->GameClient()->RaceHelper()->IsClusterRangeFinish(ChatHelper()->GameClient()->m_PredictedChar.m_Pos, 32))
+				if(GameClient()->m_Snap.m_pLocalCharacter && GameClient()->RaceHelper()->IsClusterRangeFinish(GameClient()->m_PredictedChar.m_Pos, 32))
 				{
 					str_format(m_pResponse, m_SizeOfResponse, "%s I am at the finish line", m_pMessageAuthor);
 					return true;
 				}
-				else if(ChatHelper()->GameClient()->m_Snap.m_pLocalCharacter && ChatHelper()->GameClient()->RaceHelper()->IsClusterRangeStart(ChatHelper()->GameClient()->m_PredictedChar.m_Pos, 32))
+				else if(GameClient()->m_Snap.m_pLocalCharacter && GameClient()->RaceHelper()->IsClusterRangeStart(GameClient()->m_PredictedChar.m_Pos, 32))
 				{
 					str_format(m_pResponse, m_SizeOfResponse, "%s I am at start", m_pMessageAuthor);
 					return true;
@@ -143,9 +143,9 @@ bool CReplyToPing::Where()
 				}
 			}
 		}
-		if(ChatHelper()->GameClient()->m_Snap.m_pLocalCharacter && ChatHelper()->GameClient()->RaceHelper()->IsNearFinish(ChatHelper()->GameClient()->m_PredictedChar.m_Pos, 32))
+		if(GameClient()->m_Snap.m_pLocalCharacter && GameClient()->RaceHelper()->IsNearFinish(GameClient()->m_PredictedChar.m_Pos, 32))
 			str_format(m_pResponse, m_SizeOfResponse, "%s I am at the finish line", m_pMessageAuthor);
-		else if(ChatHelper()->GameClient()->m_Snap.m_pLocalCharacter && ChatHelper()->GameClient()->RaceHelper()->IsNearStart(ChatHelper()->GameClient()->m_PredictedChar.m_Pos, 32))
+		else if(GameClient()->m_Snap.m_pLocalCharacter && GameClient()->RaceHelper()->IsNearStart(GameClient()->m_PredictedChar.m_Pos, 32))
 			str_format(m_pResponse, m_SizeOfResponse, "%s I am at start", m_pMessageAuthor);
 		else
 			str_format(m_pResponse, m_SizeOfResponse, "%s no idea. Where are you?", m_pMessageAuthor);

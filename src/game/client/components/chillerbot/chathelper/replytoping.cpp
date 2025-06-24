@@ -26,6 +26,7 @@
 #include "replytoping.h"
 
 CLangParser &CReplyToPing::LangParser() { return ChatHelper()->LangParser(); }
+CGameClient *CReplyToPing::GameClient() { return m_pChatHelper->GameClientUnprotected(); }
 
 CReplyToPing::CReplyToPing(CChatHelper *pChatHelper, const char *pMessageAuthor, const char *pMessageAuthorClan, const char *pMessage, char *pResponse, long unsigned int SizeOfResponse)
 {
@@ -50,14 +51,14 @@ bool CReplyToPing::Reply()
 
 	int MsgLen = str_length(m_pMessage);
 	int NameLen = 0;
-	const char *pName = ChatHelper()->GameClient()->m_aClients[ChatHelper()->GameClient()->m_aLocalIds[0]].m_aName;
-	const char *pDummyName = ChatHelper()->GameClient()->m_aClients[ChatHelper()->GameClient()->m_aLocalIds[1]].m_aName;
-	const char *pClan = ChatHelper()->GameClient()->m_aClients[ChatHelper()->GameClient()->m_aLocalIds[0]].m_aClan;
-	const char *pDummyClan = ChatHelper()->GameClient()->m_aClients[ChatHelper()->GameClient()->m_aLocalIds[1]].m_aClan;
+	const char *pName = GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName;
+	const char *pDummyName = GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName;
+	const char *pClan = GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aClan;
+	const char *pDummyClan = GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aClan;
 
 	if(ChatHelper()->LineShouldHighlight(m_pMessage, pName))
 		NameLen = str_length(pName);
-	else if(ChatHelper()->GameClient()->Client()->DummyConnected() && ChatHelper()->LineShouldHighlight(m_pMessage, pDummyName))
+	else if(GameClient()->Client()->DummyConnected() && ChatHelper()->LineShouldHighlight(m_pMessage, pDummyName))
 		NameLen = str_length(pDummyName);
 
 	// ping without further context
@@ -80,7 +81,7 @@ bool CReplyToPing::Reply()
 			str_find_nocase(m_pMessage, "into")))
 	{
 		char aResponse[1024];
-		if(ChatHelper()->HowToJoinClan(pClan, aResponse, sizeof(aResponse)) || (ChatHelper()->GameClient()->Client()->DummyConnected() && ChatHelper()->HowToJoinClan(pDummyClan, aResponse, m_SizeOfResponse)))
+		if(ChatHelper()->HowToJoinClan(pClan, aResponse, sizeof(aResponse)) || (GameClient()->Client()->DummyConnected() && ChatHelper()->HowToJoinClan(pDummyClan, aResponse, m_SizeOfResponse)))
 		{
 			str_format(m_pResponse, m_SizeOfResponse, "%s %s", m_pMessageAuthor, aResponse);
 			return true;
@@ -117,8 +118,8 @@ bool CReplyToPing::Reply()
 		(str_find_nocase(m_pMessage, "mani") || str_find_nocase(m_pMessage, "many") || str_find_nocase(m_pMessage, "much")) &&
 		(str_find_nocase(m_pMessage, "jamp") || str_find_nocase(m_pMessage, "jump") || str_find_nocase(m_pMessage, "jomp")))
 	{
-		int UnusedJumps = ChatHelper()->GameClient()->m_ChillerBotUX.GetUnusedJumps();
-		int TotalJumps = ChatHelper()->GameClient()->m_ChillerBotUX.GetTotalJumps();
+		int UnusedJumps = GameClient()->m_ChillerBotUX.GetUnusedJumps();
+		int TotalJumps = GameClient()->m_ChillerBotUX.GetTotalJumps();
 		str_format(m_pResponse, m_SizeOfResponse, "%s I currently have %d out of %d jumps", m_pMessageAuthor, UnusedJumps, TotalJumps);
 		return true;
 	}
@@ -127,8 +128,8 @@ bool CReplyToPing::Reply()
 	if((str_find_nocase(m_pMessage, "have") || str_find_nocase(m_pMessage, "has") || str_find_nocase(m_pMessage, "got") || str_find_nocase(m_pMessage, "you") || str_find_nocase(m_pMessage, " u ")) &&
 		(str_find_nocase(m_pMessage, " dj") || str_find_nocase(m_pMessage, "double") || str_find_nocase(m_pMessage, "lejump") || str_find_nocase(m_pMessage, "lejamp") || str_find_nocase(m_pMessage, "lejomp")))
 	{
-		int UnusedJumps = ChatHelper()->GameClient()->m_ChillerBotUX.GetUnusedJumps();
-		int TotalJumps = ChatHelper()->GameClient()->m_ChillerBotUX.GetTotalJumps();
+		int UnusedJumps = GameClient()->m_ChillerBotUX.GetUnusedJumps();
+		int TotalJumps = GameClient()->m_ChillerBotUX.GetTotalJumps();
 		if(UnusedJumps > 0)
 			str_format(m_pResponse, m_SizeOfResponse, "%s Yes. I currently have %d out of %d jumps", m_pMessageAuthor, UnusedJumps, TotalJumps);
 		else
@@ -140,7 +141,7 @@ bool CReplyToPing::Reply()
 	if(str_find_nocase(m_pMessage, "spec") || str_find_nocase(m_pMessage, "watch") || (str_find_nocase(m_pMessage, "look") && !str_find_nocase(m_pMessage, "looks")) || str_find_nocase(m_pMessage, "schau"))
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "/pause %s", m_pMessageAuthor);
-		ChatHelper()->GameClient()->m_Chat.SendChat(0, m_pResponse);
+		GameClient()->m_Chat.SendChat(0, m_pResponse);
 		str_format(m_pResponse, m_SizeOfResponse, "%s ok i am watching you", m_pMessageAuthor);
 		return true;
 	}
@@ -276,7 +277,7 @@ bool CReplyToPing::Reply()
 			Weapon = WEAPON_GRENADE;
 		else if(str_find_nocase(m_pMessage, "rifle") || str_find_nocase(m_pMessage, "laser") || str_find_nocase(m_pMessage, "sniper"))
 			Weapon = WEAPON_LASER;
-		CCharacter *pChar = ChatHelper()->GameClient()->m_GameWorld.GetCharacterById(ChatHelper()->GameClient()->m_aLocalIds[g_Config.m_ClDummy]);
+		CCharacter *pChar = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[g_Config.m_ClDummy]);
 		if(pChar && Weapon != -1)
 		{
 			char aWeapons[1024];

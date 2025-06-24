@@ -656,7 +656,7 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 
 	Data.m_Color.a = Alpha;
 
-	Data.m_Color = m_pClient->m_WarList.GetNameplateColor(pPlayerInfo->m_ClientId, Data.m_Color); // chillerbot-ux
+	Data.m_Color = GameClient()->m_WarList.GetNameplateColor(pPlayerInfo->m_ClientId, Data.m_Color); // chillerbot-ux
 
 	int ShowDirectionConfig = g_Config.m_ClShowDirection;
 #if defined(CONF_VIDEORECORDER)
@@ -793,12 +793,12 @@ void CNamePlates::RenderNamePlatePreview(vec2 Position, int Dummy)
 	CTeeRenderInfo TeeRenderInfo;
 	if(Dummy == 0)
 	{
-		TeeRenderInfo.Apply(m_pClient->m_Skins.Find(g_Config.m_ClPlayerSkin));
+		TeeRenderInfo.Apply(GameClient()->m_Skins.Find(g_Config.m_ClPlayerSkin));
 		TeeRenderInfo.ApplyColors(g_Config.m_ClPlayerUseCustomColor, g_Config.m_ClPlayerColorBody, g_Config.m_ClPlayerColorFeet);
 	}
 	else
 	{
-		TeeRenderInfo.Apply(m_pClient->m_Skins.Find(g_Config.m_ClDummySkin));
+		TeeRenderInfo.Apply(GameClient()->m_Skins.Find(g_Config.m_ClDummySkin));
 		TeeRenderInfo.ApplyColors(g_Config.m_ClDummyUseCustomColor, g_Config.m_ClDummyColorBody, g_Config.m_ClDummyColorFeet);
 	}
 	TeeRenderInfo.m_Size = 64.0f;

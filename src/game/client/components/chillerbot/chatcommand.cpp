@@ -32,7 +32,7 @@ void CChatCommand::OnNoChatCommandMatches(int ClientId, int Team, const char *pM
 {
 	// ux components
 
-	// m_pClient->m_WarList.OnNoChatCommandMatches(ClientId, Team, pMsg);
+	// GameClient()->m_WarList.OnNoChatCommandMatches(ClientId, Team, pMsg);
 
 	// zx components
 }
@@ -42,7 +42,7 @@ bool CChatCommand::OnChatCmd(char Prefix, int ClientId, int Team, const char *pC
 	bool match = false;
 	// ux components
 
-	if(m_pClient->m_WarList.OnChatCmd(Prefix, ClientId, Team, pCmd, NumArgs, ppArgs, pRawArgLine))
+	if(GameClient()->m_WarList.OnChatCmd(Prefix, ClientId, Team, pCmd, NumArgs, ppArgs, pRawArgLine))
 		match = true;
 
 	// zx components
@@ -70,7 +70,7 @@ bool CChatCommand::ParseChatCmd(char Prefix, int ClientId, int Team, const char 
 	str_copy(aRawArgLine, pCmdWithArgs + Skip);
 
 	aCmd[i] = '\0';
-	int RestOffset = m_pClient->m_ChatHelper.ChatCommandGetROffset(aCmd);
+	int RestOffset = GameClient()->m_ChatHelper.ChatCommandGetROffset(aCmd);
 
 	// max 16 args of 128 len each
 	const int MaxArgs = 16;
@@ -161,7 +161,7 @@ void CChatCommand::OnMessage(int MsgType, void *pRawMsg)
 		// ignore own messages
 		// they get processed on send
 		// if the server spoofs us we drop it
-		else if(ClientId != m_pClient->m_aLocalIds[0] && (!m_pClient->Client()->DummyConnected() || ClientId != m_pClient->m_aLocalIds[1]))
+		else if(ClientId != GameClient()->m_aLocalIds[0] && (!GameClient()->Client()->DummyConnected() || ClientId != GameClient()->m_aLocalIds[1]))
 		{
 			OnChatMsg(ClientId, pMsg->m_Team, pMsg->m_pMessage);
 		}

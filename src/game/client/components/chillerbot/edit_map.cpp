@@ -79,7 +79,7 @@ void CEditMap::OnRender()
 			char aDest[IO_MAX_PATH_LENGTH];
 			GetEditedMapPath(aDest, sizeof(aDest));
 			dbg_msg("edit_map", "thread finished load map: %s", aDest);
-			m_pClient->Client()->ChillerBotLoadMap(aDest);
+			GameClient()->Client()->ChillerBotLoadMap(aDest);
 			m_pSetGameTileJob = nullptr;
 		}
 	}
@@ -108,7 +108,7 @@ void CEditMap::GetSourceMapPath(char *pPath, int Size)
 		}
 	}
 	dbg_msg("edit_map", "'%s' not found in maps/ use current map", pPath + 9);
-	str_copy(pPath, m_pClient->Client()->GetCurrentMapPath(), Size);
+	str_copy(pPath, GameClient()->Client()->GetCurrentMapPath(), Size);
 }
 
 void CEditMap::ConSetGametile(IConsole::IResult *pResult, void *pUserData)
@@ -124,5 +124,5 @@ void CEditMap::ConSetGametile(IConsole::IResult *pResult, void *pUserData)
 	int y = pResult->GetInteger(1);
 	int Index = pResult->GetInteger(2);
 	pSelf->m_pSetGameTileJob = std::make_shared<CEditMapJob>(aSrc, aDest, x, y, Index);
-	pSelf->m_pClient->Engine()->AddJob(pSelf->m_pSetGameTileJob);
+	pSelf->GameClient()->Engine()->AddJob(pSelf->m_pSetGameTileJob);
 }

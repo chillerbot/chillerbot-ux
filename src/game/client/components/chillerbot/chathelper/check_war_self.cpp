@@ -38,32 +38,32 @@ bool CReplyToPing::WhyDoYouKillMe(int NameLen, int MsgLen)
 	if(LangParser().IsQuestionWhy(m_pMessage) || (str_find_nocase(m_pMessage, "?") && str_length(aStripped) < NameLen + 4) ||
 		((str_find_nocase(aStripped, "what") || str_find_nocase(aStripped, "wat") || str_find_nocase(aStripped, "warum") || str_find_nocase(aStripped, "why") || str_find_nocase(aStripped, "waht")) && str_length(aStripped) < 8) ||
 		((str_find_nocase(aStripped, "what") || str_find_nocase(aStripped, "wat") || str_find_nocase(aStripped, "was") || str_find_nocase(aStripped, "waht")) && str_find_nocase(aStripped, "problem")) ||
-		((str_find_nocase(m_pMessage, "stop") || str_find_nocase(m_pMessage, "help")) && (ChatHelper()->GameClient()->m_WarList.IsWarlist(m_pMessageAuthor) || ChatHelper()->GameClient()->m_WarList.IsTraitorlist(m_pMessageAuthor))))
+		((str_find_nocase(m_pMessage, "stop") || str_find_nocase(m_pMessage, "help")) && (GameClient()->m_WarList.IsWarlist(m_pMessageAuthor) || GameClient()->m_WarList.IsTraitorlist(m_pMessageAuthor))))
 	{
 		char aWarReason[128];
-		if(ChatHelper()->GameClient()->m_WarList.IsWarlist(m_pMessageAuthor) || ChatHelper()->GameClient()->m_WarList.IsTraitorlist(m_pMessageAuthor))
+		if(GameClient()->m_WarList.IsWarlist(m_pMessageAuthor) || GameClient()->m_WarList.IsTraitorlist(m_pMessageAuthor))
 		{
-			ChatHelper()->GameClient()->m_WarList.GetWarReason(m_pMessageAuthor, aWarReason, sizeof(aWarReason));
+			GameClient()->m_WarList.GetWarReason(m_pMessageAuthor, aWarReason, sizeof(aWarReason));
 			if(aWarReason[0])
 				str_format(m_pResponse, m_SizeOfResponse, "%s has war because: %s", m_pMessageAuthor, aWarReason);
 			else
 				str_format(m_pResponse, m_SizeOfResponse, "%s you are on my warlist.", m_pMessageAuthor);
 			return true;
 		}
-		else if(ChatHelper()->GameClient()->m_WarList.IsWarClanlist(m_pMessageAuthorClan))
+		else if(GameClient()->m_WarList.IsWarClanlist(m_pMessageAuthorClan))
 		{
 			str_format(m_pResponse, m_SizeOfResponse, "%s your clan is on my warlist.", m_pMessageAuthor);
 			return true;
 		}
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
-			auto &Client = ChatHelper()->GameClient()->m_aClients[i];
+			auto &Client = GameClient()->m_aClients[i];
 			if(!Client.m_Active)
 				continue;
 			if(str_comp(Client.m_aName, m_pMessageAuthor))
 				continue;
 
-			if(ChatHelper()->GameClient()->m_WarList.IsWarClanmate(i))
+			if(GameClient()->m_WarList.IsWarClanmate(i))
 			{
 				str_format(m_pResponse, m_SizeOfResponse, "%s i might kill you because i war member of your clan", m_pMessageAuthor);
 				return true;
@@ -108,29 +108,29 @@ bool CReplyToPing::DoYouWarMe(int NameLen, int MsgLen)
 			str_find_nocase(m_pMessage, "red") || str_find_nocase(m_pMessage, "green") || str_find_nocase(m_pMessage, "orange") || str_find_nocase(m_pMessage, "black") || str_find_nocase(m_pMessage, "reason"))
 		{
 			char aWarReason[128];
-			if(ChatHelper()->GameClient()->m_WarList.IsWarlist(m_pMessageAuthor) || ChatHelper()->GameClient()->m_WarList.IsTraitorlist(m_pMessageAuthor))
+			if(GameClient()->m_WarList.IsWarlist(m_pMessageAuthor) || GameClient()->m_WarList.IsTraitorlist(m_pMessageAuthor))
 			{
-				ChatHelper()->GameClient()->m_WarList.GetWarReason(m_pMessageAuthor, aWarReason, sizeof(aWarReason));
+				GameClient()->m_WarList.GetWarReason(m_pMessageAuthor, aWarReason, sizeof(aWarReason));
 				if(aWarReason[0])
 					str_format(m_pResponse, m_SizeOfResponse, "%s you have war because: %s", m_pMessageAuthor, aWarReason);
 				else
 					str_format(m_pResponse, m_SizeOfResponse, "%s you are on my warlist.", m_pMessageAuthor);
 				return true;
 			}
-			else if(ChatHelper()->GameClient()->m_WarList.IsWarClanlist(m_pMessageAuthorClan))
+			else if(GameClient()->m_WarList.IsWarClanlist(m_pMessageAuthorClan))
 			{
 				str_format(m_pResponse, m_SizeOfResponse, "%s your clan is on my warlist.", m_pMessageAuthor);
 				return true;
 			}
 			for(int i = 0; i < MAX_CLIENTS; i++)
 			{
-				auto &Client = ChatHelper()->GameClient()->m_aClients[i];
+				auto &Client = GameClient()->m_aClients[i];
 				if(!Client.m_Active)
 					continue;
 				if(str_comp(Client.m_aName, m_pMessageAuthor))
 					continue;
 
-				if(ChatHelper()->GameClient()->m_WarList.IsWarClanmate(i))
+				if(GameClient()->m_WarList.IsWarClanmate(i))
 				{
 					str_format(m_pResponse, m_SizeOfResponse, "%s i might kill you because i war member of your clan", m_pMessageAuthor);
 					return true;

@@ -93,12 +93,12 @@ bool CReplyToPing::ListWars()
 			char aEnemyList[256]; // 255 max msg len
 			aEnemyList[0] = '\0';
 			int NumEnemies = 0;
-			for(auto &Client : ChatHelper()->GameClient()->m_aClients)
+			for(auto &Client : GameClient()->m_aClients)
 			{
 				if(!Client.m_Active)
 					continue;
-				if(!ChatHelper()->GameClient()->m_WarList.IsWarlist(Client.m_aName) &&
-					!ChatHelper()->GameClient()->m_WarList.IsWarClanlist(Client.m_aClan))
+				if(!GameClient()->m_WarList.IsWarlist(Client.m_aName) &&
+					!GameClient()->m_WarList.IsWarClanlist(Client.m_aClan))
 					continue;
 
 				NumEnemies++;
@@ -109,9 +109,9 @@ bool CReplyToPing::ListWars()
 				str_append(aEnemyList, Client.m_aName, sizeof(aEnemyList));
 			}
 			if(NumEnemies)
-				str_format(m_pResponse, m_SizeOfResponse, "%s %d of my %d enemies are online: %s", m_pMessageAuthor, NumEnemies, ChatHelper()->GameClient()->m_WarList.NumEnemies(), aEnemyList);
+				str_format(m_pResponse, m_SizeOfResponse, "%s %d of my %d enemies are online: %s", m_pMessageAuthor, NumEnemies, GameClient()->m_WarList.NumEnemies(), aEnemyList);
 			else
-				str_format(m_pResponse, m_SizeOfResponse, "%s currently 0 of my %d enemies are connected", m_pMessageAuthor, ChatHelper()->GameClient()->m_WarList.NumEnemies());
+				str_format(m_pResponse, m_SizeOfResponse, "%s currently 0 of my %d enemies are connected", m_pMessageAuthor, GameClient()->m_WarList.NumEnemies());
 			return true;
 		}
 		const char *pFriend = NULL;
@@ -143,12 +143,12 @@ bool CReplyToPing::ListWars()
 			char aFriendList[256]; // 255 max msg len
 			aFriendList[0] = '\0';
 			int NumFriends = 0;
-			for(auto &Client : ChatHelper()->GameClient()->m_aClients)
+			for(auto &Client : GameClient()->m_aClients)
 			{
 				if(!Client.m_Active)
 					continue;
-				if(!ChatHelper()->GameClient()->m_WarList.IsTeamlist(Client.m_aName) &&
-					!ChatHelper()->GameClient()->m_WarList.IsTeamClanlist(Client.m_aClan))
+				if(!GameClient()->m_WarList.IsTeamlist(Client.m_aName) &&
+					!GameClient()->m_WarList.IsTeamClanlist(Client.m_aClan))
 					continue;
 
 				NumFriends++;
@@ -159,9 +159,9 @@ bool CReplyToPing::ListWars()
 				str_append(aFriendList, Client.m_aName, sizeof(aFriendList));
 			}
 			if(NumFriends)
-				str_format(m_pResponse, m_SizeOfResponse, "%s %d of my %d friends are online: %s", m_pMessageAuthor, NumFriends, ChatHelper()->GameClient()->m_WarList.NumTeam(), aFriendList);
+				str_format(m_pResponse, m_SizeOfResponse, "%s %d of my %d friends are online: %s", m_pMessageAuthor, NumFriends, GameClient()->m_WarList.NumTeam(), aFriendList);
 			else
-				str_format(m_pResponse, m_SizeOfResponse, "%s currently 0 of my %d friends are connected", m_pMessageAuthor, ChatHelper()->GameClient()->m_WarList.NumTeam());
+				str_format(m_pResponse, m_SizeOfResponse, "%s currently 0 of my %d friends are connected", m_pMessageAuthor, GameClient()->m_WarList.NumTeam());
 			return true;
 		}
 	}

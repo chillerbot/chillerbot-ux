@@ -15,6 +15,10 @@
 #define MAX_CHAT_FILTER_LEN 128
 class CChatHelper : public CComponent
 {
+public:
+	class CGameClient *GameClientUnprotected();
+
+private:
 	class CChillerBotUX *m_pChillerBot;
 
 	CLangParser m_LangParser;

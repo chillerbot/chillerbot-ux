@@ -34,6 +34,8 @@ private:
 public:
 	virtual int Sizeof() const override { return sizeof(*this); }
 
+	class CGameClient *GameClientUnprotected();
+
 	std::vector<std::pair<std::string, int>> m_vWalletMain;
 	std::vector<std::pair<std::string, int>> m_vWalletDummy;
 

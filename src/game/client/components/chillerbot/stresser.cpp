@@ -63,7 +63,7 @@ void CStresser::OnRender()
 	{
 		if(time_get() >= -m_RequestCmdlist)
 		{
-			m_pClient->m_Chat.SendChat(0, "/cmdlist");
+			GameClient()->m_Chat.SendChat(0, "/cmdlist");
 			m_RequestCmdlist = time_get();
 		}
 		// dbg_msg("pentest", "time=%lld req=%lld diff=%lld", time_get(), -m_RequestCmdlist, (-m_RequestCmdlist - time_get()) / time_freq());
@@ -111,14 +111,14 @@ void CStresser::OnRender()
 			str_append(aArg, aBuf, sizeof(aArg));
 		}
 		str_format(aChatCmd, sizeof(aChatCmd), "/%s %s", GetRandomChatCommand(), aArg);
-		m_pClient->m_Chat.SendChat(0, aChatCmd);
+		GameClient()->m_Chat.SendChat(0, aChatCmd);
 	}
 	else // file messages
 	{
 		char aCmd[512];
 		if(GetPentestCommand(g_Config.m_ClPenTestFile, aCmd, sizeof(aCmd)))
 		{
-			m_pClient->m_Chat.SendChat(0, aCmd);
+			GameClient()->m_Chat.SendChat(0, aCmd);
 		}
 		else
 		{
@@ -127,7 +127,7 @@ void CStresser::OnRender()
 				"/register xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 12831237189237189231982371938712893798",
 				"todo: configure me ( pentest file not found)",
 				"/login bang baz baz"};
-			m_pClient->m_Chat.SendChat(0, aaCmds[rand() % NumCmds]);
+			GameClient()->m_Chat.SendChat(0, aaCmds[rand() % NumCmds]);
 		}
 	}
 }
@@ -188,7 +188,7 @@ void CStresser::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	{
 		if(m_RequestCmdlist > 0)
 		{
-			// int64 SecsPassed = -(m_pClient->m_RequestCmdlist - time_get()) / time_freq();
+			// int64 SecsPassed = -(GameClient()->m_RequestCmdlist - time_get()) / time_freq();
 			// str_format(aBuf, sizeof(aBuf), "sent message %lld secs ago", SecsPassed);
 			// Say(0, aBuf);
 			// dbg_msg("pentest", "cmdlist: %s", pMsg);

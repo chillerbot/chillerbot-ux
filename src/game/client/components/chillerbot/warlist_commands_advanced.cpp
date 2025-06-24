@@ -17,39 +17,39 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(NumArgs != 1)
 		{
 			str_format(aBuf, sizeof(aBuf), "Error: expected 1 argument but got %d", NumArgs);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
-		m_pClient->m_Chat.AddLine(-2, 0, "[search] fullmatch:");
+		GameClient()->m_Chat.AddLine(-2, 0, "[search] fullmatch:");
 		if(!SearchName(ppArgs[0], false))
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "[search] partial:");
+			GameClient()->m_Chat.AddLine(-2, 0, "[search] partial:");
 			SearchName(ppArgs[0], true);
 		}
 	}
 	else if(!str_comp(pCmd, "help"))
 	{
-		m_pClient->m_Chat.AddLine(-2, 0, "=== chillerbot-ux warlist ===");
-		m_pClient->m_Chat.AddLine(-2, 0, "!addwar <folder> <name>");
-		m_pClient->m_Chat.AddLine(-2, 0, "!addteam <folder> <name>");
-		m_pClient->m_Chat.AddLine(-2, 0, "!peace <folder>");
-		m_pClient->m_Chat.AddLine(-2, 0, "!war <folder>");
-		m_pClient->m_Chat.AddLine(-2, 0, "!team <folder>");
-		m_pClient->m_Chat.AddLine(-2, 0, "!unfriend <folder>"); // aliases delteam, unteam
-		m_pClient->m_Chat.AddLine(-2, 0, "!addreason <folder> [--force] <reason>");
-		m_pClient->m_Chat.AddLine(-2, 0, "!search <name>");
-		m_pClient->m_Chat.AddLine(-2, 0, "!create <war|team|neutral|traitor> <folder> [name]");
+		GameClient()->m_Chat.AddLine(-2, 0, "=== chillerbot-ux warlist ===");
+		GameClient()->m_Chat.AddLine(-2, 0, "!addwar <folder> <name>");
+		GameClient()->m_Chat.AddLine(-2, 0, "!addteam <folder> <name>");
+		GameClient()->m_Chat.AddLine(-2, 0, "!peace <folder>");
+		GameClient()->m_Chat.AddLine(-2, 0, "!war <folder>");
+		GameClient()->m_Chat.AddLine(-2, 0, "!team <folder>");
+		GameClient()->m_Chat.AddLine(-2, 0, "!unfriend <folder>"); // aliases delteam, unteam
+		GameClient()->m_Chat.AddLine(-2, 0, "!addreason <folder> [--force] <reason>");
+		GameClient()->m_Chat.AddLine(-2, 0, "!search <name>");
+		GameClient()->m_Chat.AddLine(-2, 0, "!create <war|team|neutral|traitor> <folder> [name]");
 	}
 	else if(!str_comp(pCmd, "create")) // "create <war|team|neutral|traitor> <folder> [name]"
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <type>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <type>");
 			return true;
 		}
 		if(NumArgs < 2)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		char aType[512];
@@ -65,7 +65,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 			str_comp(aType, "neutral") &&
 			str_comp(aType, "traitor"))
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error type has to be one of those: <war|team|neutral|traitor>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error type has to be one of those: <war|team|neutral|traitor>");
 			return true;
 		}
 		const char *aTypes[] = {"war", "team", "neutral", "traitor"};
@@ -76,7 +76,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 			{
 				char aError[256];
 				str_format(aError, sizeof(aError), "Error folder already exists: %s", aBuf);
-				m_pClient->m_Chat.AddLine(-2, 0, aError);
+				GameClient()->m_Chat.AddLine(-2, 0, aError);
 				return true;
 			}
 		}
@@ -84,31 +84,31 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(!Storage()->CreateFolder(aBuf, IStorage::TYPE_SAVE))
 		{
 			str_format(aBuf, sizeof(aBuf), "Failed to create folder %s/%s", aType, aFolder);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 		str_format(aBuf, sizeof(aBuf), "chillerbot/warlist/%s/%s", aType, aFolder);
 		if(!Storage()->CreateFolder(aBuf, IStorage::TYPE_SAVE))
 		{
 			str_format(aBuf, sizeof(aBuf), "Failed to create folder %s/%s", aType, aFolder);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 		if(!aName[0])
 		{
 			str_format(aBuf, sizeof(aBuf), "Created folder %s/%s", aType, aFolder);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 
 		if(SearchName(aName, false, true))
 		{
 			str_format(aBuf, sizeof(aBuf), "Error: name '%s' is already used in different folder", aName);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 		str_format(aBuf, sizeof(aBuf), "Created folder %s/%s and add name '%s'", aType, aFolder, aName);
-		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 		if(!str_comp(aType, "war"))
 			AddWar(aFolder, aName);
 		else if(!str_comp(aType, "team"))
@@ -116,19 +116,19 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		else
 		{
 			str_format(aBuf, sizeof(aBuf), "Error: failed to add name '%s' to '%s' list (list type not supported)", aName, aType);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 		}
 	}
 	else if(!str_comp(pCmd, "addwar")) // "addwar <folder> <name can contain spaces>"
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		if(NumArgs < 2)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <name>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <name>");
 			return true;
 		}
 		char aFolder[512];
@@ -141,12 +141,12 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		if(NumArgs < 2)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <name>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <name>");
 			return true;
 		}
 		char aFolder[512];
@@ -159,12 +159,12 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		if(NumArgs < 2)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <name>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <name>");
 			return true;
 		}
 		char aFolder[512];
@@ -177,7 +177,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(!File)
 		{
 			str_format(aBuf, sizeof(aBuf), "failed to open war list file '%s'", aFilename);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 
@@ -187,13 +187,13 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 
 		str_format(aBuf, sizeof(aBuf), "Added '%s' to the folder %s", aName, aFolder);
 		ReloadList();
-		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 	}
 	else if(!str_comp(pCmd, "peace")) // "peace <folder>"
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		char aFolder[512];
@@ -206,7 +206,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(!File)
 		{
 			str_format(aBuf, sizeof(aBuf), "failed to open war list file '%s'", aPath);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 		io_close(File);
@@ -214,7 +214,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(File)
 		{
 			str_format(aBuf, sizeof(aBuf), "Peace entry already exists '%s'", aPeacePath);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			io_close(File);
 			return true;
 		}
@@ -225,13 +225,13 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 
 		str_format(aBuf, sizeof(aBuf), "Moved folder %s from war/ to neutral/", aFolder);
 		ReloadList();
-		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 	}
 	else if(!str_comp(pCmd, "unfriend") || !str_comp(pCmd, "unteam") || !str_comp(pCmd, "delteam")) // "unfriend <folder>"
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		char aFolder[512];
@@ -244,7 +244,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(!File)
 		{
 			str_format(aBuf, sizeof(aBuf), "failed to open war list file '%s'", aPath);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 		io_close(File);
@@ -252,7 +252,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(File)
 		{
 			str_format(aBuf, sizeof(aBuf), "Neutral entry already exists '%s'", aNeutralPath);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			io_close(File);
 			return true;
 		}
@@ -263,13 +263,13 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 
 		str_format(aBuf, sizeof(aBuf), "Moved folder %s from team/ to neutral/", aFolder);
 		ReloadList();
-		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 	}
 	else if(!str_comp(pCmd, "team")) // "team <folder>"
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		char aFolder[512];
@@ -282,7 +282,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(!File)
 		{
 			str_format(aBuf, sizeof(aBuf), "failed to open war list file '%s'", aPath);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 		io_close(File);
@@ -290,7 +290,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(File)
 		{
 			str_format(aBuf, sizeof(aBuf), "Peace entry already exists '%s'", aTeamPath);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			io_close(File);
 			return true;
 		}
@@ -301,13 +301,13 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 
 		str_format(aBuf, sizeof(aBuf), "Moved folder %s from neutral/ to team/", aFolder);
 		ReloadList();
-		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 	}
 	else if(!str_comp(pCmd, "war")) // "war <folder>"
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		char aFolder[512];
@@ -320,7 +320,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(!File)
 		{
 			str_format(aBuf, sizeof(aBuf), "failed to open war list file '%s'", aPath);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 		io_close(File);
@@ -328,7 +328,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(File)
 		{
 			str_format(aBuf, sizeof(aBuf), "War entry already exists '%s'", aWarPath);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			io_close(File);
 			return true;
 		}
@@ -339,18 +339,18 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 
 		str_format(aBuf, sizeof(aBuf), "Moved folder %s from neutral/ to war/", aFolder);
 		ReloadList();
-		m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 	}
 	else if(!str_comp(pCmd, "addreason")) // "addreason <folder> <reason can contain spaces>"
 	{
 		if(NumArgs < 1)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <folder>");
 			return true;
 		}
 		if(NumArgs < 2)
 		{
-			m_pClient->m_Chat.AddLine(-2, 0, "Error: missing argument <reason>");
+			GameClient()->m_Chat.AddLine(-2, 0, "Error: missing argument <reason>");
 			return true;
 		}
 		char aFolder[512];
@@ -385,7 +385,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 			if(pLine && pLine[0] != '\0' && !Force)
 			{
 				str_format(aBuf, sizeof(aBuf), "Folder %s already has a reason. Use -f to overwrite reason: %s", aFolder, pLine);
-				m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+				GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 				return true;
 			}
 		}
@@ -393,7 +393,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		if(!File)
 		{
 			str_format(aBuf, sizeof(aBuf), "Failed to open file for writing chillerbot/warlist/war/%s/reason.txt", aFolder);
-			m_pClient->m_Chat.AddLine(-2, 0, aBuf);
+			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
 		str_format(aBuf, sizeof(aBuf), "Adding reason to folder='%s' reason='%s'", aFolder, pReason);
@@ -405,7 +405,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		io_write_newline(File);
 		io_close(File);
 		ReloadList();
-		m_pClient->m_Chat.AddLine(-1, 0, aBuf);
+		GameClient()->m_Chat.AddLine(-1, 0, aBuf);
 	}
 	else
 	{
