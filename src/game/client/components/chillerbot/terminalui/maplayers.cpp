@@ -36,10 +36,10 @@ void CTerminalUI::RenderPickup(const CNetObj_Pickup *pPrev, const CNetObj_Pickup
 
 void CTerminalUI::RenderItems()
 {
-	int SwitcherTeam = m_pClient->SwitchStateTeam();
+	int SwitcherTeam = GameClient()->SwitchStateTeam();
 	bool UsePredicted = GameClient()->Predict() && GameClient()->AntiPingGunfire();
 	auto &aSwitchers = GameClient()->Switchers();
-	bool IsSuper = m_pClient->IsLocalCharSuper();
+	bool IsSuper = GameClient()->IsLocalCharSuper();
 	int Ticks = Client()->GameTick(g_Config.m_ClDummy) % Client()->GameTickSpeed();
 	bool BlinkingPickup = (Ticks % 22) < 4;
 	if(UsePredicted)
@@ -61,7 +61,7 @@ void CTerminalUI::RenderItems()
 			}
 		}
 	}
-	for(const CSnapEntities &Ent : m_pClient->SnapEntities())
+	for(const CSnapEntities &Ent : GameClient()->SnapEntities())
 	{
 		const IClient::CSnapItem Item = Ent.m_Item;
 		const void *pData = Item.m_pData;
@@ -132,10 +132,10 @@ void CTerminalUI::RenderPlayers(int offX, int offY, int w, int h)
 	float Scale = 1.0; // chillerbot tile size is always one character
 	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 	int render_dist = 16; // render tiles surroundign the tee
-	ScreenX0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X) / 32.0f) - (render_dist);
-	ScreenY0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) - (render_dist / 2);
-	ScreenX1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X) / 32.0f) + (render_dist);
-	ScreenY1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) + (render_dist / 2);
+	ScreenX0 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f) - (render_dist);
+	ScreenY0 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) - (render_dist / 2);
+	ScreenX1 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f) + (render_dist);
+	ScreenY1 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) + (render_dist / 2);
 	// dbg_msg("screen", "x0: %2.f y0: %.2f x1: %.2f y1: %.2f", ScreenX0, ScreenY0, ScreenX1, ScreenY1);
 
 	int StartY = (int)(ScreenY0 / Scale) - 1;
@@ -173,8 +173,8 @@ void CTerminalUI::RenderPlayers(int offX, int offY, int w, int h)
 					continue; // my = h-1;
 			}
 
-			int renderX = (x * Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X) / 32.0f);
-			int renderY = (y * Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y) / 32.0f);
+			int renderX = (x * Scale) - (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f);
+			int renderY = (y * Scale) - (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y) / 32.0f);
 			renderX += 32;
 			renderY += 16;
 			mx *= 32;
@@ -182,16 +182,16 @@ void CTerminalUI::RenderPlayers(int offX, int offY, int w, int h)
 			my += 64;
 			for(int ClientId = 0; ClientId < MAX_CLIENTS; ClientId++)
 			{
-				if(!m_pClient->m_Snap.m_aCharacters[ClientId].m_Active || !IsPlayerInfoAvailable(ClientId))
+				if(!GameClient()->m_Snap.m_aCharacters[ClientId].m_Active || !IsPlayerInfoAvailable(ClientId))
 					continue;
 
-				// int curX = m_pClient->m_aClients[ClientId].m_RenderCur.m_X;
+				// int curX = GameClient()->m_aClients[ClientId].m_RenderCur.m_X;
 				// DBG_II(curX, mx);
 
-				int PlayerX = m_pClient->m_aClients[ClientId].m_RenderCur.m_X;
-				int PlayerY = m_pClient->m_aClients[ClientId].m_RenderCur.m_Y;
+				int PlayerX = GameClient()->m_aClients[ClientId].m_RenderCur.m_X;
+				int PlayerY = GameClient()->m_aClients[ClientId].m_RenderCur.m_Y;
 				const char *pPlayerSkin = "o";
-				if(m_pClient->m_Snap.m_aCharacters[ClientId].m_Cur.m_Weapon == WEAPON_NINJA)
+				if(GameClient()->m_Snap.m_aCharacters[ClientId].m_Cur.m_Weapon == WEAPON_NINJA)
 					pPlayerSkin = "ø";
 				if(PlayerX > mx - 16 && PlayerX < mx + 16)
 					if(PlayerY > my - 16 && PlayerY < my + 16)
@@ -203,7 +203,7 @@ void CTerminalUI::RenderPlayers(int offX, int offY, int w, int h)
 
 void CTerminalUI::RenderTilemap(CTile *pTiles, int offX, int offY, int WinWidth, int WinHeight, int w, int h, float Scale, vec4 Color, int RenderFlags, int ColorEnv, int ColorEnvOffset)
 {
-	if(!m_pClient->m_Snap.m_pLocalCharacter) // TODO: also render map if tee is dead and also add possibility to spectate
+	if(!GameClient()->m_Snap.m_pLocalCharacter) // TODO: also render map if tee is dead and also add possibility to spectate
 		return;
 	if(WinWidth < 3)
 		return;
@@ -231,14 +231,14 @@ void CTerminalUI::RenderTilemap(CTile *pTiles, int offX, int offY, int WinWidth,
 		// str_format(aFrame[i], sizeof(aFrame[i]), "%*s", (int)sizeof(aFrame[i]), " ");
 	}
 	int rendered_tiles = 0;
-	// dbg_msg("render", "teeX: %.2f", static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f);
+	// dbg_msg("render", "teeX: %.2f", static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X)/32.0f);
 	Scale = 1.0; // chillerbot tile size is always one character
 	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 	int render_dist = 16; // render tiles surroundign the tee
-	ScreenX0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X) / 32.0f) - (render_dist);
-	ScreenY0 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) - (render_dist / 2);
-	ScreenX1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X) / 32.0f) + (render_dist);
-	ScreenY1 = (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) + (render_dist / 2);
+	ScreenX0 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f) - (render_dist);
+	ScreenY0 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) - (render_dist / 2);
+	ScreenX1 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f) + (render_dist);
+	ScreenY1 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) + (render_dist / 2);
 	// dbg_msg("screen", "x0: %2.f y0: %.2f x1: %.2f y1: %.2f", ScreenX0, ScreenY0, ScreenX1, ScreenY1);
 
 	int StartY = (int)(ScreenY0 / Scale) - 1;
@@ -278,8 +278,8 @@ void CTerminalUI::RenderTilemap(CTile *pTiles, int offX, int offY, int WinWidth,
 
 			int c = mx + my * w;
 			unsigned char Index = pTiles[c].m_Index;
-			int renderX = (x * Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X) / 32.0f);
-			int renderY = (y * Scale) - (static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y) / 32.0f);
+			int renderX = (x * Scale) - (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f);
+			int renderY = (y * Scale) - (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y) / 32.0f);
 			// dbg_msg("x", "mx=%d my=%d renderX=%d renderY=%d", mx, my, renderX, renderY);
 			renderX += 32;
 			renderY += 16;
@@ -295,7 +295,7 @@ void CTerminalUI::RenderTilemap(CTile *pTiles, int offX, int offY, int WinWidth,
 				if(Index)
 				{
 					// dbg_msg("map", "draw tile=%d at x: %.2f y: %.2f w: %.2f h: %.2f", Index, x*Scale, y*Scale, Scale, Scale);
-					// dbg_msg("map", "absolut tile x: %d y: %d       tee x: %.2f y: %.2f", renderX, renderY, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_X)/32.0f, static_cast<float>(m_pClient->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
+					// dbg_msg("map", "absolut tile x: %d y: %d       tee x: %.2f y: %.2f", renderX, renderY, static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X)/32.0f, static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
 					// dbg_msg("map", "array pos  tile x: %d y: %d\n", renderX, renderY);
 					if(Index == TILE_SOLID)
 					{

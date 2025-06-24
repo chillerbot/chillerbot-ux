@@ -32,7 +32,7 @@ bool CTerminalUI::PickMenuItem()
 		OpenHelpPopup();
 		break;
 	case CInputWindow::MENU_ITEM_QUIT:
-		m_pClient->Client()->Quit();
+		GameClient()->Client()->Quit();
 		break;
 	default:
 		break;

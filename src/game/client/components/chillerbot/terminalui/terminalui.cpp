@@ -220,7 +220,7 @@ int CTerminalUI::CursesTick()
 		g_LogWindow.DrawBorders();
 		g_InfoWin.DrawBorders();
 
-		if(m_pClient->m_Snap.m_pLocalCharacter && m_RenderGame)
+		if(GameClient()->m_Snap.m_pLocalCharacter && m_RenderGame)
 		{
 			wresize(g_GameWindow.m_pCursesWin, g_NewY - (g_InputWin.m_Height + INFO_WIN_HEIGHT), g_NewX); // TODO: fix this size
 			wclear(g_LogWindow.m_pCursesWin);
@@ -233,13 +233,13 @@ int CTerminalUI::CursesTick()
 	// draw to our windows
 	LogDraw();
 	InfoDraw();
-	if(m_pClient->m_Snap.m_pLocalCharacter && m_RenderGame)
+	if(GameClient()->m_Snap.m_pLocalCharacter && m_RenderGame)
 		RenderGame();
 	RenderServerList();
 	RenderConnecting();
 	RenderPopup();
 	RenderHelpPage();
-	if(m_pClient->m_Snap.m_pLocalCharacter)
+	if(GameClient()->m_Snap.m_pLocalCharacter)
 		RenderScoreboard(0, &g_LogWindow);
 
 	int input = GetInput(); // calls InputDraw()
@@ -282,7 +282,7 @@ void CTerminalUI::OnInit()
 	m_RenderServerList = false;
 	m_ScoreboardActive = false;
 	m_RenderHelpPage = false;
-	g_pClient = m_pClient;
+	g_pClient = GameClient();
 	mem_zero(m_aLastPressedKey, sizeof(m_aLastPressedKey));
 	mem_zero(m_aaInputHistory, sizeof(m_aaInputHistory));
 	mem_zero(m_InputHistory, sizeof(m_InputHistory));
@@ -409,10 +409,10 @@ void CTerminalUI::OnRender()
 	if(cl_InterruptSignaled)
 		Console()->ExecuteLine("quit");
 
-	if(!m_pClient->m_Snap.m_pLocalCharacter)
+	if(!GameClient()->m_Snap.m_pLocalCharacter)
 		return;
-	float X = m_pClient->m_Snap.m_pLocalCharacter->m_X;
-	float Y = m_pClient->m_Snap.m_pLocalCharacter->m_Y;
+	float X = GameClient()->m_Snap.m_pLocalCharacter->m_X;
+	float Y = GameClient()->m_Snap.m_pLocalCharacter->m_Y;
 	str_format(g_aInfoStr2, sizeof(g_aInfoStr2),
 		"%.2f %.2f scoreboard=%d",
 		X / 32, Y / 32,
@@ -568,18 +568,18 @@ int CTerminalUI::GetInput()
 			m_LockKeyUntilRelease = c;
 
 			if(InputMode() == INPUT_LOCAL_CONSOLE)
-				m_pClient->Console()->ExecuteLine(g_aInputStr);
+				GameClient()->Console()->ExecuteLine(g_aInputStr);
 			else if(InputMode() == INPUT_REMOTE_CONSOLE)
 			{
-				if(m_pClient->Client()->RconAuthed())
-					m_pClient->Client()->Rcon(g_aInputStr);
+				if(GameClient()->Client()->RconAuthed())
+					GameClient()->Client()->Rcon(g_aInputStr);
 				else
-					m_pClient->Client()->RconAuth("", g_aInputStr, g_Config.m_ClDummy);
+					GameClient()->Client()->RconAuth("", g_aInputStr, g_Config.m_ClDummy);
 			}
 			else if(InputMode() == INPUT_CHAT)
-				m_pClient->m_Chat.SendChat(0, g_aInputStr);
+				GameClient()->m_Chat.SendChat(0, g_aInputStr);
 			else if(InputMode() == INPUT_CHAT_TEAM)
-				m_pClient->m_Chat.SendChat(1, g_aInputStr);
+				GameClient()->m_Chat.SendChat(1, g_aInputStr);
 			else if(InputMode() == INPUT_BROWSER_SEARCH)
 			{
 				m_SelectedServer = 0;
@@ -1066,12 +1066,12 @@ void CTerminalUI::CompleteNames(bool IsReverse)
 	int Matches = 0;
 	const char *pMatch = NULL;
 	bool Found = false;
-	for(auto &PlayerInfo : m_pClient->m_Snap.m_apInfoByName)
+	for(auto &PlayerInfo : GameClient()->m_Snap.m_apInfoByName)
 	{
 		if(!PlayerInfo)
 			continue;
 
-		PlayerName = m_pClient->m_aClients[PlayerInfo->m_ClientId].m_aName;
+		PlayerName = GameClient()->m_aClients[PlayerInfo->m_ClientId].m_aName;
 		FoundInput = str_utf8_find_nocase(PlayerName, m_aCompletionBuffer);
 		if(!FoundInput)
 			continue;
@@ -1174,7 +1174,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 		m_NewInput = true;
 	}
 	else if(Key == 'k')
-		m_pClient->SendKill();
+		GameClient()->SendKill();
 	else if(Key == ' ')
 	{
 		m_Input.m_Jump = 1;
@@ -1224,7 +1224,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 		{
 			m_RenderServerList = false;
 			const CServerInfo *pItem = ServerBrowser()->SortedGet(m_SelectedServer);
-			if(pItem && m_pClient->Client()->State() != IClient::STATE_CONNECTING)
+			if(pItem && GameClient()->Client()->State() != IClient::STATE_CONNECTING)
 			{
 				char aBuf[128];
 				str_format(aBuf, sizeof(aBuf), "connect %s", pItem->m_aAddress);

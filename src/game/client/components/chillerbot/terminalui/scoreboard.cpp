@@ -34,7 +34,7 @@ void CTerminalUI::RenderScoreboard(int Team, CTermWindow *pWin)
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		// make sure that we render the correct team
-		const CNetObj_PlayerInfo *pInfo = m_pClient->m_Snap.m_apInfoByDDTeamScore[i];
+		const CNetObj_PlayerInfo *pInfo = GameClient()->m_Snap.m_apInfoByDDTeamScore[i];
 		if(!pInfo || pInfo->m_Team != Team)
 			continue;
 
@@ -55,16 +55,16 @@ void CTerminalUI::RenderScoreboard(int Team, CTermWindow *pWin)
 		// if(rendered++ < 0) continue;
 
 		// make sure that we render the correct team
-		const CNetObj_PlayerInfo *pInfo = m_pClient->m_Snap.m_apInfoByDDTeamScore[i];
+		const CNetObj_PlayerInfo *pInfo = GameClient()->m_Snap.m_apInfoByDDTeamScore[i];
 		if(!pInfo || pInfo->m_Team != Team)
 			continue;
 
-		// dbg_msg("scoreboard", "i=%d name=%s", i, m_pClient->m_aClients[pInfo->m_ClientId].m_aName);
+		// dbg_msg("scoreboard", "i=%d name=%s", i, GameClient()->m_aClients[pInfo->m_ClientId].m_aName);
 
 		char aScore[64];
 
 		// score
-		if(m_pClient->m_GameInfo.m_TimeScore)
+		if(GameClient()->m_GameInfo.m_TimeScore)
 		{
 			if(pInfo->m_Score == -9999)
 				aScore[0] = 0;
@@ -80,8 +80,8 @@ void CTerminalUI::RenderScoreboard(int Team, CTermWindow *pWin)
 		char aBuf[1024];
 		char aName[64];
 		char aClan[64];
-		str_copy(aName, m_pClient->m_aClients[pInfo->m_ClientId].m_aName, sizeof(aName));
-		str_copy(aClan, m_pClient->m_aClients[pInfo->m_ClientId].m_aClan, sizeof(aClan));
+		str_copy(aName, GameClient()->m_aClients[pInfo->m_ClientId].m_aName, sizeof(aName));
+		str_copy(aClan, GameClient()->m_aClients[pInfo->m_ClientId].m_aClan, sizeof(aClan));
 
 		str_pad_right_utf8(aName, sizeof(aName), NAME_COL_SIZE);
 		str_pad_right_utf8(aClan, sizeof(aClan), CLAN_COL_SIZE);

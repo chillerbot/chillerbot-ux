@@ -3,6 +3,7 @@
 #if defined(CONF_CURSES_CLIENT)
 
 #include <engine/client/serverbrowser.h>
+#include <engine/shared/linereader.h>
 #include <game/client/components/controls.h>
 #include <game/client/gameclient.h>
 
