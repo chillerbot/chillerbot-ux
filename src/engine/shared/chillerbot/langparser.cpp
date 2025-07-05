@@ -184,6 +184,7 @@ bool CLangParser::IsGreeting(const char *pMsg)
 		"slt",
 		"sup",
 		"szia",
+		"salam",
 		"selam"};
 	for(const auto &aGreeting : aGreetings)
 	{
