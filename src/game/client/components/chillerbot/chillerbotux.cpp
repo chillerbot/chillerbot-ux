@@ -1,5 +1,6 @@
 // ChillerDragon 2020 - chillerbot ux
 
+#include <base/log.h>
 #include <engine/client/notifications.h>
 #include <engine/config.h>
 #include <engine/console.h>
@@ -75,7 +76,7 @@ void CChillerBotUX::OnRender()
 
 				if(pGetServers->State() != EHttpState::DONE)
 				{
-					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", "failed to hearthbeat");
+					log_error("chillerbot", "failed to hearthbeat (not done)");
 					return;
 				}
 
@@ -97,7 +98,7 @@ void CChillerBotUX::OnRender()
 				}
 				json_value_free(pJson);
 				if(!Success)
-					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", "failed to hearthbeat");
+					log_error("chillerbot", "failed to hearthbeat (no success)");
 			}
 		}
 		CheckEmptyTick();
