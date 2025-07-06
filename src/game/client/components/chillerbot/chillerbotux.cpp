@@ -239,7 +239,7 @@ void CChillerBotUX::SendPlayTimeTick()
 		if(g_Config.m_PlayerName[0])
 			EscapeUrl(aEscaped, sizeof(aEscaped), g_Config.m_PlayerName);
 		else
-			str_copy(aEscaped, "nameless tee", sizeof(aEscaped));
+			str_copy(aEscaped, "nameless%20tee", sizeof(aEscaped));
 		str_append(aUrl, aEscaped, sizeof(aUrl));
 
 		m_pAliveGet = HttpGet(aUrl);
