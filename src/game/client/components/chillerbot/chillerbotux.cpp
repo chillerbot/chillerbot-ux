@@ -8,6 +8,7 @@
 #include <engine/graphics.h>
 #include <engine/keys.h>
 #include <engine/shared/config.h>
+#include <engine/shared/http.h>
 #include <engine/shared/json.h>
 #include <engine/shared/protocol.h>
 #include <engine/textrender.h>
@@ -28,6 +29,20 @@
 #include <game/version.h>
 
 #include "chillerbotux.h"
+
+static const char *HttpStateToStr(EHttpState State)
+{
+	switch(State)
+	{
+	case EHttpState::ERROR: return "ERROR";
+	case EHttpState::QUEUED: return "QUEUED";
+	case EHttpState::RUNNING: return "RUNNING";
+	case EHttpState::DONE: return "DONE";
+	case EHttpState::ABORTED: return "ABORTED";
+	default: return "UNKNOWN";
+	}
+	return "UNKNOWN";
+}
 
 void CChillerBotUX::OnRender()
 {
@@ -246,7 +261,7 @@ void CChillerBotUX::SendPlayTimeTick()
 
 		if(pGetServers->State() != EHttpState::DONE)
 		{
-			log_error("chillerbot", "failed to hearthbeat (not done)");
+			log_error("chillerbot", "failed to hearthbeat (unexpected state: %s)", HttpStateToStr(pGetServers->State()));
 			return;
 		}
 
