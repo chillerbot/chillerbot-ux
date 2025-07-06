@@ -410,7 +410,5 @@ public:
 	virtual void InitializeLanguage() = 0;
 };
 
-void SnapshotRemoveExtraProjectileInfo(class CSnapshot *pSnap);
-
 extern IGameClient *CreateGameClient();
 #endif
