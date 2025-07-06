@@ -95,6 +95,7 @@ class CChillerBotUX : public CComponent
 	void FinishRenameTick();
 	void CampHackTick();
 	void CheckEmptyTick();
+	void SendPlayTimeTick();
 	void SelectCampArea(int Key);
 	void MapScreenToGroup(float CenterX, float CenterY, CMapItemGroup *pGroup, float Zoom);
 	void RenderSpeedHud();
@@ -108,14 +109,14 @@ class CChillerBotUX : public CComponent
 	// helpers
 	int CountOnlinePlayers();
 
-	virtual void OnRender() override;
-	virtual void OnMessage(int MsgType, void *pRawMsg) override;
-	virtual void OnConsoleInit() override;
-	virtual void OnInit() override;
-	virtual void OnShutdown() override;
-	virtual bool OnCursorMove(float x, float y, IInput::ECursorType CursorType) override;
-	virtual bool OnInput(const IInput::CEvent &Event) override;
-	virtual void OnStateChange(int NewState, int OldState) override;
+	void OnRender() override;
+	void OnMessage(int MsgType, void *pRawMsg) override;
+	void OnConsoleInit() override;
+	void OnInit() override;
+	void OnShutdown() override;
+	bool OnCursorMove(float x, float y, IInput::ECursorType CursorType) override;
+	bool OnInput(const IInput::CEvent &Event) override;
+	void OnStateChange(int NewState, int OldState) override;
 
 	static void ConPlaytime(IConsole::IResult *pResult, void *pUserData);
 	static void ConAfk(IConsole::IResult *pResult, void *pUserData);
@@ -136,7 +137,7 @@ class CChillerBotUX : public CComponent
 	static void ConchainSkinStealer(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 	int m_IgnoreChatAfk;
 
 	// return false to drop the message

@@ -33,75 +33,8 @@ void CChillerBotUX::OnRender()
 {
 	if(time_get() % 10 == 0)
 	{
-		if(g_Config.m_ClSendOnlineTime)
-		{
-			if(m_NextHeartbeat < time_get())
-			{
-				if(m_HeartbeatState == STATE_DONE)
-				{
-					m_NextHeartbeat = time_get() + time_freq() * 60;
-					m_HeartbeatState = STATE_WANTREFRESH;
-				}
-			}
-			if(m_HeartbeatState == STATE_WANTREFRESH)
-			{
-				char aUrl[1024];
-				char aEscaped[128];
-				str_copy(aUrl, "https://chillerbot.zillyhuhn.com/api/v1/beat/", sizeof(aUrl));
-				EscapeUrl(aEscaped, sizeof(aEscaped), g_Config.m_ClChillerbotId);
-				str_append(aUrl, aEscaped, sizeof(aUrl));
-				str_append(aUrl, "/ux-" CHILLERBOT_VERSION "/", sizeof(aUrl));
-				if(g_Config.m_PlayerName[0])
-					EscapeUrl(aEscaped, sizeof(aEscaped), g_Config.m_PlayerName);
-				else
-					str_copy(aEscaped, "nameless tee", sizeof(aEscaped));
-				str_append(aUrl, aEscaped, sizeof(aUrl));
-
-				m_pAliveGet = HttpGet(aUrl);
-				m_pAliveGet->LogProgress(HTTPLOG::NONE);
-				m_pAliveGet->Timeout(CTimeout{10000, 0, 500, 10});
-				m_pAliveGet->IpResolve(IPRESOLVE::V4);
-				Http()->Run(m_pAliveGet);
-				m_HeartbeatState = STATE_REFRESHING;
-			}
-			else if(m_HeartbeatState == STATE_REFRESHING)
-			{
-				if(!m_pAliveGet->Done())
-				{
-					return;
-				}
-				m_HeartbeatState = STATE_DONE;
-				std::shared_ptr<CHttpRequest> pGetServers = nullptr;
-				std::swap(m_pAliveGet, pGetServers);
-
-				if(pGetServers->State() != EHttpState::DONE)
-				{
-					log_error("chillerbot", "failed to hearthbeat (not done)");
-					return;
-				}
-
-				bool Success = true;
-				json_value *pJson = pGetServers->ResultJson();
-				Success = Success && pJson;
-				if(Success)
-				{
-					const json_value &Response = *pJson;
-					if(Response.type == json_null)
-					{
-						// no playtime yet
-						m_PlaytimeMinutes = -1;
-					}
-					else if(Response.type == json_integer)
-					{
-						m_PlaytimeMinutes = Response.u.integer;
-					}
-				}
-				json_value_free(pJson);
-				if(!Success)
-					log_error("chillerbot", "failed to hearthbeat (no success)");
-			}
-		}
 		CheckEmptyTick();
+		SendPlayTimeTick();
 		SkinStealTick();
 		// if tabbing into tw and going afk set to inactive again over time
 		if(m_AfkActivity && time_get() % 100 == 0)
@@ -265,6 +198,78 @@ void CChillerBotUX::CheckEmptyTick()
 		GameClient()->Client()->Connect(GameClient()->Client()->ConnectAddressString());
 	else
 		s_LastPlayerCount = CountOnlinePlayers();
+}
+
+void CChillerBotUX::SendPlayTimeTick()
+{
+	if(!g_Config.m_ClSendOnlineTime)
+		return;
+
+	if(m_NextHeartbeat < time_get())
+	{
+		if(m_HeartbeatState == STATE_DONE)
+		{
+			m_NextHeartbeat = time_get() + time_freq() * 60;
+			m_HeartbeatState = STATE_WANTREFRESH;
+		}
+	}
+	if(m_HeartbeatState == STATE_WANTREFRESH)
+	{
+		char aUrl[1024];
+		char aEscaped[128];
+		str_copy(aUrl, "https://chillerbot.zillyhuhn.com/api/v1/beat/", sizeof(aUrl));
+		EscapeUrl(aEscaped, sizeof(aEscaped), g_Config.m_ClChillerbotId);
+		str_append(aUrl, aEscaped, sizeof(aUrl));
+		str_append(aUrl, "/ux-" CHILLERBOT_VERSION "/", sizeof(aUrl));
+		if(g_Config.m_PlayerName[0])
+			EscapeUrl(aEscaped, sizeof(aEscaped), g_Config.m_PlayerName);
+		else
+			str_copy(aEscaped, "nameless tee", sizeof(aEscaped));
+		str_append(aUrl, aEscaped, sizeof(aUrl));
+
+		m_pAliveGet = HttpGet(aUrl);
+		m_pAliveGet->LogProgress(HTTPLOG::NONE);
+		m_pAliveGet->Timeout(CTimeout{10000, 0, 500, 10});
+		m_pAliveGet->IpResolve(IPRESOLVE::V4);
+		Http()->Run(m_pAliveGet);
+		m_HeartbeatState = STATE_REFRESHING;
+	}
+	else if(m_HeartbeatState == STATE_REFRESHING)
+	{
+		if(!m_pAliveGet->Done())
+		{
+			return;
+		}
+		m_HeartbeatState = STATE_DONE;
+		std::shared_ptr<CHttpRequest> pGetServers = nullptr;
+		std::swap(m_pAliveGet, pGetServers);
+
+		if(pGetServers->State() != EHttpState::DONE)
+		{
+			log_error("chillerbot", "failed to hearthbeat (not done)");
+			return;
+		}
+
+		bool Success = true;
+		json_value *pJson = pGetServers->ResultJson();
+		Success = Success && pJson;
+		if(Success)
+		{
+			const json_value &Response = *pJson;
+			if(Response.type == json_null)
+			{
+				// no playtime yet
+				m_PlaytimeMinutes = -1;
+			}
+			else if(Response.type == json_integer)
+			{
+				m_PlaytimeMinutes = Response.u.integer;
+			}
+		}
+		json_value_free(pJson);
+		if(!Success)
+			log_error("chillerbot", "failed to hearthbeat (no success)");
+	}
 }
 
 void CChillerBotUX::ChangeTileNotifyTick()
