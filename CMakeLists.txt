@@ -2568,6 +2568,8 @@ if(CLIENT)
     editor_ui.h
     enums.h
     explanations.cpp
+    font_typer.cpp
+    font_typer.h
     layer_selector.cpp
     layer_selector.h
     map_grid.cpp

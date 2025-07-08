@@ -241,7 +241,8 @@ void CMapLayers::OnRender()
 		if(!DoRenderGroup)
 			continue;
 
-		pRenderLayer->Render(Params);
+		if(pRenderLayer->DoRender(Params))
+			pRenderLayer->Render(Params);
 	}
 
 	// Reset clip from last group
