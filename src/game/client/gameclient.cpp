@@ -1251,7 +1251,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dumm
 	else if(MsgId == NETMSGTYPE_SV_PREINPUT)
 	{
 		CNetMsg_Sv_PreInput *pMsg = (CNetMsg_Sv_PreInput *)pRawMsg;
-		m_aClients[pMsg->m_Owner].m_PreInput[pMsg->m_IntendedTick % 200] = *pMsg;
+		m_aClients[pMsg->m_Owner].m_aPreInputs[pMsg->m_IntendedTick % 200] = *pMsg;
 	}
 }
 
@@ -2475,7 +2475,7 @@ void CGameClient::OnPredict()
 					if(pDummyChar == pChar || pLocalChar == pChar)
 						continue;
 
-					const CNetMsg_Sv_PreInput PreInput = m_aClients[i].m_PreInput[Tick % 200];
+					const CNetMsg_Sv_PreInput PreInput = m_aClients[i].m_aPreInputs[Tick % 200];
 					if(PreInput.m_IntendedTick != Tick)
 						continue;
 
@@ -2511,7 +2511,7 @@ void CGameClient::OnPredict()
 					if(pDummyChar == pChar || pLocalChar == pChar)
 						continue;
 
-					const CNetMsg_Sv_PreInput PreInput = m_aClients[i].m_PreInput[Tick % 200];
+					const CNetMsg_Sv_PreInput PreInput = m_aClients[i].m_aPreInputs[Tick % 200];
 					if(PreInput.m_IntendedTick != Tick)
 						continue;
 
@@ -2883,6 +2883,11 @@ void CGameClient::CClientData::Reset()
 
 	m_Snapped.m_Tick = -1;
 	m_Evolved.m_Tick = -1;
+
+	for(auto &PreInput : m_aPreInputs)
+	{
+		PreInput.m_IntendedTick = -1;
+	}
 
 	m_RenderCur.m_Tick = -1;
 	m_RenderPrev.m_Tick = -1;
