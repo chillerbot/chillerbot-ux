@@ -485,9 +485,21 @@ bool CChatHelper::FilterChat(int ClientId, int Team, const char *pLine)
 			return true;
 		}
 	}
+
+	// do not auto reply muted players
+	bool IsMuted = (*pLine == 0 ||
+			(ClientId == -1 && !g_Config.m_ClShowChatSystem) ||
+			(ClientId >= 0 && (GameClient()->m_aClients[ClientId].m_aName[0] == '\0' || // unknown client
+						  GameClient()->m_aClients[ClientId].m_ChatIgnore ||
+						  (GameClient()->m_Snap.m_LocalClientId != ClientId && g_Config.m_ClShowChatFriends && !GameClient()->m_aClients[ClientId].m_Friend) ||
+						  (GameClient()->m_Snap.m_LocalClientId != ClientId && g_Config.m_ClShowChatTeamMembersOnly && GameClient()->IsOtherTeam(ClientId) && GameClient()->m_Teams.Team(GameClient()->m_Snap.m_LocalClientId) != TEAM_FLOCK) ||
+						  (GameClient()->m_Snap.m_LocalClientId != ClientId && GameClient()->m_aClients[ClientId].m_Foe))));
+
 	int Spam = IsSpam(ClientId, Team, pLine);
 	if(Spam)
 	{
+		if(IsMuted)
+			return true;
 		if(g_Config.m_ClChatSpamFilter != 2)
 			return true;
 		if(Spam >= SPAM_INSULT)
