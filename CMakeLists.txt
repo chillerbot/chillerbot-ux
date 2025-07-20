@@ -2604,6 +2604,7 @@ if(CLIENT)
     mapitems/layer_tune.cpp
     mapitems/layer_tune.h
     mapitems/map.cpp
+    mapitems/map.h
     mapitems/map_io.cpp
     mapitems/sound.cpp
     mapitems/sound.h
