@@ -170,6 +170,7 @@ bool CLangParser::IsGreeting(const char *pMsg)
 		"zdorova", // hello
 		"zdarova", // hello
 		"здарова", // hello
+		"ку", // hi ???
 		"ola",
 		"ay",
 		"ayy",
