@@ -370,8 +370,7 @@ public:
 		}
 	};
 	std::map<const char *, CUi::SMessagePopupContext *, SStringKeyComparator> m_PopupMessageContexts;
-	void ShowFileDialogError(const char *pFormat, ...)
-		GNUC_ATTRIBUTE((format(printf, 2, 3)));
+	[[gnu::format(printf, 2, 3)]] void ShowFileDialogError(const char *pFormat, ...);
 
 	void Reset(bool CreateDefault = true);
 	bool Save(const char *pFilename) override;
@@ -977,8 +976,7 @@ public:
 	CEnvelopeEditorOperationTracker m_EnvOpTracker;
 
 private:
-	void UndoLastAction();
-	void RedoLastAction();
+	CEditorHistory &ActiveHistory();
 
 	std::map<int, CPoint[5]> m_QuadDragOriginalPoints;
 };

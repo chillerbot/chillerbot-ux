@@ -69,6 +69,7 @@ public:
 private:
 	std::vector<std::unique_ptr<CRenderLayer>> m_vRenderLayers;
 	int GetLayerType(const CMapItemLayer *pLayer) const;
+	CRenderLayerParams m_Params;
 };
 
 #endif
