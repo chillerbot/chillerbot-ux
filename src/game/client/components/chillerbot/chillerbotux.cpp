@@ -399,6 +399,8 @@ void CChillerBotUX::RenderEnabledComponents()
 		return;
 	if(GameClient()->m_Voting.IsVoting())
 		return;
+	if(GameClient()->m_GameConsole.IsActive())
+		return;
 	if(!g_Config.m_ClChillerbotHud)
 		return;
 	int offset = 0;
