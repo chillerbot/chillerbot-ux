@@ -824,6 +824,8 @@ void CMenus::RenderLoading(const char *pCaption, const char *pContent, int Incre
 	const char *apMsg[] = {
 		"fng > gores",
 		"I was a faithful friend...",
+		"where a deen",
+		"I need a deen",
 		"MAPLE MAPLE MAPLE",
 		"you zooz you loose",
 		"I am LIBAN",
