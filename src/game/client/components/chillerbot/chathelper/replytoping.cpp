@@ -1,5 +1,6 @@
 // chillerbot-ux reply to ping
 
+#include <base/system.h>
 #include <engine/client/notifications.h>
 #include <engine/config.h>
 #include <engine/console.h>
@@ -112,6 +113,13 @@ bool CReplyToPing::Reply()
 	// where are you
 	if(Where())
 		return true;
+
+	// are you here?
+	if((str_find_nocase(m_pMessage, "u here") || str_find_nocase(m_pMessage, "here?")) && (MsgLen < NameLen + str_length("yo brother are you here????")))
+	{
+		str_format(m_pResponse, m_SizeOfResponse, "%s yes I am here", m_pMessageAuthor);
+		return true;
+	}
 
 	// how many jumps do you have?
 	if(str_find_nocase(m_pMessage, "how") &&
