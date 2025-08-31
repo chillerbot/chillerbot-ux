@@ -161,6 +161,7 @@ bool CLangParser::IsGreeting(const char *pMsg)
 		"hemnlo",
 		"herro",
 		"ahoi",
+		"ahoy",
 		"moin",
 		"servus",
 		"guten tag",
