@@ -114,6 +114,9 @@ public:
 
 		Success &= CreateFolder("chillerbot", TYPE_SAVE);
 		Success &= CreateFolder("chillerbot/warlist", TYPE_SAVE);
+		Success &= CreateFolder("chillerbot/warlist/neutral", TYPE_SAVE);
+		Success &= CreateFolder("chillerbot/warlist/team", TYPE_SAVE);
+		Success &= CreateFolder("chillerbot/warlist/war", TYPE_SAVE);
 		Success &= CreateFolder("chillerbot/term_hist", TYPE_SAVE);
 
 		if(!Success)
