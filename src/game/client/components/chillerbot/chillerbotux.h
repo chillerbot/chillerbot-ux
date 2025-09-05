@@ -97,7 +97,6 @@ class CChillerBotUX : public CComponent
 	void CheckEmptyTick();
 	void SendPlayTimeTick();
 	void SelectCampArea(int Key);
-	void MapScreenToGroup(float CenterX, float CenterY, CMapItemGroup *pGroup, float Zoom);
 	void RenderSpeedHud();
 	void RenderWeaponHud();
 	void RenderEnabledComponents();
@@ -139,6 +138,9 @@ class CChillerBotUX : public CComponent
 public:
 	int Sizeof() const override { return sizeof(*this); }
 	int m_IgnoreChatAfk;
+
+	// Merge helper. Should be removed.
+	void MapScreenToGroup(float CenterX, float CenterY, CMapItemGroup *pGroup, float Zoom);
 
 	// return false to drop the message
 	bool OnSendChat(int Team, const char *pLine);

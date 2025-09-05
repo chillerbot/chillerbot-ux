@@ -105,7 +105,7 @@ void CPlayerPics::Render(const char *pName, const vec4 *pColor, float x, float y
 	{
 		float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 		Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-		RenderTools()->MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
+		GameClient()->m_ChillerBotUX.MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 		Graphics()->TextureSet(pFlag->m_Texture);
 		Graphics()->QuadsBegin();
 		Graphics()->SetColor(pColor->r, pColor->g, pColor->b, pColor->a);
@@ -167,13 +167,14 @@ void CPlayerPics::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pP
 					TextRender()->DeleteTextContainer(m_aNamePlates[ClientId].m_WarReasonTextContainerIndex);
 
 				CTextCursor Cursor;
-				TextRender()->SetCursor(&Cursor, 0, 0, FontSizeClan, TEXTFLAG_RENDER);
+				Cursor.m_FontSize = FontSizeClan;
+				Cursor.m_Flags = TEXTFLAG_RENDER;
 				Cursor.m_LineWidth = -1;
 
 				// create nameplates at standard zoom
 				float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 				Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-				RenderTools()->MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
+				GameClient()->m_ChillerBotUX.MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 
 				m_aNamePlates[ClientId].m_WarReasonTextWidth = TextRender()->TextWidth(FontSizeClan, aWarReason, -1, -1.0f);
 
