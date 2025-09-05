@@ -46,6 +46,7 @@ static const char *HttpStateToStr(EHttpState State)
 
 // OMG MERGING DDNET IS ANNOYING
 
+// TODO: use MapScreenToWorld instead lol
 void CChillerBotUX::MapScreenToGroup(float CenterX, float CenterY, CMapItemGroup *pGroup, float Zoom)
 {
 	float ParallaxZoom = std::clamp((double)(maximum(pGroup->m_ParallaxX, pGroup->m_ParallaxY)), 0., 100.);
