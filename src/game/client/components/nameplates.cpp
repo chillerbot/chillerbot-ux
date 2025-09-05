@@ -4,7 +4,7 @@
 
 #include <engine/shared/protocol7.h>
 
-#include <game/generated/client_data.h>
+#include <generated/client_data.h>
 
 #include "camera.h"
 #include "controls.h"
@@ -80,7 +80,7 @@ public:
 			// Create text at standard zoom
 			float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 			This.Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
-			This.RenderTools()->MapScreenToInterface(This.m_Camera.m_Center.x, This.m_Camera.m_Center.y);
+			This.Graphics()->MapScreenToInterface(This.m_Camera.m_Center.x, This.m_Camera.m_Center.y);
 			This.TextRender()->DeleteTextContainer(m_TextContainerIndex);
 			UpdateText(This, Data);
 			This.Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
@@ -160,8 +160,8 @@ public:
 		This.Graphics()->QuadsSetRotation(m_Rotation);
 		This.Graphics()->QuadsBegin();
 		This.Graphics()->SetColor(m_Color);
-		This.RenderTools()->SelectSprite(m_Sprite, m_SpriteFlags);
-		This.RenderTools()->DrawSprite(Pos.x, Pos.y, Size().x, Size().y);
+		This.Graphics()->SelectSprite(m_Sprite, m_SpriteFlags);
+		This.Graphics()->DrawSprite(Pos.x, Pos.y, Size().x, Size().y);
 		This.Graphics()->QuadsEnd();
 		This.Graphics()->QuadsSetRotation(0.0f);
 	}
@@ -264,7 +264,7 @@ protected:
 		else
 			str_format(m_aText, sizeof(m_aText), "%d:", m_ClientId);
 		CTextCursor Cursor;
-		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
+		Cursor.m_FontSize = m_FontSize;
 		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, m_aText);
 	}
 
@@ -295,7 +295,7 @@ protected:
 		m_FontSize = Data.m_FontSize;
 		CTextCursor Cursor;
 		This.TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
+		Cursor.m_FontSize = m_FontSize;
 		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, FontIcons::FONT_ICON_HEART);
 		This.TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
 	}
@@ -328,7 +328,7 @@ protected:
 		m_FontSize = Data.m_FontSize;
 		str_copy(m_aText, Data.m_pName, sizeof(m_aText));
 		CTextCursor Cursor;
-		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
+		Cursor.m_FontSize = m_FontSize;
 		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, m_aText);
 	}
 
@@ -357,7 +357,7 @@ protected:
 		m_FontSize = Data.m_FontSizeClan;
 		str_copy(m_aText, Data.m_pClan, sizeof(m_aText));
 		CTextCursor Cursor;
-		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
+		Cursor.m_FontSize = m_FontSize;
 		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, m_aText);
 	}
 
@@ -437,7 +437,7 @@ protected:
 		m_StrongWeakId = Data.m_HookStrongWeakId;
 		str_format(m_aText, sizeof(m_aText), "%d", m_StrongWeakId);
 		CTextCursor Cursor;
-		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
+		Cursor.m_FontSize = m_FontSize;
 		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, m_aText);
 	}
 

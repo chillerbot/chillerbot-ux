@@ -104,6 +104,16 @@ public:
 		MAX_RCONCMD_SEND = 16,
 	};
 
+	enum class EDnsblState
+	{
+		NONE,
+		PENDING,
+		BLACKLISTED,
+		WHITELISTED,
+	};
+
+	static const char *DnsblStateStr(EDnsblState State);
+
 	class CClient
 	{
 	public:
@@ -120,11 +130,6 @@ public:
 			SNAPRATE_INIT = 0,
 			SNAPRATE_FULL,
 			SNAPRATE_RECOVER,
-
-			DNSBL_STATE_NONE = 0,
-			DNSBL_STATE_PENDING,
-			DNSBL_STATE_BLACKLISTED,
-			DNSBL_STATE_WHITELISTED,
 		};
 
 		class CInput
@@ -192,7 +197,7 @@ public:
 		int64_t m_RedirectDropTime;
 
 		// DNSBL
-		int m_DnsblState;
+		EDnsblState m_DnsblState;
 		std::shared_ptr<CHostLookup> m_pDnsblLookup;
 
 		bool m_Sixup;
@@ -201,12 +206,9 @@ public:
 		{
 			return m_State != STATE_EMPTY && !m_DebugDummy;
 		}
-
-		int ConsoleAccessLevel() const
-		{
-			return m_Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : m_Authed == AUTHED_MOD ? IConsole::ACCESS_LEVEL_MOD : IConsole::ACCESS_LEVEL_HELPER;
-		}
 	};
+
+	int ConsoleAccessLevel(int ClientId) const;
 
 	CClient m_aClients[MAX_CLIENTS];
 	int m_aIdMap[MAX_CLIENTS * VANILLA_MAX_CLIENTS];
@@ -312,6 +314,8 @@ public:
 	void SendLogLine(const CLogMessage *pMessage);
 	void SetRconCid(int ClientId) override;
 	int GetAuthedState(int ClientId) const override;
+	bool IsRconAuthed(int ClientId) const override;
+	bool IsRconAuthedAdmin(int ClientId) const override;
 	const char *GetAuthName(int ClientId) const override;
 	bool HasAuthHidden(int ClientId) const override;
 	void GetMapInfo(char *pMapName, int MapNameSize, int *pMapSize, SHA256_DIGEST *pMapSha256, int *pMapCrc) override;
@@ -494,16 +498,16 @@ public:
 	void InitDnsbl(int ClientId);
 	bool DnsblWhite(int ClientId) override
 	{
-		return m_aClients[ClientId].m_DnsblState == CClient::DNSBL_STATE_NONE ||
-		       m_aClients[ClientId].m_DnsblState == CClient::DNSBL_STATE_WHITELISTED;
+		return m_aClients[ClientId].m_DnsblState == EDnsblState::NONE ||
+		       m_aClients[ClientId].m_DnsblState == EDnsblState::WHITELISTED;
 	}
 	bool DnsblPending(int ClientId) override
 	{
-		return m_aClients[ClientId].m_DnsblState == CClient::DNSBL_STATE_PENDING;
+		return m_aClients[ClientId].m_DnsblState == EDnsblState::PENDING;
 	}
 	bool DnsblBlack(int ClientId) override
 	{
-		return m_aClients[ClientId].m_DnsblState == CClient::DNSBL_STATE_BLACKLISTED;
+		return m_aClients[ClientId].m_DnsblState == EDnsblState::BLACKLISTED;
 	}
 
 	void AuthRemoveKey(int KeySlot);
