@@ -4,7 +4,7 @@
 #include <engine/client.h>
 #include <engine/console.h>
 #include <game/client/component.h>
-#include <game/generated/protocol.h>
+#include <generated/protocol.h>
 
 #if defined(CONF_CURSES_CLIENT)
 #include "terminalui_keys.h" /* undefines conflicting ncurses key codes */

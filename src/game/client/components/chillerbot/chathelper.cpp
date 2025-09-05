@@ -9,7 +9,7 @@
 #include <game/client/components/chat.h>
 #include <game/client/components/chillerbot/chillerbotux.h>
 #include <game/client/gameclient.h>
-#include <game/generated/protocol.h>
+#include <generated/protocol.h>
 
 #include "chathelper.h"
 

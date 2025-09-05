@@ -19,8 +19,8 @@
 #include <game/client/prediction/entities/character.h>
 #include <game/client/race.h>
 #include <game/client/render.h>
-#include <game/generated/client_data.h>
-#include <game/generated/protocol.h>
 #include <game/version.h>
+#include <generated/client_data.h>
+#include <generated/protocol.h>
 
 #include "replytoping.h"

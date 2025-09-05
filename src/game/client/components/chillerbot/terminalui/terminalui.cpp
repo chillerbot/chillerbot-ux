@@ -4,7 +4,7 @@
 #include <engine/shared/config.h>
 #include <game/client/components/controls.h>
 #include <game/client/gameclient.h>
-#include <game/generated/protocol.h>
+#include <generated/protocol.h>
 
 #include <base/ccurses.h>
 #include <base/chillerbot/curses_colors.h>

@@ -3,8 +3,8 @@
 
 #include <engine/shared/protocol.h>
 #include <game/client/component.h>
-#include <game/generated/protocol.h>
 #include <game/mapitems.h>
+#include <generated/protocol.h>
 
 class CVibeBot : public CComponent
 {
