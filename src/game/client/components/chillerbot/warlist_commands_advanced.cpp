@@ -319,7 +319,7 @@ bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char
 		IOHANDLE File = Storage()->OpenFile(aPath, IOFLAG_READ, IStorage::TYPE_SAVE);
 		if(!File)
 		{
-			str_format(aBuf, sizeof(aBuf), "failed to open war list file '%s'", aPath);
+			str_format(aBuf, sizeof(aBuf), "Failed to open war list file '%s'. First do: !create war [dir] ?[name]", aPath);
 			GameClient()->m_Chat.AddLine(-2, 0, aBuf);
 			return true;
 		}
