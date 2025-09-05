@@ -39,15 +39,15 @@ void CChatCommand::OnNoChatCommandMatches(int ClientId, int Team, const char *pM
 
 bool CChatCommand::OnChatCmd(char Prefix, int ClientId, int Team, const char *pCmd, int NumArgs, const char **ppArgs, const char *pRawArgLine)
 {
-	bool match = false;
+	bool Match = false;
 	// ux components
 
 	if(GameClient()->m_WarList.OnChatCmd(Prefix, ClientId, Team, pCmd, NumArgs, ppArgs, pRawArgLine))
-		match = true;
+		Match = true;
 
 	// zx components
 
-	return match;
+	return Match;
 }
 
 bool CChatCommand::ParseChatCmd(char Prefix, int ClientId, int Team, const char *pCmdWithArgs)
@@ -141,11 +141,11 @@ bool CChatCommand::ParseChatCmd(char Prefix, int ClientId, int Team, const char 
 	// char aBuf[512];
 	// str_format(aBuf, sizeof(aBuf), "got cmd '%s' with %d args: %s", aCmd, NumArgs, aArgsStr);
 	// Say(aBuf);
-	bool match = OnChatCmd(Prefix, ClientId, Team, aCmd, NumArgs, (const char **)ppArgs, aRawArgLine);
+	bool Match = OnChatCmd(Prefix, ClientId, Team, aCmd, NumArgs, (const char **)ppArgs, aRawArgLine);
 	for(int x = 0; x < MaxArgs; ++x)
 		delete[] ppArgs[x];
 	delete[] ppArgs;
-	return match;
+	return Match;
 }
 
 void CChatCommand::OnMessage(int MsgType, void *pRawMsg)
