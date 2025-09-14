@@ -16,8 +16,8 @@
 #include <game/client/components/chillerbot/chathelper.h>
 #include <game/client/components/chillerbot/chillerbotux.h>
 
-#include <game/client/components/console.h>
 #include <game/client/components/censor.h>
+#include <game/client/components/console.h>
 #include <game/client/components/scoreboard.h>
 #include <game/client/components/skins.h>
 #include <game/client/components/sounds.h>
