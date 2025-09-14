@@ -1046,14 +1046,12 @@ void CEditor::DoToolbarLayers(CUIRect ToolBar)
 			m_ShowTileInfo = SHOW_TILE_OFF;
 		else
 			m_ShowTileInfo = SHOW_TILE_DECIMAL;
-		m_ShowEnvelopePreview = SHOWENV_NONE;
 	}
 
 	// handle shortcut for hex button
 	if(m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr && Input()->KeyPress(KEY_I) && ModPressed && ShiftPressed)
 	{
 		m_ShowTileInfo = m_ShowTileInfo == SHOW_TILE_HEXADECIMAL ? SHOW_TILE_OFF : SHOW_TILE_HEXADECIMAL;
-		m_ShowEnvelopePreview = SHOWENV_NONE;
 	}
 
 	// handle shortcut for unused button
@@ -1203,7 +1201,7 @@ void CEditor::DoToolbarLayers(CUIRect ToolBar)
 			// flip buttons
 			TB_Top.VSplitLeft(25.0f, &Button, &TB_Top);
 			static int s_FlipXButton = 0;
-			if(DoButton_FontIcon(&s_FlipXButton, FONT_ICON_ARROWS_LEFT_RIGHT, Enabled, &Button, BUTTONFLAG_LEFT, "[N] Flip the brush horizontally.", IGraphics::CORNER_L) || (Input()->KeyPress(KEY_N) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr))
+			if(DoButton_FontIcon(&s_FlipXButton, FONT_ICON_ARROWS_LEFT_RIGHT, Enabled, &Button, BUTTONFLAG_LEFT, "[N] Flip the brush horizontally.", IGraphics::CORNER_L) || (Input()->KeyPress(KEY_N) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr && !Ui()->IsPopupOpen()))
 			{
 				for(auto &pLayer : m_pBrush->m_vpLayers)
 					pLayer->BrushFlipX();
@@ -1211,7 +1209,7 @@ void CEditor::DoToolbarLayers(CUIRect ToolBar)
 
 			TB_Top.VSplitLeft(25.0f, &Button, &TB_Top);
 			static int s_FlipyButton = 0;
-			if(DoButton_FontIcon(&s_FlipyButton, FONT_ICON_ARROWS_UP_DOWN, Enabled, &Button, BUTTONFLAG_LEFT, "[M] Flip the brush vertically.", IGraphics::CORNER_R) || (Input()->KeyPress(KEY_M) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr))
+			if(DoButton_FontIcon(&s_FlipyButton, FONT_ICON_ARROWS_UP_DOWN, Enabled, &Button, BUTTONFLAG_LEFT, "[M] Flip the brush vertically.", IGraphics::CORNER_R) || (Input()->KeyPress(KEY_M) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr && !Ui()->IsPopupOpen()))
 			{
 				for(auto &pLayer : m_pBrush->m_vpLayers)
 					pLayer->BrushFlipY();
@@ -1232,7 +1230,7 @@ void CEditor::DoToolbarLayers(CUIRect ToolBar)
 				}
 
 			static int s_CcwButton = 0;
-			if(DoButton_FontIcon(&s_CcwButton, FONT_ICON_ARROW_ROTATE_LEFT, Enabled, &Button, BUTTONFLAG_LEFT, "[R] Rotate the brush counter-clockwise.", IGraphics::CORNER_L) || (Input()->KeyPress(KEY_R) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr))
+			if(DoButton_FontIcon(&s_CcwButton, FONT_ICON_ARROW_ROTATE_LEFT, Enabled, &Button, BUTTONFLAG_LEFT, "[R] Rotate the brush counter-clockwise.", IGraphics::CORNER_L) || (Input()->KeyPress(KEY_R) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr && !Ui()->IsPopupOpen()))
 			{
 				for(auto &pLayer : m_pBrush->m_vpLayers)
 					pLayer->BrushRotate(-s_RotationAmount / 360.0f * pi * 2);
@@ -1244,7 +1242,7 @@ void CEditor::DoToolbarLayers(CUIRect ToolBar)
 
 			TB_Top.VSplitLeft(25.0f, &Button, &TB_Top);
 			static int s_CwButton = 0;
-			if(DoButton_FontIcon(&s_CwButton, FONT_ICON_ARROW_ROTATE_RIGHT, Enabled, &Button, BUTTONFLAG_LEFT, "[T] Rotate the brush clockwise.", IGraphics::CORNER_R) || (Input()->KeyPress(KEY_T) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr))
+			if(DoButton_FontIcon(&s_CwButton, FONT_ICON_ARROW_ROTATE_RIGHT, Enabled, &Button, BUTTONFLAG_LEFT, "[T] Rotate the brush clockwise.", IGraphics::CORNER_R) || (Input()->KeyPress(KEY_T) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr && !Ui()->IsPopupOpen()))
 			{
 				for(auto &pLayer : m_pBrush->m_vpLayers)
 					pLayer->BrushRotate(s_RotationAmount / 360.0f * pi * 2);
@@ -2261,7 +2259,7 @@ void CEditor::DoQuad(int LayerIndex, const std::shared_ptr<CLayerQuads> &pLayer,
 
 		Graphics()->SetColor(1, 1, 1, 1);
 	}
-	else if(Input()->KeyPress(KEY_R) && !m_vSelectedQuads.empty() && m_Dialog == DIALOG_NONE)
+	else if(Input()->KeyPress(KEY_R) && !m_vSelectedQuads.empty() && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr && !Ui()->IsPopupOpen())
 	{
 		Ui()->EnableMouseLock(pId);
 		Ui()->SetActiveItem(pId);
@@ -2534,7 +2532,7 @@ void CEditor::DoQuadPoint(int LayerIndex, const std::shared_ptr<CLayerQuads> &pL
 
 			s_Operation = OP_SELECT;
 		}
-		else if(Ui()->MouseButton(1))
+		else if(Ui()->MouseButtonClicked(1))
 		{
 			s_Operation = OP_CONTEXT_MENU;
 
@@ -2809,7 +2807,7 @@ void CEditor::DoQuadEnvelopes(const std::vector<CQuad> &vQuads, IGraphics::CText
 
 	for(size_t i = 0; i < Num; i++)
 	{
-		if((m_ShowEnvelopePreview == SHOWENV_SELECTED && vQuads[i].m_PosEnv == m_SelectedEnvelope) || m_ShowEnvelopePreview == SHOWENV_ALL)
+		if((m_ActiveEnvelopePreview == EEnvelopePreview::SELECTED && vQuads[i].m_PosEnv == m_SelectedEnvelope) || m_ActiveEnvelopePreview == EEnvelopePreview::ALL)
 			if(vQuads[i].m_PosEnv >= 0 && vQuads[i].m_PosEnv < (int)m_Map.m_vpEnvelopes.size())
 				apEnvelope[i] = m_Map.m_vpEnvelopes[vQuads[i].m_PosEnv];
 	}
@@ -3460,8 +3458,8 @@ void CEditor::DoMapEditor(CUIRect View)
 					{
 						std::shared_ptr<CLayerQuads> pLayer = std::static_pointer_cast<CLayerQuads>(pEditLayer);
 
-						if(m_ShowEnvelopePreview == SHOWENV_NONE)
-							m_ShowEnvelopePreview = SHOWENV_ALL;
+						if(m_ActiveEnvelopePreview == EEnvelopePreview::NONE)
+							m_ActiveEnvelopePreview = EEnvelopePreview::ALL;
 
 						if(m_QuadKnifeActive)
 							DoQuadKnife(m_vSelectedQuads[m_SelectedQuadIndex]);
@@ -3617,7 +3615,7 @@ void CEditor::DoMapEditor(CUIRect View)
 	if(!m_ShowPicker)
 		MapView()->ProofMode()->RenderScreenSizes();
 
-	if(!m_ShowPicker && m_ShowTileInfo != SHOW_TILE_OFF && m_ShowEnvelopePreview != SHOWENV_NONE && GetSelectedLayer(0) && GetSelectedLayer(0)->m_Type == LAYERTYPE_QUADS)
+	if(!m_ShowPicker && m_ShowEnvelopePreview && m_ActiveEnvelopePreview != EEnvelopePreview::NONE && GetSelectedLayer(0) && GetSelectedLayer(0)->m_Type == LAYERTYPE_QUADS)
 	{
 		GetSelectedGroup()->MapScreen();
 
@@ -3627,7 +3625,7 @@ void CEditor::DoMapEditor(CUIRect View)
 			Texture = m_Map.m_vpImages[pLayer->m_Image]->m_Texture;
 
 		DoQuadEnvelopes(pLayer->m_vQuads, Texture);
-		m_ShowEnvelopePreview = SHOWENV_NONE;
+		m_ActiveEnvelopePreview = EEnvelopePreview::NONE;
 	}
 
 	Ui()->MapScreen();
@@ -3660,8 +3658,8 @@ void CEditor::SetHotQuadPoint(const std::shared_ptr<CLayerQuads> &pLayer)
 	{
 		CQuad &Quad = pLayer->m_vQuads.at(i);
 
-		if(m_ShowTileInfo != SHOW_TILE_OFF &&
-			m_ShowEnvelopePreview != SHOWENV_NONE &&
+		if(m_ShowEnvelopePreview &&
+			m_ActiveEnvelopePreview != EEnvelopePreview::NONE &&
 			Quad.m_PosEnv >= 0 &&
 			Quad.m_PosEnv < (int)m_Map.m_vpEnvelopes.size())
 		{
@@ -5887,7 +5885,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 				s_EnvelopeEditorButtonUsed = -1;
 			}
 
-			m_ShowEnvelopePreview = SHOWENV_SELECTED;
+			m_ActiveEnvelopePreview = EEnvelopePreview::SELECTED;
 			str_copy(m_aTooltip, "Double click to create a new point. Use shift to change the zoom axis. Press S to scale selected envelope points.");
 		}
 
@@ -6194,7 +6192,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 
 						if(Ui()->CheckActiveItem(pId))
 						{
-							m_ShowEnvelopePreview = SHOWENV_SELECTED;
+							m_ActiveEnvelopePreview = EEnvelopePreview::SELECTED;
 
 							if(s_Operation == EEnvelopeEditorOp::OP_SELECT)
 							{
@@ -6354,7 +6352,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 								}
 							}
 
-							m_ShowEnvelopePreview = SHOWENV_SELECTED;
+							m_ActiveEnvelopePreview = EEnvelopePreview::SELECTED;
 							Graphics()->SetColor(1, 1, 1, 1);
 							str_copy(m_aTooltip, "Envelope point. Left mouse to drag. Hold ctrl to be more precise. Hold shift to alter time. Shift+right click to delete.");
 							m_pUiGotContext = pId;
@@ -6400,7 +6398,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 
 							if(Ui()->CheckActiveItem(pId))
 							{
-								m_ShowEnvelopePreview = SHOWENV_SELECTED;
+								m_ActiveEnvelopePreview = EEnvelopePreview::SELECTED;
 
 								if(s_Operation == EEnvelopeEditorOp::OP_SELECT)
 								{
@@ -6489,7 +6487,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 									}
 								}
 
-								m_ShowEnvelopePreview = SHOWENV_SELECTED;
+								m_ActiveEnvelopePreview = EEnvelopePreview::SELECTED;
 								Graphics()->SetColor(1, 1, 1, 1);
 								str_copy(m_aTooltip, "Bezier out-tangent. Left mouse to drag. Hold ctrl to be more precise. Shift+right click to reset.");
 								m_pUiGotContext = pId;
@@ -6533,7 +6531,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 
 							if(Ui()->CheckActiveItem(pId))
 							{
-								m_ShowEnvelopePreview = SHOWENV_SELECTED;
+								m_ActiveEnvelopePreview = EEnvelopePreview::SELECTED;
 
 								if(s_Operation == EEnvelopeEditorOp::OP_SELECT)
 								{
@@ -6622,7 +6620,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 									}
 								}
 
-								m_ShowEnvelopePreview = SHOWENV_SELECTED;
+								m_ActiveEnvelopePreview = EEnvelopePreview::SELECTED;
 								Graphics()->SetColor(1, 1, 1, 1);
 								str_copy(m_aTooltip, "Bezier in-tangent. Left mouse to drag. Hold ctrl to be more precise. Shift+right click to reset.");
 								m_pUiGotContext = pId;
@@ -7159,8 +7157,8 @@ void CEditor::RenderMenubar(CUIRect MenuBar)
 	MenuBar.VSplitLeft(60.0f, &SettingsButton, &MenuBar);
 	if(DoButton_Ex(&s_SettingsButton, "Settings", 0, &SettingsButton, BUTTONFLAG_LEFT, nullptr, IGraphics::CORNER_T, EditorFontSizes::MENU, TEXTALIGN_ML))
 	{
-		static SPopupMenuId s_PopupMenuEntitiesId;
-		Ui()->DoPopupMenu(&s_PopupMenuEntitiesId, SettingsButton.x, SettingsButton.y + SettingsButton.h - 1.0f, 220.0f, 134.0f, this, PopupMenuSettings, PopupProperties);
+		static SPopupMenuId s_PopupMenuSettingsId;
+		Ui()->DoPopupMenu(&s_PopupMenuSettingsId, SettingsButton.x, SettingsButton.y + SettingsButton.h - 1.0f, 280.0f, 148.0f, this, PopupMenuSettings, PopupProperties);
 	}
 
 	CUIRect ChangedIndicator, Info, Help, Close;
@@ -7950,7 +7948,7 @@ void CEditor::Reset(bool CreateDefault)
 	m_Map.m_LastSaveTime = Client()->GlobalTime();
 	m_Map.m_LastAutosaveUpdateTime = -1.0f;
 
-	m_ShowEnvelopePreview = SHOWENV_NONE;
+	m_ActiveEnvelopePreview = EEnvelopePreview::NONE;
 	m_ShiftBy = 1;
 
 	m_ResetZoomEnvelope = true;
