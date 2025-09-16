@@ -2023,6 +2023,8 @@ set_src(BASE GLOB_RECURSE src/base
   curses.h
   detect.h
   dynamic.h
+  fs.cpp
+  fs.h
   hash.cpp
   hash.h
   hash_bundled.cpp
