@@ -937,7 +937,7 @@ void CTerminalUI::RefreshConsoleCmdHelpText()
 		// find the current command
 		char aCurrentCmd[sizeof(m_aCommandName)];
 		StrCopyUntilSpace(aCurrentCmd, sizeof(aCurrentCmd), g_aInputStr);
-		const IConsole::CCommandInfo *pCommand = Console()->GetCommandInfo(aCurrentCmd, CompletionFlagmask,
+		const IConsole::ICommandInfo *pCommand = Console()->GetCommandInfo(aCurrentCmd, CompletionFlagmask,
 			Type != CGameConsole::CONSOLETYPE_LOCAL && Client()->RconAuthed() && Client()->UseTempRconCommands());
 
 		// use this to highlight command as green
@@ -947,9 +947,9 @@ void CTerminalUI::RefreshConsoleCmdHelpText()
 		if(pCommand)
 		{
 			// m_IsCommand = true;
-			str_copy(m_aCommandName, pCommand->m_pName);
-			str_copy(m_aCommandHelp, pCommand->m_pHelp);
-			str_copy(m_aCommandParams, pCommand->m_pParams);
+			str_copy(m_aCommandName, pCommand->Name());
+			str_copy(m_aCommandHelp, pCommand->Help());
+			str_copy(m_aCommandParams, pCommand->Params());
 			// dbg_msg("cmd", "help: %s", m_aCommandHelp);
 			char aBuf[512];
 			// str_format(aBuf, sizeof(aBuf), "%s %s - %s", aCurrentCmd, m_aCommandParams, m_aCommandHelp);
