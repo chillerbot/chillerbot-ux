@@ -1293,7 +1293,7 @@ void CChillerBotUX::GoAfk(int Minutes, const char *pMsg)
 		if((unsigned long)str_length(pMsg) > sizeof(m_aAfkMessage))
 		{
 			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "error: afk message too long %d/%lu", str_length(pMsg), sizeof(m_aAfkMessage));
+			str_format(aBuf, sizeof(aBuf), "error: afk message too long %d/%" PRIzu, str_length(pMsg), sizeof(m_aAfkMessage));
 			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
 			return;
 		}
