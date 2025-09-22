@@ -322,12 +322,12 @@ bool CReplyToPing::Reply()
 	}
 
 	// real?
-	if(MsgLen < NameLen + 12 && (str_find_nocase(m_pMessage, "real?") ||
-					    str_find_nocase(m_pMessage, "you real") ||
-					    str_find_nocase(m_pMessage, "u real") ||
-					    str_find_nocase(m_pMessage, "you reel") ||
-					    str_find_nocase(m_pMessage, "u reel") ||
-					    str_find_nocase(m_pMessage, "reel?")))
+	if(str_find_nocase(m_pMessage, "real?") ||
+		str_find_nocase(m_pMessage, "you real") ||
+		str_find_nocase(m_pMessage, "u real") ||
+		str_find_nocase(m_pMessage, "you reel") ||
+		str_find_nocase(m_pMessage, "u reel") ||
+		str_find_nocase(m_pMessage, "reel?"))
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "%s: no u", m_pMessageAuthor);
 		return true;
