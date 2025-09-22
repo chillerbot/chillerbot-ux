@@ -312,10 +312,10 @@ bool CReplyToPing::Reply()
 		return true;
 
 	// fake?
-	if(MsgLen < NameLen + 12 && (str_find_nocase(m_pMessage, "fake?") ||
-					    str_find_nocase(m_pMessage, "you fake") ||
-					    str_find_nocase(m_pMessage, "u fake") ||
-					    str_find_nocase(m_pMessage, "feker")))
+	if(str_find_nocase(m_pMessage, "fake?") ||
+		str_find_nocase(m_pMessage, "you fake") ||
+		str_find_nocase(m_pMessage, "u fake") ||
+		str_find_nocase(m_pMessage, "feker"))
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "%s yes i am fake", m_pMessageAuthor);
 		return true;
