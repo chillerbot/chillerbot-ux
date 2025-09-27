@@ -7591,7 +7591,7 @@ void CEditor::Reset(bool CreateDefault)
 	if(CreateDefault)
 	{
 		m_EditorWasUsedBefore = true;
-		m_Map.CreateDefault(GetEntitiesTexture());
+		m_Map.CreateDefault();
 	}
 
 	SelectGameLayer();
