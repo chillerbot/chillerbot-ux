@@ -417,7 +417,7 @@ bool CChatHelper::IsNoContextPing(const char *pMsg)
 		if(str_startswith_nocase(pMsg, pName))
 		{
 			const int NameLen = str_length(pName);
-			if(pMsg[NameLen] == ':' || pMsg[NameLen + 1] == '\0')
+			if(pMsg[NameLen] == ':' && pMsg[NameLen + 1] == '\0')
 				return true;
 		}
 
