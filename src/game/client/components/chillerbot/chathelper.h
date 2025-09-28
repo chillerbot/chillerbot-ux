@@ -171,6 +171,11 @@ private:
 		SPAM_OTHER,
 		SPAM_INSULT
 	};
+
+	// is the message a ping without any additonal message
+	// such as "name" or "name:"
+	bool IsNoContextPing(const char *pMsg);
+
 	int IsSpam(int ClientId, int Team, const char *pMsg);
 
 	void OnChatMessage(int ClientId, int Team, const char *pMsg);

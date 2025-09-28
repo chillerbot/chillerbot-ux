@@ -1,5 +1,6 @@
 // ChillerDragon 2020 - chillerbot ux
 
+#include <base/str.h>
 #include <cinttypes>
 
 #include <base/math.h>
@@ -405,6 +406,27 @@ void CChatHelper::AddChatFilter(const char *pFilter)
 	}
 }
 
+bool CChatHelper::IsNoContextPing(const char *pMsg)
+{
+	const char *apNames[] = {PlayerName(), DummyName()};
+	for(const char *pName : apNames)
+	{
+		if(!str_comp_nocase(pName, pMsg))
+			return true;
+
+		if(str_startswith_nocase(pMsg, pName))
+		{
+			const int NameLen = str_length(pName);
+			if(pMsg[NameLen] == ':' || pMsg[NameLen + 1] == '\0')
+				return true;
+		}
+
+		if(!GameClient()->Client()->DummyConnected())
+			break;
+	}
+	return false;
+}
+
 int CChatHelper::IsSpam(int ClientId, int Team, const char *pMsg)
 {
 	if(!g_Config.m_ClChatSpamFilter)
@@ -430,26 +452,26 @@ int CChatHelper::IsSpam(int ClientId, int Team, const char *pMsg)
 		return SPAM_INSULT;
 	if(!Highlighted)
 		return SPAM_NONE;
-	char aName[64];
-	str_copy(aName, GameClient()->m_aClients[ClientId].m_aName, sizeof(aName));
+	char aSenderName[64];
+	str_copy(aSenderName, GameClient()->m_aClients[ClientId].m_aName, sizeof(aSenderName));
 	if(ClientId == 63 && !str_comp_num(GameClient()->m_aClients[ClientId].m_aName, " ", 2))
 	{
-		Get128Name(pMsg, aName);
-		MsgLen -= str_length(aName) + 2;
+		Get128Name(pMsg, aSenderName);
+		MsgLen -= str_length(aSenderName) + 2;
 		// dbg_msg("chillerbot", "fixname 128 player '%s' -> '%s'", GameClient()->m_aClients[ClientId].m_aName, aName);
 	}
 	// ignore own and dummys messages
-	if(!str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName))
+	if(!str_comp(aSenderName, pName))
 		return SPAM_NONE;
-	if(Client()->DummyConnected() && !str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName))
+	if(Client()->DummyConnected() && !str_comp(aSenderName, pDummyName))
 		return SPAM_NONE;
 
 	// ping without further context
-	if(MsgLen < NameLen + 2)
+	if(IsNoContextPing(pMsg))
 		return SPAM_OTHER;
 	else if(m_LangParser.IsAskToAsk(pMsg))
 		return SPAM_OTHER;
-	else if(!str_comp(aName, "nameless tee") || !str_comp(aName, "brainless tee") || str_find(aName, ")nameless tee") || str_find(aName, ")brainless te"))
+	else if(!str_comp(aSenderName, "nameless tee") || !str_comp(aSenderName, "brainless tee") || str_find(aSenderName, ")nameless tee") || str_find(aSenderName, ")brainless te"))
 		return SPAM_OTHER;
 	else if(str_find(pMsg, "bro, check out this client: krxclient.pages.dev"))
 		return SPAM_OTHER;
