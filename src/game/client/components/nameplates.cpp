@@ -2,7 +2,6 @@
 
 #include "camera.h"
 #include "controls.h"
-#include "nameplates.h"
 
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
