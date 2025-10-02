@@ -1,8 +1,8 @@
 #if defined(CONF_CURSES_CLIENT)
 
-#include <base/curses.h>
-
 #include "ccurses.h"
+
+#include <base/curses.h>
 
 WINDOW *ccurses_stdscr()
 {

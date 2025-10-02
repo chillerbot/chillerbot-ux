@@ -3,8 +3,8 @@
 
 // nobo copy and edit of countryflags.h
 #include <base/vmath.h>
-#include <game/client/component.h>
 
+#include <game/client/component.h>
 #include <game/client/components/nameplates.h>
 
 #include <vector>

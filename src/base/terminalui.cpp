@@ -1,13 +1,12 @@
 #if defined(CONF_CURSES_CLIENT)
 
-#include <base/curses.h>
-
-#include <base/math.h>
-#include <base/system.h>
-
 #include "terminalui.h"
 
 #include "chillerbot/curses_colors.h"
+
+#include <base/curses.h>
+#include <base/math.h>
+#include <base/system.h>
 
 static CCursesLogMsg gs_aChillerLogger[CHILLER_LOGGER_HEIGHT];
 

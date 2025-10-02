@@ -1,18 +1,20 @@
 // ChillerDragon 2020 - chillerbot ux
 
-#include <base/str.h>
-#include <cinttypes>
+#include "chathelper.h"
 
 #include <base/math.h>
+#include <base/str.h>
 #include <base/vmath.h>
 
 #include <engine/shared/protocol.h>
+
+#include <generated/protocol.h>
+
 #include <game/client/components/chat.h>
 #include <game/client/components/chillerbot/chillerbotux.h>
 #include <game/client/gameclient.h>
-#include <generated/protocol.h>
 
-#include "chathelper.h"
+#include <cinttypes>
 
 CGameClient *CChatHelper::GameClientUnprotected()
 {

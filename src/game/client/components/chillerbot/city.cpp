@@ -1,17 +1,18 @@
 // ChillerDragon 2021 - chillerbot ux
 
-#include <base/vmath.h>
-#include <engine/config.h>
-#include <engine/shared/config.h>
-#include <game/client/components/chillerbot/chathelper.h>
-#include <game/client/components/controls.h>
-#include <game/client/gameclient.h>
-
-#include <engine/serverbrowser.h>
+#include "city.h"
 
 #include "chillerbotux.h"
 
-#include "city.h"
+#include <base/vmath.h>
+
+#include <engine/config.h>
+#include <engine/serverbrowser.h>
+#include <engine/shared/config.h>
+
+#include <game/client/components/chillerbot/chathelper.h>
+#include <game/client/components/controls.h>
+#include <game/client/gameclient.h>
 
 void CCityHelper::OnInit()
 {

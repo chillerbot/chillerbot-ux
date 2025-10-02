@@ -1,13 +1,14 @@
 // ChillerDragon 2021 - chillerbot ux
 
-#include <engine/config.h>
-#include <engine/shared/linereader.h>
-#include <engine/textrender.h>
-#include <game/client/gameclient.h>
+#include "warlist.h"
 
 #include <base/system.h>
 
-#include "warlist.h"
+#include <engine/config.h>
+#include <engine/shared/linereader.h>
+#include <engine/textrender.h>
+
+#include <game/client/gameclient.h>
 
 void CWarList::AddSimpleWar(const char *pName)
 {

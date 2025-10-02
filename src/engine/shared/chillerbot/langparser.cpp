@@ -1,11 +1,11 @@
 // Langugage parser by ChillerDragon
 
-#include <cstdarg>
-#include <cstdio>
+#include "langparser.h"
 
 #include <base/system.h>
 
-#include "langparser.h"
+#include <cstdarg>
+#include <cstdio>
 
 const char *CLangParser::StrFindOrder(const char *pHaystack, int NumNeedles, ...)
 {

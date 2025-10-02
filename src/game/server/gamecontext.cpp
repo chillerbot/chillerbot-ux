@@ -2,13 +2,19 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "gamecontext.h"
 
-#include <vector>
-
+#include "entities/character.h"
+#include "gamemodes/DDRace.h"
+#include "gamemodes/mod.h"
+#include "player.h"
+#include "score.h"
 #include "teeinfo.h"
+
 #include <antibot/antibot_data.h>
+
 #include <base/logger.h>
 #include <base/math.h>
 #include <base/system.h>
+
 #include <engine/console.h>
 #include <engine/engine.h>
 #include <engine/map.h>
@@ -21,19 +27,15 @@
 #include <engine/shared/protocolglue.h>
 #include <engine/storage.h>
 
+#include <generated/protocol7.h>
+#include <generated/protocolglue.h>
+
 #include <game/collision.h>
 #include <game/gamecore.h>
 #include <game/mapitems.h>
 #include <game/version.h>
 
-#include <generated/protocol7.h>
-#include <generated/protocolglue.h>
-
-#include "entities/character.h"
-#include "gamemodes/DDRace.h"
-#include "gamemodes/mod.h"
-#include "player.h"
-#include "score.h"
+#include <vector>
 
 // Not thread-safe!
 class CClientChatLogger : public ILogger
@@ -1555,7 +1557,7 @@ void CGameContext::OnClientEnter(int ClientId)
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
 	}
 	for(const IConsole::ICommandInfo *pCmd = Console()->FirstCommandInfo(IConsole::EAccessLevel::USER, CFGFLAG_CHAT);
-		pCmd; pCmd = pCmd->NextCommandInfo(IConsole::EAccessLevel::USER, CFGFLAG_CHAT))
+		pCmd; pCmd = Console()->NextCommandInfo(pCmd, IConsole::EAccessLevel::USER, CFGFLAG_CHAT))
 	{
 		const char *pName = pCmd->Name();
 
@@ -2295,7 +2297,6 @@ void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int Cli
 	{
 		str_copy(aReason, pMsg->m_pReason, sizeof(aReason));
 	}
-	int Authed = Server()->GetAuthedState(ClientId);
 
 	if(str_comp_nocase(pMsg->m_pType, "option") == 0)
 	{
@@ -2350,7 +2351,7 @@ void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int Cli
 
 		if(!pOption)
 		{
-			if(Authed != AUTHED_ADMIN) // allow admins to call any vote they want
+			if(!Server()->IsRconAuthedAdmin(ClientId)) // allow admins to call any vote they want
 			{
 				str_format(aChatmsg, sizeof(aChatmsg), "'%s' isn't an option on this server", pMsg->m_pValue);
 				SendChatTarget(ClientId, aChatmsg);
@@ -2368,12 +2369,12 @@ void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int Cli
 	}
 	else if(str_comp_nocase(pMsg->m_pType, "kick") == 0)
 	{
-		if(!g_Config.m_SvVoteKick && !Authed) // allow admins to call kick votes even if they are forbidden
+		if(!g_Config.m_SvVoteKick && !Server()->IsRconAuthed(ClientId)) // allow admins to call kick votes even if they are forbidden
 		{
 			SendChatTarget(ClientId, "Server does not allow voting to kick players");
 			return;
 		}
-		if(!Authed && time_get() < m_apPlayers[ClientId]->m_Last_KickVote + (time_freq() * g_Config.m_SvVoteKickDelay))
+		if(!Server()->IsRconAuthed(ClientId) && time_get() < m_apPlayers[ClientId]->m_Last_KickVote + (time_freq() * g_Config.m_SvVoteKickDelay))
 		{
 			str_format(aChatmsg, sizeof(aChatmsg), "There's a %d second wait time between kick votes for each player please wait %d second(s)",
 				g_Config.m_SvVoteKickDelay,
@@ -2436,6 +2437,7 @@ void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int Cli
 		{
 			return;
 		}
+		int Authed = Server()->GetAuthedState(ClientId);
 		int KickedAuthed = Server()->GetAuthedState(KickId);
 		if(KickedAuthed > Authed)
 		{
@@ -2497,6 +2499,7 @@ void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int Cli
 			SendChatTarget(ClientId, "You can't move yourself to spectators");
 			return;
 		}
+		int Authed = Server()->GetAuthedState(ClientId);
 		int SpectateAuthed = Server()->GetAuthedState(SpectateId);
 		if(SpectateAuthed > Authed)
 		{

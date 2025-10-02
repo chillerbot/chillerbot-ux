@@ -1,20 +1,22 @@
 // ChillerDragon 2021 - chillerbot ux
 
-#include <vector>
+#include "warlist.h"
+
+#include "chillerbotux.h"
 
 #include <base/color.h>
 #include <base/log.h>
 #include <base/system.h>
+
 #include <engine/config.h>
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
 #include <engine/storage.h>
 #include <engine/textrender.h>
+
 #include <game/client/gameclient.h>
 
-#include "chillerbotux.h"
-
-#include "warlist.h"
+#include <vector>
 
 void CWarList::OnInit()
 {

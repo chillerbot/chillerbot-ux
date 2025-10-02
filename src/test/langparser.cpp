@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-
 #include <engine/shared/chillerbot/langparser.h>
+
+#include <gtest/gtest.h>
 
 TEST(Lang, Greetings)
 {

@@ -1,6 +1,9 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_CITY_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_CITY_H
 
+#include <engine/client/enums.h>
+#include <engine/console.h>
+
 #include <game/client/component.h>
 
 class CCityHelper : public CComponent

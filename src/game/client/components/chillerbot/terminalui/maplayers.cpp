@@ -1,19 +1,18 @@
 // ChillerDragon 2022 - chillerbot
 
+#include "terminalui.h"
+
+#include <base/chillerbot/dbg_print.h>
+#include <base/terminalui.h>
+
 #include <engine/client/serverbrowser.h>
+
 #include <game/client/components/controls.h>
 #include <game/client/gameclient.h>
 #include <game/client/prediction/entities/pickup.h>
-
-#include <base/terminalui.h>
-
-#include <base/chillerbot/dbg_print.h>
-
 #include <game/mapitems.h>
 
 #include <csignal>
-
-#include "terminalui.h"
 
 #if defined(CONF_CURSES_CLIENT)
 

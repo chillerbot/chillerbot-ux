@@ -1,9 +1,10 @@
 #include "test.h"
 
-#include <gtest/gtest.h>
-
 #include <base/system.h>
+
 #include <engine/shared/chillerbot/langparser.h>
+
+#include <gtest/gtest.h>
 
 // #include <base/chillerbot/pad_utf8.h>
 

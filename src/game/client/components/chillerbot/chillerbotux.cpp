@@ -1,6 +1,9 @@
 // ChillerDragon 2020 - chillerbot ux
 
+#include "chillerbotux.h"
+
 #include <base/log.h>
+
 #include <engine/client/notifications.h>
 #include <engine/config.h>
 #include <engine/console.h>
@@ -12,6 +15,10 @@
 #include <engine/shared/json.h>
 #include <engine/shared/protocol.h>
 #include <engine/textrender.h>
+
+#include <generated/client_data.h>
+#include <generated/protocol.h>
+
 #include <game/client/animstate.h>
 #include <game/client/components/camera.h>
 #include <game/client/components/chat.h>
@@ -25,10 +32,6 @@
 #include <game/client/race.h>
 #include <game/client/render.h>
 #include <game/version.h>
-#include <generated/client_data.h>
-#include <generated/protocol.h>
-
-#include "chillerbotux.h"
 
 static const char *HttpStateToStr(EHttpState State)
 {

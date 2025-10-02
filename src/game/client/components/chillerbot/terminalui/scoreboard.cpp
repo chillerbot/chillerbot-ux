@@ -1,16 +1,17 @@
 // ChillerDragon 2023 - chillerbot
 
-#include <engine/client/serverbrowser.h>
-#include <game/client/components/controls.h>
-#include <game/client/gameclient.h>
+#include "pad_utf8.h"
+#include "terminalui.h"
 
 #include <base/chillerbot/curses_colors.h>
 #include <base/terminalui.h>
 
-#include "pad_utf8.h"
-#include <rust-bridge-chillerbot/unicode.h>
+#include <engine/client/serverbrowser.h>
 
-#include "terminalui.h"
+#include <game/client/components/controls.h>
+#include <game/client/gameclient.h>
+
+#include <rust-bridge-chillerbot/unicode.h>
 
 #if defined(CONF_CURSES_CLIENT)
 

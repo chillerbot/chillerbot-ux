@@ -1,15 +1,18 @@
 // ChillerDragon 2020 - chillerbot ux
 
+#include "chillpw.h"
+
 #include <base/log.h>
 #include <base/system.h>
+
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
 #include <engine/shared/protocol.h>
-#include <game/client/components/chat.h>
-#include <game/client/gameclient.h>
+
 #include <generated/protocol.h>
 
-#include "chillpw.h"
+#include <game/client/components/chat.h>
+#include <game/client/gameclient.h>
 
 void CChillPw::OnMapLoad()
 {

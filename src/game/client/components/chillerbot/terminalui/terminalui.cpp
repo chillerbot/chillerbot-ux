@@ -1,24 +1,27 @@
 // ChillerDragon 2020 - chillerbot
 
-#include <engine/client/serverbrowser.h>
-#include <engine/shared/config.h>
-#include <game/client/components/controls.h>
-#include <game/client/gameclient.h>
-#include <generated/protocol.h>
+#include "terminalui.h"
+
+#include "pad_utf8.h"
 
 #include <base/ccurses.h>
 #include <base/chillerbot/curses_colors.h>
 #include <base/system.h>
 #include <base/terminalui.h>
 
-#include "pad_utf8.h"
+#include <engine/client/serverbrowser.h>
+#include <engine/shared/config.h>
 
-#include "terminalui.h"
+#include <generated/protocol.h>
+
+#include <game/client/components/controls.h>
+#include <game/client/gameclient.h>
 
 #if defined(CONF_CURSES_CLIENT)
 
-#include <csignal>
 #include <sys/ioctl.h>
+
+#include <csignal>
 
 CGameClient *g_pClient;
 volatile sig_atomic_t cl_InterruptSignaled = 0;

@@ -1,16 +1,16 @@
 // ChillerDragon 2021 - chillerbot ux
 
+#include "remotecontrol.h"
+
+#include <engine/serverbrowser.h>
 #include <engine/shared/linereader.h>
+
 #include <generated/protocol.h>
 
 #include <game/client/components/chat.h>
 #include <game/client/components/chillerbot/chathelper.h>
 #include <game/client/components/chillerbot/chillerbotux.h>
 #include <game/client/gameclient.h>
-
-#include <engine/serverbrowser.h>
-
-#include "remotecontrol.h"
 
 void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 {

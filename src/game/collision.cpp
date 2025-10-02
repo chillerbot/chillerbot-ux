@@ -1,19 +1,19 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+#include <antibot/antibot_data.h>
+
 #include <base/math.h>
 #include <base/system.h>
 #include <base/vmath.h>
 
-#include <antibot/antibot_data.h>
-
-#include <cmath>
 #include <engine/map.h>
+#include <engine/shared/config.h>
 
 #include <game/collision.h>
 #include <game/layers.h>
 #include <game/mapitems.h>
 
-#include <engine/shared/config.h>
+#include <cmath>
 
 void CCollision::ModifyTile(int x, int y, int Group, int Layer, int Index, int Flags)
 {

@@ -1,18 +1,19 @@
 // ChillerDragon 2022 - chillerbot
 
+#include "pad_utf8.h"
+#include "terminalui.h"
+
+#include <base/terminalui.h>
+
 #include <engine/client/serverbrowser.h>
+
 #include <game/client/components/controls.h>
 #include <game/client/gameclient.h>
 #include <game/localization.h>
 
-#include <base/terminalui.h>
-
-#include <csignal>
-
-#include "pad_utf8.h"
 #include <rust-bridge-chillerbot/unicode.h>
 
-#include "terminalui.h"
+#include <csignal>
 
 #if defined(CONF_CURSES_CLIENT)
 

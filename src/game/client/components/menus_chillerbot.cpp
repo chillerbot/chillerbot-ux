@@ -1,5 +1,7 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+#include "menus.h"
+
 #include <base/log.h>
 #include <base/math.h>
 #include <base/system.h>
@@ -17,6 +19,8 @@
 
 #include <game/client/animstate.h>
 #include <game/client/components/chat.h>
+#include <game/client/components/chillerbot/chillerbotux.h>
+#include <game/client/components/chillerbot/warlist.h>
 #include <game/client/components/menu_background.h>
 #include <game/client/components/sounds.h>
 #include <game/client/gameclient.h>
@@ -26,11 +30,6 @@
 #include <game/client/ui_listbox.h>
 #include <game/client/ui_scrollregion.h>
 #include <game/localization.h>
-
-#include <game/client/components/chillerbot/chillerbotux.h>
-#include <game/client/components/chillerbot/warlist.h>
-
-#include "menus.h"
 
 using namespace FontIcons;
 using namespace std::chrono_literals;

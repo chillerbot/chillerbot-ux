@@ -1,6 +1,7 @@
 #if defined(CONF_CURSES_CLIENT)
 
 #include "pad_utf8.h"
+
 #include <base/system.h>
 
 #include <rust-bridge-chillerbot/unicode.h>

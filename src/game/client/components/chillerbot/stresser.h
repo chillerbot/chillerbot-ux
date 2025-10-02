@@ -1,6 +1,13 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_STRESSER_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_STRESSER_H
 
+#include <engine/client/enums.h>
+#include <engine/console.h>
+
+#include <generated/protocol.h>
+
+#include <game/client/component.h>
+
 class CStresser : public CComponent
 {
 public:

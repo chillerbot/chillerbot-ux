@@ -1,6 +1,8 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_UNIX_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_UNIX_H
 
+#include <engine/console.h>
+
 #include <game/client/component.h>
 
 class CUnix : public CComponent

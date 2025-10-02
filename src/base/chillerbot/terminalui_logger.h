@@ -3,9 +3,8 @@
 
 #if defined(CONF_CURSES_CLIENT)
 
-#include "../logger.h"
-
 #include "../color.h"
+#include "../logger.h"
 #include "../system.h"
 #include "../terminalui.h"
 

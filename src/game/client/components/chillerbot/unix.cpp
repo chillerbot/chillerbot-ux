@@ -1,6 +1,6 @@
-#include <game/client/gameclient.h>
-
 #include "unix.h"
+
+#include <game/client/gameclient.h>
 
 void CUnix::OnInit()
 {

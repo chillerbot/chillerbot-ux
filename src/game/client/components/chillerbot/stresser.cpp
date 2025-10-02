@@ -2,13 +2,14 @@
 // The stresser component
 // used to stress test servers and find crashbugs
 
-#include <engine/shared/config.h>
-#include <engine/shared/linereader.h>
-#include <game/client/gameclient.h>
+#include "stresser.h"
 
 #include <base/system.h>
 
-#include "stresser.h"
+#include <engine/shared/config.h>
+#include <engine/shared/linereader.h>
+
+#include <game/client/gameclient.h>
 
 void CStresser::OnInit()
 {

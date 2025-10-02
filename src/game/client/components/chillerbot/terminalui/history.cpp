@@ -2,15 +2,16 @@
 
 #if defined(CONF_CURSES_CLIENT)
 
-#include <engine/client/serverbrowser.h>
-#include <engine/shared/linereader.h>
-#include <game/client/components/controls.h>
-#include <game/client/gameclient.h>
+#include "terminalui.h"
 
 #include <base/chillerbot/curses_colors.h>
 #include <base/terminalui.h>
 
-#include "terminalui.h"
+#include <engine/client/serverbrowser.h>
+#include <engine/shared/linereader.h>
+
+#include <game/client/components/controls.h>
+#include <game/client/gameclient.h>
 
 bool CTerminalUI::SaveInputToHistoryFile(int Type, const char *pInput)
 {

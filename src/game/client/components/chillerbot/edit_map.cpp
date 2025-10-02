@@ -1,5 +1,7 @@
 // ChillerDragon 2022 - chillerbot ux
 
+#include "edit_map.h"
+
 #include <engine/client/notifications.h>
 #include <engine/config.h>
 #include <engine/console.h>
@@ -8,6 +10,10 @@
 #include <engine/keys.h>
 #include <engine/shared/protocol.h>
 #include <engine/textrender.h>
+
+#include <generated/client_data.h>
+#include <generated/protocol.h>
+
 #include <game/client/animstate.h>
 #include <game/client/components/camera.h>
 #include <game/client/components/chat.h>
@@ -21,10 +27,6 @@
 #include <game/client/race.h>
 #include <game/client/render.h>
 #include <game/version.h>
-#include <generated/client_data.h>
-#include <generated/protocol.h>
-
-#include "edit_map.h"
 
 /*
     needed setup

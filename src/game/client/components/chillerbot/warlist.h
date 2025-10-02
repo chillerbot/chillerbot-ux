@@ -1,10 +1,14 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_WARLIST_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_WARLIST_H
 
-#include <vector>
-
 #include <base/color.h>
+
+#include <engine/console.h>
+#include <engine/shared/protocol.h>
+
 #include <game/client/component.h>
+
+#include <vector>
 
 class CWarList : public CComponent
 {

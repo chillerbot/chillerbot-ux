@@ -1,14 +1,13 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_CHATHELPER_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_CHATHELPER_H
 
+#include "chathelper/replytoping.h"
+
 #include <engine/console.h>
+#include <engine/shared/chillerbot/langparser.h>
 
 #include <game/client/component.h>
 #include <game/client/lineinput.h>
-
-#include "chathelper/replytoping.h"
-
-#include <engine/shared/chillerbot/langparser.h>
 
 #define MAX_CHAT_BUFFER_LEN 8
 #define MAX_CHAT_FILTERS 8

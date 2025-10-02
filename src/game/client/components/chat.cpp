@@ -1,6 +1,8 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 
+#include "chat.h"
+
 #include <engine/editor.h>
 #include <engine/graphics.h>
 #include <engine/keys.h>
@@ -12,19 +14,15 @@
 #include <generated/protocol7.h>
 
 #include <game/client/animstate.h>
-
+#include <game/client/components/censor.h>
 #include <game/client/components/chillerbot/chathelper.h>
 #include <game/client/components/chillerbot/chillerbotux.h>
-
-#include <game/client/components/censor.h>
 #include <game/client/components/console.h>
 #include <game/client/components/scoreboard.h>
 #include <game/client/components/skins.h>
 #include <game/client/components/sounds.h>
 #include <game/client/gameclient.h>
 #include <game/localization.h>
-
-#include "chat.h"
 
 char CChat::ms_aDisplayText[MAX_LINE_LENGTH] = "";
 

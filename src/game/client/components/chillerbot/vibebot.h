@@ -1,10 +1,14 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_VIBEBOT_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_VIBEBOT_H
 
+#include <engine/client/enums.h>
+#include <engine/console.h>
 #include <engine/shared/protocol.h>
+
+#include <generated/protocol.h>
+
 #include <game/client/component.h>
 #include <game/mapitems.h>
-#include <generated/protocol.h>
 
 class CVibeBot : public CComponent
 {

@@ -2,9 +2,9 @@
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_EDIT_MAP_H
 
 #include <engine/console.h>
-#include <game/client/component.h>
-
 #include <engine/shared/jobs.h>
+
+#include <game/client/component.h>
 
 class CEditMapJob : public IJob
 {

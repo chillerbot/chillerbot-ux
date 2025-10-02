@@ -1,14 +1,16 @@
 // ChillerDragon 2021 - chillerbot ux
 
-#include <base/vmath.h>
-#include <engine/config.h>
-#include <engine/shared/config.h>
-#include <game/client/components/controls.h>
-#include <game/client/gameclient.h>
+#include "vibebot.h"
 
 #include "chillerbotux.h"
 
-#include "vibebot.h"
+#include <base/vmath.h>
+
+#include <engine/config.h>
+#include <engine/shared/config.h>
+
+#include <game/client/components/controls.h>
+#include <game/client/gameclient.h>
 
 CNetObj_Character *CVibeBot::GetCharacter() const
 {

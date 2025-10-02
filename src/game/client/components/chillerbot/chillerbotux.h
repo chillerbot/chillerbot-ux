@@ -2,13 +2,12 @@
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_CHILLERBOTUX_H
 
 #include <engine/client.h>
+#include <engine/console.h>
+#include <engine/shared/http.h>
+
 #include <game/client/component.h>
 #include <game/client/render.h>
 #include <game/mapitems.h>
-
-#include <engine/console.h>
-
-#include <engine/shared/http.h>
 
 #define MAX_COMPONENT_LEN 16
 #define MAX_COMPONENTS_ENABLED 8

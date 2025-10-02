@@ -1,13 +1,14 @@
 // ChillerDragon 2021 - chillerbot ux
 
-#include <engine/config.h>
-#include <engine/shared/linereader.h>
-#include <engine/textrender.h>
-#include <game/client/gameclient.h>
+#include "warlist.h"
 
 #include <base/system.h>
 
-#include "warlist.h"
+#include <engine/config.h>
+#include <engine/shared/linereader.h>
+#include <engine/textrender.h>
+
+#include <game/client/gameclient.h>
 
 bool CWarList::OnChatCmdAdvanced(char Prefix, int ClientId, int Team, const char *pCmd, int NumArgs, const char **ppArgs, const char *pRawArgLine)
 {

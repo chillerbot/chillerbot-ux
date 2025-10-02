@@ -1,18 +1,19 @@
 // ChillerDragon 2021 - chillerbot ux
 
-#include <base/system.h>
-#include <base/vmath.h>
-#include <engine/config.h>
-#include <engine/shared/config.h>
-#include <game/client/components/chillerbot/chathelper.h>
-#include <game/client/components/controls.h>
-#include <game/client/gameclient.h>
-
-#include <engine/serverbrowser.h>
+#include "mmotee.h"
 
 #include "chillerbotux.h"
 
-#include "mmotee.h"
+#include <base/system.h>
+#include <base/vmath.h>
+
+#include <engine/config.h>
+#include <engine/serverbrowser.h>
+#include <engine/shared/config.h>
+
+#include <game/client/components/chillerbot/chathelper.h>
+#include <game/client/components/controls.h>
+#include <game/client/gameclient.h>
 
 void CMmoTee::OnInit()
 {

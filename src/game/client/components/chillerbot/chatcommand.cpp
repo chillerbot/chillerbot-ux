@@ -1,16 +1,16 @@
 // ChillerDragon 2023 - chillerbot ux
 
+#include "chatcommand.h"
+
+#include <base/system.h>
+
+#include <engine/shared/protocol.h>
+
+#include <game/client/components/chat.h>
 #include <game/client/components/chillerbot/chillerbotux.h>
 #include <game/client/gameclient.h>
 
 #include <cinttypes>
-#include <engine/shared/protocol.h>
-
-#include <game/client/components/chat.h>
-
-#include <base/system.h>
-
-#include "chatcommand.h"
 
 void CChatCommand::OnServerMsg(const char *pMsg)
 {
