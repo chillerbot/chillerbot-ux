@@ -702,6 +702,12 @@ void CMenus::RenderServerbrowserFilters(CUIRect View)
 	if(DoButton_CheckBox(&g_Config.m_BrFilterPw, Localize("No password"), g_Config.m_BrFilterPw, &Button))
 		g_Config.m_BrFilterPw ^= 1;
 
+	// chillerbot-ux START
+	View.HSplitTop(RowHeight, &Button, &View);
+	if(DoButton_CheckBox(&g_Config.m_BrFilterNoIpv6, Localize("Has ipv6"), g_Config.m_BrFilterNoIpv6, &Button))
+		g_Config.m_BrFilterNoIpv6 ^= 1;
+	// chillerbot-ux END
+
 	View.HSplitTop(RowHeight, &Button, &View);
 	if(DoButton_CheckBox(&g_Config.m_BrFilterLogin, Localize("No login required"), g_Config.m_BrFilterLogin, &Button))
 		g_Config.m_BrFilterLogin ^= 1;
@@ -839,6 +845,7 @@ void CMenus::ResetServerbrowserFilters()
 	g_Config.m_BrFilterCountry = 0;
 	g_Config.m_BrFilterCountryIndex = -1;
 	g_Config.m_BrFilterPw = 0;
+	g_Config.m_BrFilterNoIpv6 = 0; // chillerbot-ux
 	g_Config.m_BrFilterGametype[0] = '\0';
 	g_Config.m_BrFilterGametypeStrict = 0;
 	g_Config.m_BrFilterConnectingPlayers = 1;

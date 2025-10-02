@@ -438,7 +438,23 @@ void CServerBrowser::Filter()
 		CServerInfo &Info = m_ppServerlist[i]->m_Info;
 		bool Filtered = false;
 
-		if(g_Config.m_BrFilterEmpty && Info.m_NumFilteredPlayers == 0)
+		// chillerbot-ux START
+		bool HasIpv6 = false;
+		for(int AddrIdx = 0; AddrIdx < Info.m_NumAddresses; AddrIdx++)
+		{
+			if(Info.m_aAddresses[AddrIdx].type & NETTYPE_IPV6)
+			{
+				NETADDR *pAddr = &Info.m_aAddresses[AddrIdx];
+				char aAddr[512];
+				net_addr_str(pAddr, aAddr, sizeof(aAddr), false);
+				HasIpv6 = true;
+			}
+		}
+		if(g_Config.m_BrFilterNoIpv6 && !HasIpv6)
+			Filtered = true;
+		// chillerbot-ux END
+
+		else if(g_Config.m_BrFilterEmpty && Info.m_NumFilteredPlayers == 0)
 			Filtered = true;
 		else if(g_Config.m_BrFilterFull && Players(Info) == Max(Info))
 			Filtered = true;
@@ -615,6 +631,7 @@ int CServerBrowser::SortHash() const
 	i |= g_Config.m_BrFilterCountry << 14;
 	i |= g_Config.m_BrFilterConnectingPlayers << 15;
 	i |= g_Config.m_BrFilterLogin << 16;
+	i |= g_Config.m_BrFilterNoIpv6 << 17; // chillerbot-ux
 	return i;
 }
 

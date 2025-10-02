@@ -4507,6 +4507,7 @@ void CClient::RegisterCommands()
 	m_pConsole->Chain("br_filter_serveraddress", ConchainServerBrowserUpdate, this);
 	m_pConsole->Chain("br_filter_unfinished_map", ConchainServerBrowserUpdate, this);
 	m_pConsole->Chain("br_filter_login", ConchainServerBrowserUpdate, this);
+	m_pConsole->Chain("br_filter_ipv4", ConchainServerBrowserUpdate, this); // chillerbot-ux
 	m_pConsole->Chain("add_favorite", ConchainServerBrowserUpdate, this);
 	m_pConsole->Chain("remove_favorite", ConchainServerBrowserUpdate, this);
 	m_pConsole->Chain("end_favorite_group", ConchainServerBrowserUpdate, this);
