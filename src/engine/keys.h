@@ -8,6 +8,11 @@
 #undef KEY_EXECUTE
 #endif
 
+#if defined(CONF_CURSES_CLIENT)
+// undefines conflicting ncurses key codes
+#include <game/client/components/chillerbot/terminalui/terminalui_keys.h>
+#endif
+
 // NOLINTBEGIN(misc-confusable-identifiers)
 enum EKey
 {

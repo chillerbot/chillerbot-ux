@@ -7,10 +7,9 @@
 #include <generated/protocol.h>
 
 #include <game/client/component.h>
+#include <game/mapitems.h>
 
 #if defined(CONF_CURSES_CLIENT)
-#include "terminalui_keys.h" /* undefines conflicting ncurses key codes */
-
 #include <base/curses.h>
 
 #include <unistd.h>
