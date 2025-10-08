@@ -2,6 +2,7 @@
 
 #include "chillerbotux.h"
 
+#include <base/color.h>
 #include <base/log.h>
 
 #include <engine/client/notifications.h>
@@ -536,7 +537,7 @@ void CChillerBotUX::RenderDbgIntersect()
 
 	vec2 OutCol;
 	vec2 OutBeforeCol;
-	vec4 Color = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	ColorRGBA Color = ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f);
 
 	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 	Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
@@ -545,7 +546,7 @@ void CChillerBotUX::RenderDbgIntersect()
 	if(Collision()->IntersectLine(InitPos, FinishPos, &OutCol, &OutBeforeCol))
 	{
 		Graphics()->TextureClear();
-		Color = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+		Color = ColorRGBA(0.0f, 1.0f, 0.0f, 1.0f);
 		Graphics()->SetColor(Color);
 		Graphics()->DrawRect(OutCol.x, OutCol.y, 10, 10, ColorRGBA(0.0f, 0.0f, 1.0f, 0.5f), IGraphics::CORNER_ALL, 3.0f);
 		Graphics()->DrawRect(OutBeforeCol.x, OutBeforeCol.y, 10, 10, ColorRGBA(0.0f, 1.0f, 0.0f, 0.5f), IGraphics::CORNER_ALL, 3.0f);
