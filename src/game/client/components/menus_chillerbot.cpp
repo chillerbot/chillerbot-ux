@@ -150,4 +150,18 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		str_format(aBuf, sizeof(aBuf), "chillerbot-ux playtime: %d hours", GameClient()->m_ChillerBotUX.GetPlayTimeHours());
 		Ui()->DoLabel(&Label, aBuf, 14.0f, -1);
 	}
+
+	// Send and detect custom clients
+	{
+		CUIRect Checkbox;
+		MainView.HSplitTop(20.0f, &Checkbox, &MainView);
+		if(DoButton_CheckBox(&g_Config.m_ClSendClientType, "Let know other clients we are Chillerbot-UX", g_Config.m_ClSendClientType, &Checkbox))
+			g_Config.m_ClSendClientType ^= 1;
+	}
+	{
+		CUIRect Checkbox;
+		MainView.HSplitTop(20.0f, &Checkbox, &MainView);
+		if(DoButton_CheckBox(&g_Config.m_ClShowClientType, "Try to identify other clients and show a icon above player name", g_Config.m_ClShowClientType, &Checkbox))
+			g_Config.m_ClShowClientType ^= 1;
+	}
 }

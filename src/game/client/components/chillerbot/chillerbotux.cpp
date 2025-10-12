@@ -26,12 +26,14 @@
 #include <game/client/components/chillerbot/chathelper.h>
 #include <game/client/components/chillerbot/version.h>
 #include <game/client/components/controls.h>
+#include <game/client/components/countryflags.h>
 #include <game/client/components/menus.h>
 #include <game/client/components/voting.h>
 #include <game/client/gameclient.h>
 #include <game/client/prediction/entities/character.h>
 #include <game/client/race.h>
 #include <game/client/render.h>
+#include <game/mapitems.h>
 #include <game/version.h>
 
 static const char *HttpStateToStr(EHttpState State)
@@ -161,11 +163,107 @@ void CChillerBotUX::OnStateChange(int NewState, int OldState)
 	}
 }
 
+void CChillerBotUX::OnUpdate()
+{
+	bool MustSendCustomClient = false;
+
+    for(auto &Client : GameClient()->m_aClients)
+    {
+        if(Client.m_Active)
+        {
+            if(Client.ClientId() == GameClient()->m_Snap.m_LocalClientId || Client.ClientId() == GameClient()->GetPredictedDummyId())
+            {
+                Client.m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX; //force chillerbot client for us
+            }
+
+            if(!Client.m_SentCustomClient)
+            {
+                MustSendCustomClient = true;
+                Client.m_SentCustomClient = true;
+            }
+        }
+        else
+        {
+            Client.m_SentCustomClient = false;
+        }
+    }
+
+    if(MustSendCustomClient)
+    {
+        m_SendingCustomClientTicks = 25;
+    }
+
+    switch (m_SendingCustomClientTicks)
+    {
+    case 25:
+        GameClient()->SendInfo(false);
+        GameClient()->SendDummyInfo(false);
+        m_SendingCustomClientTicks = 24;
+        break;
+    case 0:
+        GameClient()->SendInfo(false);
+        GameClient()->SendDummyInfo(false);
+        m_SendingCustomClientTicks = -1;
+        break;
+    default:
+        if(m_SendingCustomClientTicks > 0)
+            m_SendingCustomClientTicks--;
+        break;
+    }
+}
+
+void CChillerBotUX::OnReset()
+{
+	GameClient()->m_aClients[0].m_SentCustomClient = false; //to send custom client on connect
+}
+
 int CChillerBotUX::GetPlayTimeHours() const
 {
 	if(m_PlaytimeMinutes == -1)
 		return 0;
 	return m_PlaytimeMinutes / 60;
+}
+
+// function originally from Kaizo Network by +KZ, credit if used
+int CChillerBotUX::InsertArbitraryClientFlagInCountry(int Country)
+{
+    if(!g_Config.m_ClSendClientType)
+        return Country;
+    
+    if(m_SendingCustomClientTicks <= 1) //dont send custom flag
+        return Country;
+
+    UCountryData CountryFlagsNum;
+    CountryFlagsNum.m_IntData = GameClient()->m_CountryFlags.Num();
+
+    //if some day amount of flags conflicts with arbitrary flag, just send normal country
+    if(CountryFlagsNum.m_CharArbitraryData[3]) 
+    {
+        return Country;
+    }
+
+    //insert arbitrary byte
+    UCountryData CountryData;
+
+    CountryData.m_IntData = Country;
+	//(+KZ note: this may be removing negative bit, may need improvement,
+	// but is not a big problem since custom flag is only sent 1 time)
+    CountryData.m_CharArbitraryData[3] = CUSTOM_CLIENT_ID_CHILLERBOTUX; //2 = CHILLERBOT-UX
+
+	return CountryData.m_IntData;
+}
+
+// function originally from Kaizo Network by +KZ, credit if used
+int CChillerBotUX::RemoveArbitraryClientFlagFromCountry(int Country)
+{
+	UCountryData CountryData;
+
+    CountryData.m_IntData = Country;
+	//(+KZ note: this may be removing negative bit, may need improvement,
+	// but is not a big problem since custom flag is only sent 1 time)
+    CountryData.m_CharArbitraryData[3] = 0; // clear byte
+
+	return CountryData.m_IntData;
 }
 
 void CChillerBotUX::PrintPlaytime()

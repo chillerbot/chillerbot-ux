@@ -1736,7 +1736,18 @@ void CGameClient::OnNewSnapshot()
 						str_copy(pClient->m_aName, "nameless tee");
 					}
 					IntsToStr(pInfo->m_aClan, std::size(pInfo->m_aClan), pClient->m_aClan, std::size(pClient->m_aClan));
-					pClient->m_Country = pInfo->m_Country;
+					if(pClient->m_CustomClient) //chillerbot modified
+					{
+						pClient->m_Country = pInfo->m_Country;
+					}
+					else
+					{
+						CChillerBotUX::UCountryData TempCountryData;
+						TempCountryData.m_IntData = pInfo->m_Country;
+						pClient->m_Country = m_ChillerBotUX.RemoveArbitraryClientFlagFromCountry(TempCountryData.m_IntData);
+						//+KZ: get arbitrary custom client byte
+						pClient->m_CustomClient = TempCountryData.m_CharArbitraryData[3];
+					}
 
 					IntsToStr(pInfo->m_aSkin, std::size(pInfo->m_aSkin), pClient->m_aSkinName, std::size(pClient->m_aSkinName));
 					if(!CSkin::IsValidName(pClient->m_aSkinName) ||
@@ -2859,6 +2870,9 @@ void CGameClient::CClientData::UpdateRenderInfo()
 
 void CGameClient::CClientData::Reset()
 {
+	m_CustomClient = '\0'; //chillerbot
+	m_SentCustomClient = false; //chillerbot
+
 	m_UseCustomColor = 0;
 	m_ColorBody = 0;
 	m_ColorFeet = 0;
@@ -3007,7 +3021,7 @@ void CGameClient::SendStartInfo7(bool Dummy)
 	protocol7::CNetMsg_Cl_StartInfo Msg;
 	Msg.m_pName = Dummy ? Client()->DummyName() : Client()->PlayerName();
 	Msg.m_pClan = Dummy ? Config()->m_ClDummyClan : Config()->m_PlayerClan;
-	Msg.m_Country = Dummy ? Config()->m_ClDummyCountry : Config()->m_PlayerCountry;
+	Msg.m_Country = m_ChillerBotUX.InsertArbitraryClientFlagInCountry(Dummy ? Config()->m_ClDummyCountry : Config()->m_PlayerCountry); // chillerbot modified
 	for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
 	{
 		Msg.m_apSkinPartNames[p] = CSkins7::ms_apSkinVariables[(int)Dummy][p];
@@ -3092,7 +3106,7 @@ void CGameClient::SendInfo(bool Start)
 		CNetMsg_Cl_StartInfo Msg;
 		Msg.m_pName = Client()->PlayerName();
 		Msg.m_pClan = g_Config.m_PlayerClan;
-		Msg.m_Country = g_Config.m_PlayerCountry;
+		Msg.m_Country = m_ChillerBotUX.InsertArbitraryClientFlagInCountry(g_Config.m_PlayerCountry); // chillerbot modified
 		Msg.m_pSkin = g_Config.m_ClPlayerSkin;
 		Msg.m_UseCustomColor = g_Config.m_ClPlayerUseCustomColor;
 		Msg.m_ColorBody = g_Config.m_ClPlayerColorBody;
@@ -3107,7 +3121,7 @@ void CGameClient::SendInfo(bool Start)
 		CNetMsg_Cl_ChangeInfo Msg;
 		Msg.m_pName = Client()->PlayerName();
 		Msg.m_pClan = g_Config.m_PlayerClan;
-		Msg.m_Country = g_Config.m_PlayerCountry;
+		Msg.m_Country = m_ChillerBotUX.InsertArbitraryClientFlagInCountry(g_Config.m_PlayerCountry); // chillerbot modified
 		Msg.m_pSkin = g_Config.m_ClPlayerSkin;
 		Msg.m_UseCustomColor = g_Config.m_ClPlayerUseCustomColor;
 		Msg.m_ColorBody = g_Config.m_ClPlayerColorBody;
@@ -3134,7 +3148,7 @@ void CGameClient::SendDummyInfo(bool Start)
 		CNetMsg_Cl_StartInfo Msg;
 		Msg.m_pName = Client()->DummyName();
 		Msg.m_pClan = g_Config.m_ClDummyClan;
-		Msg.m_Country = g_Config.m_ClDummyCountry;
+		Msg.m_Country = m_ChillerBotUX.InsertArbitraryClientFlagInCountry(g_Config.m_ClDummyCountry); // chillerbot modified
 		Msg.m_pSkin = g_Config.m_ClDummySkin;
 		Msg.m_UseCustomColor = g_Config.m_ClDummyUseCustomColor;
 		Msg.m_ColorBody = g_Config.m_ClDummyColorBody;
@@ -3149,7 +3163,7 @@ void CGameClient::SendDummyInfo(bool Start)
 		CNetMsg_Cl_ChangeInfo Msg;
 		Msg.m_pName = Client()->DummyName();
 		Msg.m_pClan = g_Config.m_ClDummyClan;
-		Msg.m_Country = g_Config.m_ClDummyCountry;
+		Msg.m_Country = m_ChillerBotUX.InsertArbitraryClientFlagInCountry(g_Config.m_ClDummyCountry); // chillerbot modified
 		Msg.m_pSkin = g_Config.m_ClDummySkin;
 		Msg.m_UseCustomColor = g_Config.m_ClDummyUseCustomColor;
 		Msg.m_ColorBody = g_Config.m_ClDummyColorBody;

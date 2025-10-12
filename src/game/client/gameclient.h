@@ -555,6 +555,9 @@ public:
 
 		// 0.7 Skin
 		CSixup m_aSixup[NUM_DUMMIES];
+
+		char m_CustomClient = '\0'; //chillerbot
+		bool m_SentCustomClient = false; //chillerbot
 	};
 
 	CClientData m_aClients[MAX_CLIENTS];
@@ -962,6 +965,10 @@ private:
 	};
 
 	SMultiView m_MultiView;
+
+	//chillerbot
+	public:
+	int GetPredictedDummyId() { return m_PredictedDummyId; }
 };
 
 ColorRGBA CalculateNameColor(ColorHSLA TextColorHSL);
