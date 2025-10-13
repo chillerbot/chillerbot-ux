@@ -3,8 +3,10 @@
 
 // nobo copy and edit of countryflags.h
 #include <base/vmath.h>
+
 #include <engine/shared/protocol.h>
 #include <engine/textrender.h>
+
 #include <generated/protocol.h>
 
 #include <game/client/component.h>
