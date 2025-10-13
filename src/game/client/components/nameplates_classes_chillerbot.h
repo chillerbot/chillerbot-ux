@@ -1,3 +1,7 @@
+#ifndef GAME_CLIENT_COMPONENTS_NAMEPLATES_CLASSES_CHILLERBOT_H
+#define GAME_CLIENT_COMPONENTS_NAMEPLATES_CLASSES_CHILLERBOT_H
+
+#include <engine/shared/chillerbot/ddnet-custom-clients/custom_clients_ids.h>
 
 #include <game/client/gameclient.h>
 #include <game/mapitems.h>
@@ -35,3 +39,5 @@ public:
 		m_Size = vec2(20 + DEFAULT_PADDING, 20 + DEFAULT_PADDING);
 	}
 };
+
+#endif

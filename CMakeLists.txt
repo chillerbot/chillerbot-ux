@@ -1924,7 +1924,6 @@ function(generate_source output_file script_parameter)
       datasrc/compile.py
       datasrc/content.py
       datasrc/datatypes.py
-      datasrc/images_chillerbot.py
       datasrc/network.py
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   )
@@ -1952,7 +1951,6 @@ function(generate_maps output_file script_parameter)
       datasrc/compile.py
       datasrc/content.py
       datasrc/datatypes.py
-      datasrc/images_chillerbot.py
       datasrc/network.py
       datasrc/seven/compile.py
       datasrc/seven/content.py
