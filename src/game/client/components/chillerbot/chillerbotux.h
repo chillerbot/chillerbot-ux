@@ -137,10 +137,9 @@ class CChillerBotUX : public CComponent
 	static void ConchainSkinStealer(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
 public:
-
 	class CChillerClientData
 	{
-		public:
+	public:
 		char m_CustomClient = '\0'; //chillerbot
 		bool m_SentCustomClient = false; //chillerbot
 
@@ -191,10 +190,10 @@ public:
 
 	//+KZ: union to detect other custom clients by inserting data in the empty country bytes
 	union UCountryData
-    {
-        int m_IntData = 0;
-        unsigned char m_aCharArbitraryData[sizeof(int)];
-    };
+	{
+		int m_IntData = 0;
+		unsigned char m_aCharArbitraryData[sizeof(int)];
+	};
 
 	int InsertArbitraryClientFlagInCountry(int Country);
 	int RemoveArbitraryClientFlagFromCountry(int Country);

@@ -964,7 +964,7 @@ private:
 	SMultiView m_MultiView;
 
 	//chillerbot
-	public:
+public:
 	int GetPredictedDummyId() { return m_PredictedDummyId; }
 };
 

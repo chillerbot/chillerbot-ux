@@ -28,10 +28,10 @@ public:
 
 	CNamePlatePartChillerCustomClient(CGameClient &This) :
 		CNamePlatePartSprite(This)
-		{
-			m_Texture = g_pData->m_aImages[IMAGE_KZ_KAIZOICON].m_Id;
-			m_Padding = vec2(0.0f, 0.0f);
-			m_Sprite = SPRITE_KZ_KAIZOICON;
-			m_Size = vec2(20 + DEFAULT_PADDING, 20 + DEFAULT_PADDING);
-		}
+	{
+		m_Texture = g_pData->m_aImages[IMAGE_KZ_KAIZOICON].m_Id;
+		m_Padding = vec2(0.0f, 0.0f);
+		m_Sprite = SPRITE_KZ_KAIZOICON;
+		m_Size = vec2(20 + DEFAULT_PADDING, 20 + DEFAULT_PADDING);
+	}
 };

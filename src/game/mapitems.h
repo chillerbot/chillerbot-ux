@@ -3,10 +3,10 @@
 #ifndef GAME_MAPITEMS_H
 #define GAME_MAPITEMS_H
 
+#include "enums_chiller.h" //chillerbot
+
 #include <base/color.h>
 #include <base/vmath.h>
-
-#include "enums_chiller.h" //chillerbot
 
 // layer types
 enum
