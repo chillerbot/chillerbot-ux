@@ -1736,18 +1736,8 @@ void CGameClient::OnNewSnapshot()
 						str_copy(pClient->m_aName, "nameless tee");
 					}
 					IntsToStr(pInfo->m_aClan, std::size(pInfo->m_aClan), pClient->m_aClan, std::size(pClient->m_aClan));
-					if(pClient->m_CustomClient) //chillerbot modified
-					{
-						pClient->m_Country = pInfo->m_Country;
-					}
-					else
-					{
-						CChillerBotUX::UCountryData TempCountryData;
-						TempCountryData.m_IntData = pInfo->m_Country;
-						pClient->m_Country = m_ChillerBotUX.RemoveArbitraryClientFlagFromCountry(TempCountryData.m_IntData);
-						//+KZ: get arbitrary custom client byte
-						pClient->m_CustomClient = TempCountryData.m_CharArbitraryData[3];
-					}
+					pClient->m_Country = pInfo->m_Country;
+					m_ChillerBotUX.HandleCustomClientBytes(pClient->m_Country, ClientId);
 
 					IntsToStr(pInfo->m_aSkin, std::size(pInfo->m_aSkin), pClient->m_aSkinName, std::size(pClient->m_aSkinName));
 					if(!CSkin::IsValidName(pClient->m_aSkinName) ||
@@ -2870,9 +2860,6 @@ void CGameClient::CClientData::UpdateRenderInfo()
 
 void CGameClient::CClientData::Reset()
 {
-	m_CustomClient = '\0'; //chillerbot
-	m_SentCustomClient = false; //chillerbot
-
 	m_UseCustomColor = 0;
 	m_ColorBody = 0;
 	m_ColorFeet = 0;

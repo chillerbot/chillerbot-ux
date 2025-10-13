@@ -13,7 +13,7 @@ public:
 			return;
 		}
 
-		if(This.m_aClients[Data.m_ClientId].m_CustomClient == CUSTOM_CLIENT_ID_KAIZO_NETWORK) //1 = Kaizo Network
+		if(This.m_ChillerBotUX.m_aClientData[Data.m_ClientId].m_CustomClient == CUSTOM_CLIENT_ID_KAIZO_NETWORK) //1 = Kaizo Network
 		{
 			m_Texture = g_pData->m_aImages[IMAGE_KZ_KAIZOICON].m_Id;
 			m_Sprite = SPRITE_KZ_KAIZOICON;

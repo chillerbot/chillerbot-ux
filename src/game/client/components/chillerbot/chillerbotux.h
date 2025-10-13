@@ -137,6 +137,17 @@ class CChillerBotUX : public CComponent
 	static void ConchainSkinStealer(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
 public:
+
+	class CChillerClientData
+	{
+		public:
+		char m_CustomClient = '\0'; //chillerbot
+		bool m_SentCustomClient = false; //chillerbot
+
+		void Reset();
+
+	} m_aClientData[MAX_CLIENTS];
+
 	int Sizeof() const override { return sizeof(*this); }
 	int m_IgnoreChatAfk;
 
@@ -182,12 +193,13 @@ public:
 	union UCountryData
     {
         int m_IntData = 0;
-        unsigned char m_CharArbitraryData[sizeof(int)];
+        unsigned char m_aCharArbitraryData[sizeof(int)];
     };
 
 	int InsertArbitraryClientFlagInCountry(int Country);
 	int RemoveArbitraryClientFlagFromCountry(int Country);
 	int m_SendingCustomClientTicks = -1;
+	void HandleCustomClientBytes(int Country, int ClientId);
 };
 
 #endif

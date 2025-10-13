@@ -457,7 +457,7 @@ container.sprites.Add(Sprite("part_pulley", set_extras, 4,0,1,1))
 container.sprites.Add(Sprite("part_hectagon", set_extras, 6,0,2,2))
 
 # Chillerbot-ux
-exec(open("datasrc/images_chillerbot.py").read())
+import images_chillerbot
 
 anim = Animation("base")
 anim.body.frames.Add(AnimKeyframe(0, 0, -4, 0))

@@ -173,18 +173,18 @@ void CChillerBotUX::OnUpdate()
         {
             if(Client.ClientId() == GameClient()->m_Snap.m_LocalClientId || Client.ClientId() == GameClient()->GetPredictedDummyId())
             {
-                Client.m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX; //force chillerbot client for us
+                m_aClientData[Client.ClientId()].m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX; //force chillerbot client for us
             }
 
-            if(!Client.m_SentCustomClient)
+            if(!m_aClientData[Client.ClientId()].m_SentCustomClient)
             {
                 MustSendCustomClient = true;
-                Client.m_SentCustomClient = true;
+                m_aClientData[Client.ClientId()].m_SentCustomClient = true;
             }
         }
         else
         {
-            Client.m_SentCustomClient = false;
+            m_aClientData[Client.ClientId()].m_SentCustomClient = false;
         }
     }
 
@@ -214,7 +214,10 @@ void CChillerBotUX::OnUpdate()
 
 void CChillerBotUX::OnReset()
 {
-	GameClient()->m_aClients[0].m_SentCustomClient = false; //to send custom client on connect
+	for(auto &ClientData : m_aClientData)
+	{
+		ClientData.Reset();
+	}
 }
 
 int CChillerBotUX::GetPlayTimeHours() const
@@ -237,7 +240,7 @@ int CChillerBotUX::InsertArbitraryClientFlagInCountry(int Country)
     CountryFlagsNum.m_IntData = GameClient()->m_CountryFlags.Num();
 
     //if some day amount of flags conflicts with arbitrary flag, just send normal country
-    if(CountryFlagsNum.m_CharArbitraryData[3]) 
+    if(CountryFlagsNum.m_aCharArbitraryData[3]) 
     {
         return Country;
     }
@@ -248,7 +251,7 @@ int CChillerBotUX::InsertArbitraryClientFlagInCountry(int Country)
     CountryData.m_IntData = Country;
 	//(+KZ note: this may be removing negative bit, may need improvement,
 	// but is not a big problem since custom flag is only sent 1 time)
-    CountryData.m_CharArbitraryData[3] = CUSTOM_CLIENT_ID_CHILLERBOTUX; //2 = CHILLERBOT-UX
+    CountryData.m_aCharArbitraryData[3] = CUSTOM_CLIENT_ID_CHILLERBOTUX; //2 = CHILLERBOT-UX
 
 	return CountryData.m_IntData;
 }
@@ -261,9 +264,25 @@ int CChillerBotUX::RemoveArbitraryClientFlagFromCountry(int Country)
     CountryData.m_IntData = Country;
 	//(+KZ note: this may be removing negative bit, may need improvement,
 	// but is not a big problem since custom flag is only sent 1 time)
-    CountryData.m_CharArbitraryData[3] = 0; // clear byte
+    CountryData.m_aCharArbitraryData[3] = 0; // clear byte
 
 	return CountryData.m_IntData;
+}
+
+void CChillerBotUX::HandleCustomClientBytes(int Country, int ClientId)
+{
+	if(m_aClientData[ClientId].m_CustomClient) // read normally if custom client already set
+	{
+		return;
+	}
+	else
+	{
+		CChillerBotUX::UCountryData TempCountryData;
+		TempCountryData.m_IntData = Country;
+		GameClient()->m_aClients[ClientId].m_Country = RemoveArbitraryClientFlagFromCountry(TempCountryData.m_IntData);
+		//+KZ: get arbitrary custom client byte
+		m_aClientData[ClientId].m_CustomClient = TempCountryData.m_aCharArbitraryData[3];
+	}
 }
 
 void CChillerBotUX::PrintPlaytime()
@@ -1501,4 +1520,10 @@ int CChillerBotUX::GetUnusedJumps()
 		AvailableJumpsToDisplay = abs(GameClient()->m_Snap.m_aCharacters[ClientId].m_ExtendedData.m_Jumps);
 	}
 	return AvailableJumpsToDisplay;
+}
+
+void CChillerBotUX::CChillerClientData::Reset()
+{
+	m_CustomClient = '\0';
+	m_SentCustomClient = false;
 }
