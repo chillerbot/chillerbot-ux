@@ -2095,6 +2095,7 @@ set_src(ENGINE_INTERFACE GLOB src/engine
 set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   assertion_logger.cpp
   assertion_logger.h
+  chillerbot/ddnet-custom-clients/custom_clients_ids.h
   chillerbot/langparser.cpp
   chillerbot/langparser.h
   chillerbot/variables.h
@@ -2193,7 +2194,6 @@ set_src(GAME_SHARED GLOB src/game
   alloc.h
   collision.cpp
   collision.h
-  enums_chiller.h
   gamecore.cpp
   gamecore.h
   layers.cpp

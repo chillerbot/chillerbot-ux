@@ -11,6 +11,7 @@
 #include <engine/engine.h>
 #include <engine/graphics.h>
 #include <engine/keys.h>
+#include <engine/shared/chillerbot/ddnet-custom-clients/custom_clients_ids.h>
 #include <engine/shared/config.h>
 #include <engine/shared/http.h>
 #include <engine/shared/json.h>

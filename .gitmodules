@@ -2,3 +2,6 @@
 	path = ddnet-libs
 	url = https://github.com/ddnet/ddnet-libs
 	shallow = true
+[submodule "src/engine/shared/chillerbot/ddnet-custom-clients"]
+	path = src/engine/shared/chillerbot/ddnet-custom-clients
+	url = https://github.com/ddnet-community/ddnet-custom-clients.git
