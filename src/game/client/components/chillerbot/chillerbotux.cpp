@@ -218,6 +218,8 @@ void CChillerBotUX::OnReset()
 	{
 		ClientData.Reset();
 	}
+
+	m_SendingCustomClientTicks = 25;
 }
 
 int CChillerBotUX::GetPlayTimeHours() const
