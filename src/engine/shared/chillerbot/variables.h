@@ -76,3 +76,7 @@ MACRO_CONFIG_INT(ClWarListAutoReload, cl_war_list_auto_reload, 10, 0, 600, CFGFL
 MACRO_CONFIG_INT(ClRemoteControl, cl_remote_control, 0, 0, 1, CFGFLAG_CLIENT, "Execute whisper in local console")
 MACRO_CONFIG_STR(ClRemoteControlToken, cl_remote_control_token, 512, "spaces_do_not_work", CFGFLAG_CLIENT | CFGFLAG_SAVE, "Remote control token (see cl_remote_control)")
 MACRO_CONFIG_STR(ClRemoteControlTokenAdmin, cl_remote_control_token_admin, 512, "spaces_do_not_work_", CFGFLAG_CLIENT | CFGFLAG_SAVE, "Remote control admin token (see cl_remote_control)")
+
+// client identify (from Kaizo Network)
+MACRO_CONFIG_INT(ClSendClientType, cl_send_client_type, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Let know other clients that we are chillerbot-ux")
+MACRO_CONFIG_INT(ClShowClientType, cl_show_client_type, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Try to identify and show other players clients as icons")

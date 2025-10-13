@@ -115,6 +115,8 @@ class CChillerBotUX : public CComponent
 	bool OnCursorMove(float x, float y, IInput::ECursorType CursorType) override;
 	bool OnInput(const IInput::CEvent &Event) override;
 	void OnStateChange(int NewState, int OldState) override;
+	void OnUpdate() override;
+	void OnReset() override;
 
 	static void ConPlaytime(IConsole::IResult *pResult, void *pUserData);
 	static void ConAfk(IConsole::IResult *pResult, void *pUserData);
@@ -135,6 +137,17 @@ class CChillerBotUX : public CComponent
 	static void ConchainSkinStealer(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
 public:
+
+	class CChillerClientData
+	{
+		public:
+		char m_CustomClient = '\0'; //chillerbot
+		bool m_SentCustomClient = false; //chillerbot
+
+		void Reset();
+
+	} m_aClientData[MAX_CLIENTS];
+
 	int Sizeof() const override { return sizeof(*this); }
 	int m_IgnoreChatAfk;
 
@@ -175,6 +188,18 @@ public:
 	int GetTotalJumps();
 	int GetUnusedJumps();
 	int GetPlayTimeHours() const;
+
+	//+KZ: union to detect other custom clients by inserting data in the empty country bytes
+	union UCountryData
+    {
+        int m_IntData = 0;
+        unsigned char m_aCharArbitraryData[sizeof(int)];
+    };
+
+	int InsertArbitraryClientFlagInCountry(int Country);
+	int RemoveArbitraryClientFlagFromCountry(int Country);
+	int m_SendingCustomClientTicks = -1;
+	void HandleCustomClientBytes(int Country, int ClientId);
 };
 
 #endif

@@ -6,6 +6,8 @@
 #include <base/color.h>
 #include <base/vmath.h>
 
+#include "enums_chiller.h" //chillerbot
+
 // layer types
 enum
 {

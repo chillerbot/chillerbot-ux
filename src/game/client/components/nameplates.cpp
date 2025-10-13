@@ -445,6 +445,9 @@ public:
 		CNamePlatePartText(This) {}
 };
 
+//chillerbot-ux
+#include "nameplates_classes_chillerbot.h"
+
 // Name Plates
 
 class CNamePlate
@@ -500,6 +503,9 @@ private:
 
 		AddPart<CNamePlatePartHookStrongWeak>(This);
 		AddPart<CNamePlatePartHookStrongWeakId>(This);
+
+		//chillerbot
+		AddPart<CNamePlatePartChillerCustomClient>(This);
 	}
 
 public:

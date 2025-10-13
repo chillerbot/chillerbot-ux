@@ -1408,6 +1408,8 @@ set(EXPECTED_DATA
   countryflags/ZW.png
   countryflags/default.png
   countryflags/index.txt
+  customclients/kaizoicon.png
+  customclients/license.txt
   deadtee.png
   debug_font.png
   editor/audio_source.png
@@ -1922,6 +1924,7 @@ function(generate_source output_file script_parameter)
       datasrc/compile.py
       datasrc/content.py
       datasrc/datatypes.py
+      datasrc/images_chillerbot.py
       datasrc/network.py
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   )
@@ -1949,6 +1952,7 @@ function(generate_maps output_file script_parameter)
       datasrc/compile.py
       datasrc/content.py
       datasrc/datatypes.py
+      datasrc/images_chillerbot.py
       datasrc/network.py
       datasrc/seven/compile.py
       datasrc/seven/content.py
@@ -2189,6 +2193,7 @@ set_src(GAME_SHARED GLOB src/game
   alloc.h
   collision.cpp
   collision.h
+  enums_chiller.h
   gamecore.cpp
   gamecore.h
   layers.cpp
@@ -2485,6 +2490,7 @@ if(CLIENT)
     components/motd.h
     components/nameplates.cpp
     components/nameplates.h
+    components/nameplates_classes_chillerbot.h
     components/particles.cpp
     components/particles.h
     components/players.cpp

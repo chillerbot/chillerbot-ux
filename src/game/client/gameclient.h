@@ -962,6 +962,10 @@ private:
 	};
 
 	SMultiView m_MultiView;
+
+	//chillerbot
+	public:
+	int GetPredictedDummyId() { return m_PredictedDummyId; }
 };
 
 ColorRGBA CalculateNameColor(ColorHSLA TextColorHSL);
