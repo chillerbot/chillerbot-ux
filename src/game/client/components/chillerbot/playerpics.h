@@ -3,6 +3,9 @@
 
 // nobo copy and edit of countryflags.h
 #include <base/vmath.h>
+#include <engine/shared/protocol.h>
+#include <engine/textrender.h>
+#include <generated/protocol.h>
 
 #include <game/client/component.h>
 #include <game/client/components/nameplates.h>
@@ -75,9 +78,9 @@ private:
 	void ResetNamePlates();
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
-	virtual void OnWindowResize() override;
-	virtual void OnInit() override;
-	virtual void OnRender() override;
+	int Sizeof() const override { return sizeof(*this); }
+	void OnWindowResize() override;
+	void OnInit() override;
+	void OnRender() override;
 };
 #endif

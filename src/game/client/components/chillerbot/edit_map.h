@@ -34,15 +34,15 @@ public:
 
 	int m_State;
 
-	int State() { return m_State; }
+	int State() const { return m_State; }
 };
 
 class CEditMap : public CComponent
 {
-	virtual void OnRender() override;
-	virtual void OnInit() override;
-	virtual void OnShutdown() override;
-	virtual void OnConsoleInit() override;
+	void OnRender() override;
+	void OnInit() override;
+	void OnShutdown() override;
+	void OnConsoleInit() override;
 
 	static void ConSetGametile(IConsole::IResult *pResult, void *pUserData);
 
@@ -52,7 +52,7 @@ class CEditMap : public CComponent
 	void GetSourceMapPath(char *pPath, int Size);
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 
 	CEditMap();
 };

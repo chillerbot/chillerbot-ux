@@ -11,17 +11,17 @@
 class CStresser : public CComponent
 {
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
-	virtual void OnInit() override;
+	int Sizeof() const override { return sizeof(*this); }
+	void OnInit() override;
 
 	CNetObj_PlayerInput m_aInputData[NUM_DUMMIES];
 	bool m_SendData[NUM_DUMMIES];
 
 private:
-	virtual void OnRender() override;
-	virtual void OnMessage(int MsgType, void *pRawMsg) override;
-	virtual void OnMapLoad() override;
-	virtual void OnConsoleInit() override;
+	void OnRender() override;
+	void OnMessage(int MsgType, void *pRawMsg) override;
+	void OnMapLoad() override;
+	void OnConsoleInit() override;
 
 	static void ConchainPenTest(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 

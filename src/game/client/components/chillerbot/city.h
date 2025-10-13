@@ -9,10 +9,10 @@
 class CCityHelper : public CComponent
 {
 private:
-	virtual void OnRender() override;
-	virtual void OnInit() override;
-	virtual void OnConsoleInit() override;
-	virtual void OnMessage(int MsgType, void *pRawMsg) override;
+	void OnRender() override;
+	void OnInit() override;
+	void OnConsoleInit() override;
+	void OnMessage(int MsgType, void *pRawMsg) override;
 
 	static void ConchainShowWallet(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
@@ -35,7 +35,7 @@ private:
 	void AddWalletMoney(int Money, int ClientId = -1);
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 
 	class CGameClient *GameClientUnprotected();
 

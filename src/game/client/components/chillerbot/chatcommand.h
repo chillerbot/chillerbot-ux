@@ -5,7 +5,7 @@
 
 class CChatCommand : public CComponent
 {
-	virtual void OnMessage(int MsgType, void *pRawMsg) override;
+	void OnMessage(int MsgType, void *pRawMsg) override;
 
 	void OnServerMsg(const char *pMsg);
 	bool ParseChatCmd(char Prefix, int ClientId, int Team, const char *pCmdWithArgs);
@@ -34,7 +34,7 @@ class CChatCommand : public CComponent
 	void OnNoChatCommandMatches(int ClientId, int Team, const char *pMsg);
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 
 	// will be called on send of our on messages
 	// and on receive of all other messages

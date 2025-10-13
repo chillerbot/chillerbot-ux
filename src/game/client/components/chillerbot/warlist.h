@@ -108,9 +108,9 @@ class CWarList : public CComponent
 	int LoadTeamClanNames(const char *pFilename);
 	int LoadWarClanPrefixNames(const char *pFilename);
 
-	virtual void OnRender() override;
-	virtual void OnConsoleInit() override;
-	virtual void OnInit() override;
+	void OnRender() override;
+	void OnConsoleInit() override;
+	void OnInit() override;
 
 	static void ConWarlist(IConsole::IResult *pResult, void *pUserData);
 
@@ -147,7 +147,7 @@ class CWarList : public CComponent
 	int64_t m_NextReload;
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 
 	bool OnChatCmd(char Prefix, int ClientId, int Team, const char *pCmd, int NumArgs, const char **ppArgs, const char *pRawArgLine);
 

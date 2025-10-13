@@ -13,9 +13,9 @@
 class CVibeBot : public CComponent
 {
 private:
-	virtual void OnRender() override;
-	virtual void OnInit() override;
-	virtual void OnConsoleInit() override;
+	void OnRender() override;
+	void OnInit() override;
+	void OnConsoleInit() override;
 
 	static void ConVibe(IConsole::IResult *pResult, void *pUserData);
 	static void ConVibes(IConsole::IResult *pResult, void *pUserData);
@@ -44,7 +44,7 @@ private:
 	void EmoteBotTick();
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 
 	CNetObj_Character *GetCharacter() const;
 	void Emote(int Emoticon);
@@ -59,7 +59,7 @@ public:
 	vec2 m_CurrentAim[NUM_DUMMIES];
 	vec2 m_WantedAim[NUM_DUMMIES];
 
-	int MoveId() { return m_MoveId; };
+	int MoveId() const { return m_MoveId; };
 	bool IsVibing(int ClientId) { return m_Mode[ClientId] != VB_OFF; }
 
 	enum
@@ -70,8 +70,11 @@ public:
 		VB_MUSIC,
 		VB_SLEEPY,
 		VB_WTF,
+	};
 
-		EB_OFF = 0,
+	enum
+	{
+		EB_OFF,
 	};
 
 	void SetMode(int Mode, int ClientId);

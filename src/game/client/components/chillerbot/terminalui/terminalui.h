@@ -431,7 +431,7 @@ public:
 	CNetObj_PlayerInput m_aInputData[NUM_DUMMIES];
 	bool m_SendData[NUM_DUMMIES];
 
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 };
 
 #endif

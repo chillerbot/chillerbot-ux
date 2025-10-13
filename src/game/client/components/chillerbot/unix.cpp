@@ -16,7 +16,7 @@ void CUnix::ConLs(IConsole::IResult *pResult, void *pUserData)
 	((CUnix *)pUserData)->ls();
 }
 
-int CUnix::listDirCallback(const CFsFileInfo *pInfo, int IsDir, int StorageType, void *pUser)
+int CUnix::ListDirCallback(const CFsFileInfo *pInfo, int IsDir, int StorageType, void *pUser)
 {
 	CUnix *pSelf = (CUnix *)pUser;
 	char aBuf[IO_MAX_PATH_LENGTH + 128];
@@ -29,5 +29,5 @@ int CUnix::listDirCallback(const CFsFileInfo *pInfo, int IsDir, int StorageType,
 
 void CUnix::ls()
 {
-	Storage()->ListDirectoryInfo(IStorage::TYPE_ALL, ".", listDirCallback, this);
+	Storage()->ListDirectoryInfo(IStorage::TYPE_ALL, ".", ListDirCallback, this);
 }

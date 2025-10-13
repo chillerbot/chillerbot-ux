@@ -9,10 +9,10 @@ class CRemoteControl : public CComponent
 
 	void OnChatMessage(int ClientId, int Team, const char *pMsg);
 
-	virtual void OnMessage(int MsgType, void *pRawMsg) override;
+	void OnMessage(int MsgType, void *pRawMsg) override;
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 };
 
 #endif
