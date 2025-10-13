@@ -47,6 +47,7 @@
 #include "components/hud.h"
 #include "components/infomessages.h"
 #include "components/items.h"
+#include "components/key_binder.h"
 #include "components/local_server.h"
 #include "components/mapimages.h"
 #include "components/maplayers.h"
@@ -158,6 +159,7 @@ public:
 	CBroadcast m_Broadcast;
 	CGameConsole m_GameConsole;
 	CBinds m_Binds;
+	CKeyBinder m_KeyBinder;
 	CParticles m_Particles;
 	CMenus m_Menus;
 	CSkins m_Skins;
@@ -963,9 +965,12 @@ private:
 
 	SMultiView m_MultiView;
 
+	void OnSaveCodeNetMessage(const CNetMsg_Sv_SaveCode *pMsg);
+	void StoreSave(const char *pTeamMembers, const char *pGeneratedCode) const;
+
 	//chillerbot
 public:
-	int GetPredictedDummyId() { return m_PredictedDummyId; }
+	int GetPredictedDummyId() const { return m_PredictedDummyId; }
 };
 
 ColorRGBA CalculateNameColor(ColorHSLA TextColorHSL);

@@ -7663,7 +7663,7 @@ void CEditor::OnMouseMove(vec2 MousePos)
 			Rect.y = aPoints[1] + WorldHeight * (MousePos.y / Graphics()->WindowHeight());
 			Rect.w = 0;
 			Rect.h = 0;
-			RECTi r;
+			CIntRect r;
 			pTiles->Convert(Rect, &r);
 			pTiles->Clamp(&r);
 			int x = r.x;
