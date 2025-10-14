@@ -1,6 +1,8 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_VIBEBOT_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_VIBEBOT_H
 
+#include <base/system.h>
+
 #include <engine/client/enums.h>
 #include <engine/console.h>
 #include <engine/shared/protocol.h>

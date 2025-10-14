@@ -10,6 +10,8 @@
 #include <engine/config.h>
 #include <engine/shared/config.h>
 
+#include <generated/protocol.h>
+
 #include <game/client/components/controls.h>
 #include <game/client/gameclient.h>
 
