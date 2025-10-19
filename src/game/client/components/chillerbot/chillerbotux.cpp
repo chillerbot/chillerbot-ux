@@ -231,60 +231,40 @@ int CChillerBotUX::GetPlayTimeHours() const
 }
 
 // function originally from Kaizo Network by +KZ, credit if used
-int CChillerBotUX::InsertArbitraryClientFlagInCountry(int Country)
+int CChillerBotUX::ReplaceCountryFlagWithCustomClientId(int Country)
 {
-	if(!g_Config.m_ClSendClientType)
-		return Country;
+    if(!g_Config.m_ClSendClientType)
+        return Country;
 
-	if(m_SendingCustomClientTicks <= 1) //dont send custom flag
-		return Country;
+    if(m_SendingCustomClientTicks <= 1) //dont send custom flag
+        return Country;
 
-	UCountryData CountryFlagsNum;
-	CountryFlagsNum.m_IntData = GameClient()->m_CountryFlags.Num();
+    //if some random day amount of flags conflicts with invalid flag, just send normal country
+    if(GameClient()->m_CountryFlags.Num() >= CUSTOM_CLIENT_ID_KAIZO_NETWORK) 
+    {
+        return Country;
+    }
 
-	//if some day amount of flags conflicts with arbitrary flag, just send normal country
-	if(CountryFlagsNum.m_aCharArbitraryData[3])
-	{
-		return Country;
-	}
-
-	//insert arbitrary byte
-	UCountryData CountryData;
-
-	CountryData.m_IntData = Country;
-	//(+KZ note: this may be removing negative bit, may need improvement,
-	// but is not a big problem since custom flag is only sent 1 time)
-	CountryData.m_aCharArbitraryData[3] = CUSTOM_CLIENT_ID_CHILLERBOTUX; //2 = CHILLERBOT-UX
-
-	return CountryData.m_IntData;
+	return CUSTOM_CLIENT_ID_CHILLERBOTUX;
 }
 
 // function originally from Kaizo Network by +KZ, credit if used
-int CChillerBotUX::RemoveArbitraryClientFlagFromCountry(int Country)
+bool CChillerBotUX::IsCustomClientId(int Country)
 {
-	UCountryData CountryData;
-
-	CountryData.m_IntData = Country;
-	//(+KZ note: this may be removing negative bit, may need improvement,
-	// but is not a big problem since custom flag is only sent 1 time)
-	CountryData.m_aCharArbitraryData[3] = 0; // clear byte
-
-	return CountryData.m_IntData;
+	return Country == CUSTOM_CLIENT_ID_KAIZO_NETWORK || Country == CUSTOM_CLIENT_ID_CHILLERBOTUX;
 }
 
-void CChillerBotUX::HandleCustomClientBytes(int Country, int ClientId)
+// code originally from Kaizo Network by +KZ, credit if used
+int CChillerBotUX::HandleClientCountry(int Country, int ClientId)
 {
-	if(m_aClientData[ClientId].m_CustomClient) // read normally if custom client already set
+	if(IsCustomClientId(Country)) //if it is a custom client id, set custom client id and keep country
 	{
-		return;
+		m_aClientData[ClientId].m_CustomClient = Country;
+		return GameClient()->m_aClients[ClientId].m_Country;
 	}
-	else
+	else //otherwise, set country
 	{
-		CChillerBotUX::UCountryData TempCountryData;
-		TempCountryData.m_IntData = Country;
-		GameClient()->m_aClients[ClientId].m_Country = RemoveArbitraryClientFlagFromCountry(TempCountryData.m_IntData);
-		//+KZ: get arbitrary custom client byte
-		m_aClientData[ClientId].m_CustomClient = TempCountryData.m_aCharArbitraryData[3];
+		return Country;
 	}
 }
 
@@ -1527,6 +1507,6 @@ int CChillerBotUX::GetUnusedJumps()
 
 void CChillerBotUX::CChillerClientData::Reset()
 {
-	m_CustomClient = '\0';
+	m_CustomClient = 0;
 	m_SentCustomClient = false;
 }

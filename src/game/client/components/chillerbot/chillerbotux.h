@@ -140,7 +140,7 @@ public:
 	class CChillerClientData
 	{
 	public:
-		char m_CustomClient = '\0'; //chillerbot
+		int m_CustomClient = 0; //chillerbot
 		bool m_SentCustomClient = false; //chillerbot
 
 		void Reset();
@@ -188,17 +188,10 @@ public:
 	int GetUnusedJumps();
 	int GetPlayTimeHours() const;
 
-	//+KZ: union to detect other custom clients by inserting data in the empty country bytes
-	union UCountryData
-	{
-		int m_IntData = 0;
-		unsigned char m_aCharArbitraryData[sizeof(int)];
-	};
-
-	int InsertArbitraryClientFlagInCountry(int Country);
-	int RemoveArbitraryClientFlagFromCountry(int Country);
+	int ReplaceCountryFlagWithCustomClientId(int Country);
+	bool IsCustomClientId(int Country);
 	int m_SendingCustomClientTicks = -1;
-	void HandleCustomClientBytes(int Country, int ClientId);
+	int HandleClientCountry(int Country, int ClientId);
 };
 
 #endif
