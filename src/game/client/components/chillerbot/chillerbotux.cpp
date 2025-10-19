@@ -233,17 +233,17 @@ int CChillerBotUX::GetPlayTimeHours() const
 // function originally from Kaizo Network by +KZ, credit if used
 int CChillerBotUX::ReplaceCountryFlagWithCustomClientId(int Country)
 {
-    if(!g_Config.m_ClSendClientType)
-        return Country;
+	if(!g_Config.m_ClSendClientType)
+		return Country;
 
-    if(m_SendingCustomClientTicks <= 1) //dont send custom flag
-        return Country;
+	if(m_SendingCustomClientTicks <= 1) //dont send custom flag
+		return Country;
 
-    //if some random day amount of flags conflicts with invalid flag, just send normal country
-    if(GameClient()->m_CountryFlags.Num() >= CUSTOM_CLIENT_ID_KAIZO_NETWORK) 
-    {
-        return Country;
-    }
+	//if some random day amount of flags conflicts with invalid flag, just send normal country
+	if(GameClient()->m_CountryFlags.Num() >= CUSTOM_CLIENT_ID_KAIZO_NETWORK)
+	{
+		return Country;
+	}
 
 	return CUSTOM_CLIENT_ID_CHILLERBOTUX;
 }
