@@ -251,7 +251,7 @@ int CChillerBotUX::ReplaceCountryFlagWithCustomClientId(int Country)
 // function originally from Kaizo Network by +KZ, credit if used
 bool CChillerBotUX::IsCustomClientId(int Country)
 {
-	return Country == CUSTOM_CLIENT_ID_KAIZO_NETWORK || Country == CUSTOM_CLIENT_ID_CHILLERBOTUX;
+	return Country > GameClient()->m_CountryFlags.Num();
 }
 
 // code originally from Kaizo Network by +KZ, credit if used
