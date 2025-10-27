@@ -9,14 +9,14 @@
 
 const char *CLangParser::StrFindOrder(const char *pHaystack, int NumNeedles, ...)
 {
-	va_list args;
-	va_start(args, NumNeedles);
+	va_list Args;
+	va_start(Args, NumNeedles);
 	// dbg_msg("langparser", "strfindorder called with %d needles", NumNeedles);
 	const char *pSearch = pHaystack;
 	bool Found = true;
 	for(int i = 0; i < NumNeedles; i++)
 	{
-		const char *pNeedle = va_arg(args, const char *);
+		const char *pNeedle = va_arg(Args, const char *);
 		// dbg_msg("needle", "%s", pNeedle);
 		if(!(pSearch = str_find_nocase(pSearch, pNeedle)))
 		{
@@ -24,7 +24,7 @@ const char *CLangParser::StrFindOrder(const char *pHaystack, int NumNeedles, ...
 			break;
 		}
 	}
-	va_end(args);
+	va_end(Args);
 	return Found ? pSearch : NULL;
 }
 
