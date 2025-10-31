@@ -637,6 +637,14 @@ Messages = [
 		NetStringStrict("m_pGeneratedCode"),
 		NetStringStrict("m_pCode"),
 		NetStringStrict("m_pTeamMembers"),
+    ]),
+
+	NetMessageEx("Sv_ServerAlert", "server-alert@netmsg.ddnet.org", [
+		NetString("m_pMessage"),
+	]),
+
+	NetMessageEx("Sv_ModeratorAlert", "moderator-alert@netmsg.ddnet.org", [
+		NetString("m_pMessage"),
 	]),
 ]
 
