@@ -9,6 +9,7 @@
 #include <engine/console.h>
 #include <engine/graphics.h>
 #include <engine/keys.h>
+#include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
 #include <engine/textrender.h>
 
@@ -28,6 +29,8 @@
 #include <game/client/race.h>
 #include <game/client/render.h>
 #include <game/version.h>
+
+#include <external/chillerbot_reply/include/chillerbot_reply/chillerbot_reply.h>
 
 CLangParser &CReplyToPing::LangParser() { return ChatHelper()->LangParser(); }
 CGameClient *CReplyToPing::GameClient() { return m_pChatHelper->GameClientUnprotected(); }
@@ -64,6 +67,20 @@ bool CReplyToPing::Reply()
 		NameLen = str_length(pName);
 	else if(GameClient()->Client()->DummyConnected() && ChatHelper()->LineShouldHighlight(m_pMessage, pDummyName))
 		NameLen = str_length(pDummyName);
+
+	CChillerBotReplyChatMessage Message;
+	Message.m_pMessage = m_pMessage;
+	Message.m_Team = 0; // TODO: set this
+	Message.m_pAuthor = m_pMessageAuthor;
+	CChillerBotReply ReplyBot;
+	ReplyBot.m_Context.m_IsDummyConnected = GameClient()->Client()->DummyConnected();
+	ReplyBot.m_Context.m_ActiveTee = g_Config.m_ClDummy;
+	ReplyBot.m_Context.m_aOwnTees[0].m_pName = pName;
+	ReplyBot.m_Context.m_aOwnTees[0].m_pName = pClan;
+	ReplyBot.m_Context.m_aOwnTees[1].m_pName = pDummyName;
+	ReplyBot.m_Context.m_aOwnTees[1].m_pName = pDummyClan;
+	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
+		return true;
 
 	// ping without further context
 	if(MsgLen < NameLen + 2)

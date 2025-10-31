@@ -5,3 +5,6 @@
 [submodule "src/engine/shared/chillerbot/ddnet-custom-clients"]
 	path = src/engine/shared/chillerbot/ddnet-custom-clients
 	url = https://github.com/ddnet-community/ddnet-custom-clients.git
+[submodule "src/external/chillerbot_reply"]
+	path = src/external/chillerbot_reply
+	url = https://github.com/chillerbot/chillerbot_reply.git

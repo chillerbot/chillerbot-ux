@@ -2667,6 +2667,8 @@ if(CLIENT)
 
   set(DEPS_CLIENT ${DEPS} ${GLEW_DEP} ${WAVPACK_DEP})
 
+  add_subdirectory(src/external/chillerbot_reply)
+
   # Libraries
   set(LIBS_CLIENT
     ${FREETYPE_LIBRARIES}
@@ -2686,6 +2688,7 @@ if(CLIENT)
     ${TARGET_STEAMAPI}
     rust_engine_shared
     rust_chillerbot_rs
+    chillerbot_reply
 
     ${PLATFORM_CLIENT_LIBS}
     ${LIBS}
