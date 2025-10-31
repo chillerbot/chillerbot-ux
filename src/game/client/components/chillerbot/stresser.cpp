@@ -104,8 +104,8 @@ void CStresser::OnRender()
 		char aArg[64];
 		const char *pCharset = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"§$%&/()=?{[]}\\<>|-.,;:+#*'~'@_/";
 		str_copy(aArg, "", sizeof(aArg));
-		int len = rand() % 64;
-		for(int i = 0; i < len; i++)
+		int Len = rand() % 64;
+		for(int i = 0; i < Len; i++)
 		{
 			char aBuf[2];
 			str_format(aBuf, sizeof(aBuf), "%c", pCharset[rand() % str_length(pCharset)]);

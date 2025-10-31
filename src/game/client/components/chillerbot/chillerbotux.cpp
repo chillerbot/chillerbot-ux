@@ -300,8 +300,8 @@ void CChillerBotUX::SkinStealTick()
 		// only steal close by
 		vec2 *pRenderPos = &GameClient()->m_aClients[ClientId].m_RenderPos;
 		vec2 Current = vec2(GameClient()->m_Snap.m_pLocalCharacter->m_X, GameClient()->m_Snap.m_pLocalCharacter->m_Y);
-		float dist = distance(*pRenderPos, Current);
-		if(dist > 32 * g_Config.m_ClSkinStealRadius)
+		float Dist = distance(*pRenderPos, Current);
+		if(Dist > 32 * g_Config.m_ClSkinStealRadius)
 			continue;
 
 		str_copy(g_Config.m_ClPlayerSkin, GameClient()->m_aClients[ClientId].m_aSkinName, sizeof(g_Config.m_ClPlayerSkin));
@@ -519,9 +519,9 @@ void CChillerBotUX::RenderEnabledComponents()
 		return;
 	if(!g_Config.m_ClChillerbotHud)
 		return;
-	int offset = 0;
+	int Offset = 0;
 	if(m_IsLeftSidedBroadcast && Client()->GameTick(g_Config.m_ClDummy) < m_BroadcastTick)
-		offset = 2;
+		Offset = 2;
 	for(auto &EnabledComponent : m_aEnabledComponents)
 	{
 		if(EnabledComponent.m_aName[0] == '\0')
@@ -530,12 +530,12 @@ void CChillerBotUX::RenderEnabledComponents()
 		float TwNoteShort = 2.f;
 		if(EnabledComponent.m_aNoteShort[0])
 			TwNoteShort += TextRender()->TextWidth(10.0f, EnabledComponent.m_aNoteShort, -1, -1);
-		Graphics()->DrawRect(4.0f, 60.f + offset * 15, TwName + TwNoteShort, 14.0f, ColorRGBA(0, 0, 0, 0.5f), IGraphics::CORNER_ALL, 3.0f);
+		Graphics()->DrawRect(4.0f, 60.f + Offset * 15, TwName + TwNoteShort, 14.0f, ColorRGBA(0, 0, 0, 0.5f), IGraphics::CORNER_ALL, 3.0f);
 
-		TextRender()->Text(5.0f, 60.f + offset * 15, 10.0f, EnabledComponent.m_aName, -1);
-		TextRender()->Text(5.0f + TwName + 2.f, 60.f + offset * 15, 10.0f, EnabledComponent.m_aNoteShort, -1);
-		TextRender()->Text(5.0f, 60.f + offset * 15 + 10, 4.0f, EnabledComponent.m_aNoteLong, -1);
-		offset++;
+		TextRender()->Text(5.0f, 60.f + Offset * 15, 10.0f, EnabledComponent.m_aName, -1);
+		TextRender()->Text(5.0f + TwName + 2.f, 60.f + Offset * 15, 10.0f, EnabledComponent.m_aNoteShort, -1);
+		TextRender()->Text(5.0f, 60.f + Offset * 15 + 10, 4.0f, EnabledComponent.m_aNoteLong, -1);
+		Offset++;
 	}
 }
 
