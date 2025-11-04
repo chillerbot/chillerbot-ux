@@ -731,7 +731,7 @@ int CTerminalUI::GetInput()
 				}
 			}
 		}
-		else if(c == KEY_BACKSPACE || c == 127) // delete
+		else if(c == KEY_BACKSPACE || c == 127 || c == 263) // delete
 		{
 			ResetCompletion();
 			int InputLen = str_length(g_aInputStr);
