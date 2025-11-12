@@ -85,6 +85,8 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Core.m_ActiveWeapon = WEAPON_GUN;
 	m_Core.m_Pos = m_Pos;
 	m_Core.m_Id = m_pPlayer->GetCid();
+	int TuneZone = Collision()->IsTune(Collision()->GetMapIndex(Pos));
+	m_Core.m_Tuning = TuningList()[TuneZone];
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCid()] = &m_Core;
 
 	m_ReckoningTick = 0;
@@ -98,7 +100,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 
 	DDRaceInit();
 
-	m_TuneZone = Collision()->IsTune(Collision()->GetMapIndex(Pos));
+	m_TuneZone = TuneZone;
 	m_TuneZoneOld = -1; // no zone leave msg on spawn
 	m_NeededFaketuning = 0; // reset fake tunings on respawn and send the client
 	SendZoneMsgs(); // we want a entermessage also on spawn
@@ -502,7 +504,6 @@ void CCharacter::FireWeapon()
 		{
 			auto *pTarget = static_cast<CCharacter *>(apEnts[i]);
 
-			//if ((pTarget == this) || Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
 			if((pTarget == this || (pTarget->IsAlive() && !CanCollide(pTarget->GetPlayer()->GetCid()))))
 				continue;
 
@@ -836,6 +837,7 @@ void CCharacter::TickDeferred()
 		CWorldCore TempWorld;
 		m_ReckoningCore.Init(&TempWorld, Collision(), &Teams()->m_Core);
 		m_ReckoningCore.m_Id = m_pPlayer->GetCid();
+		m_ReckoningCore.m_Tuning = CTuningParams();
 		m_ReckoningCore.Tick(false);
 		m_ReckoningCore.Move();
 		m_ReckoningCore.Quantize();
@@ -1297,7 +1299,7 @@ void CCharacter::Snap(int SnappingClient)
 	if(m_Core.m_LiveFrozen)
 		pDDNetCharacter->m_Flags |= CHARACTERFLAG_MOVEMENTS_DISABLED;
 
-	pDDNetCharacter->m_FreezeEnd = m_Core.m_DeepFrozen ? -1 : m_FreezeTime == 0 ? 0 : Server()->Tick() + m_FreezeTime;
+	pDDNetCharacter->m_FreezeEnd = m_Core.m_DeepFrozen ? -1 : (m_FreezeTime == 0 ? 0 : Server()->Tick() + m_FreezeTime);
 	pDDNetCharacter->m_Jumps = m_Core.m_Jumps;
 	pDDNetCharacter->m_TeleCheckpoint = m_TeleCheckpoint;
 	pDDNetCharacter->m_StrongWeakId = m_StrongWeakId;
@@ -1588,7 +1590,6 @@ void CCharacter::SetTimeCheckpoint(int TimeCheckpoint)
 void CCharacter::HandleTiles(int Index)
 {
 	int MapIndex = Index;
-	//int PureMapIndex = Collision()->GetPureMapIndex(m_Pos);
 	m_TileIndex = Collision()->GetTileIndex(MapIndex);
 	m_TileFIndex = Collision()->GetFrontTileIndex(MapIndex);
 	m_MoveRestrictions = Collision()->GetMoveRestrictions(IsSwitchActiveCb, this, m_Pos, 18.0f, MapIndex);
@@ -2024,7 +2025,7 @@ void CCharacter::HandleTiles(int Index)
 		}
 		// if no checkpointout have been found (or if there no recorded checkpoint), teleport to start
 		vec2 SpawnPos;
-		if(GameServer()->m_pController->CanSpawn(m_pPlayer->GetTeam(), &SpawnPos, GameServer()->GetDDRaceTeam(GetPlayer()->GetCid())))
+		if(GameServer()->m_pController->CanSpawn(m_pPlayer->GetTeam(), &SpawnPos, GetPlayer()->GetCid()))
 		{
 			m_Core.m_Pos = SpawnPos;
 			m_Core.m_Vel = vec2(0, 0);
@@ -2059,7 +2060,7 @@ void CCharacter::HandleTiles(int Index)
 		}
 		// if no checkpointout have been found (or if there no recorded checkpoint), teleport to start
 		vec2 SpawnPos;
-		if(GameServer()->m_pController->CanSpawn(m_pPlayer->GetTeam(), &SpawnPos, GameServer()->GetDDRaceTeam(GetPlayer()->GetCid())))
+		if(GameServer()->m_pController->CanSpawn(m_pPlayer->GetTeam(), &SpawnPos, GetPlayer()->GetCid()))
 		{
 			m_Core.m_Pos = SpawnPos;
 
@@ -2077,11 +2078,7 @@ void CCharacter::HandleTuneLayer()
 	m_TuneZoneOld = m_TuneZone;
 	int CurrentIndex = Collision()->GetMapIndex(m_Pos);
 	m_TuneZone = Collision()->IsTune(CurrentIndex);
-
-	if(m_TuneZone)
-		m_Core.m_Tuning = TuningList()[m_TuneZone]; // throw tunings from specific zone into gamecore
-	else
-		m_Core.m_Tuning = *Tuning();
+	m_Core.m_Tuning = TuningList()[m_TuneZone]; // throw tunings from specific zone into gamecore
 
 	if(m_TuneZone != m_TuneZoneOld) // don't send tunigs all the time
 	{
@@ -2565,5 +2562,5 @@ void CCharacter::ApplyMoveRestrictions()
 void CCharacter::SwapClients(int Client1, int Client2)
 {
 	const int HookedPlayer = m_Core.HookedPlayer();
-	m_Core.SetHookedPlayer(HookedPlayer == Client1 ? Client2 : HookedPlayer == Client2 ? Client1 : HookedPlayer);
+	m_Core.SetHookedPlayer(HookedPlayer == Client1 ? Client2 : (HookedPlayer == Client2 ? Client1 : HookedPlayer));
 }

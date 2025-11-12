@@ -486,7 +486,7 @@ MACRO_CONFIG_STR(SvDnsblBanReason, sv_dnsbl_ban_reason, 128, "VPN detected, try 
 MACRO_CONFIG_INT(SvDnsblChat, sv_dnsbl_chat, 0, 0, 1, CFGFLAG_SERVER, "Don't allow chat from blacklisted addresses")
 MACRO_CONFIG_INT(SvRconVote, sv_rcon_vote, 0, 0, 1, CFGFLAG_SERVER, "Only allow authed clients to call votes")
 
-MACRO_CONFIG_INT(SvPlayerDemoRecord, sv_player_demo_record, 0, 0, 1, CFGFLAG_SERVER, "Automatically record demos for each player")
+MACRO_CONFIG_INT(SvPlayerDemoRecord, sv_player_demo_record, 0, 0, 1, CFGFLAG_SERVER, "Automatically record a demo when a player sets a new personal best time.")
 MACRO_CONFIG_INT(SvDemoChat, sv_demo_chat, 0, 0, 1, CFGFLAG_SERVER, "Record chat for demos")
 MACRO_CONFIG_INT(SvServerInfoPerSecond, sv_server_info_per_second, 50, 0, 10000, CFGFLAG_SERVER, "Maximum number of complete server info responses that are sent out per second (0 for no limit)")
 MACRO_CONFIG_INT(SvVanConnPerSecond, sv_van_conn_per_second, 10, 0, 10000, CFGFLAG_SERVER, "Antispoof specific ratelimit (0 for no limit)")
@@ -508,6 +508,7 @@ MACRO_CONFIG_INT(DbgGfx, dbg_gfx, 0, 0, 4, CFGFLAG_CLIENT, "Show graphic library
 MACRO_CONFIG_INT(DbgRenderGroupClips, dbg_render_group_clips, 0, 0, 1, CFGFLAG_CLIENT, "Debug group clipping")
 MACRO_CONFIG_INT(DbgRenderQuadClips, dbg_render_quad_clips, 0, 0, 1, CFGFLAG_CLIENT, "Debug quad layer clipping")
 MACRO_CONFIG_INT(DbgRenderClusterClips, dbg_render_cluster_clips, 0, 0, 1, CFGFLAG_CLIENT, "Debug quad layer cluster clipping")
+MACRO_CONFIG_INT(DbgRenderTileClips, dbg_render_tile_clips, 0, 0, 1, CFGFLAG_CLIENT, "Debug tile layer clipping")
 #ifdef CONF_DEBUG
 MACRO_CONFIG_INT(DbgStress, dbg_stress, 0, 0, 1, CFGFLAG_CLIENT, "Stress systems (Debug build only)")
 MACRO_CONFIG_STR(DbgStressServer, dbg_stress_server, 32, "localhost", CFGFLAG_CLIENT, "Server to stress (Debug build only)")
@@ -641,7 +642,7 @@ MACRO_CONFIG_INT(ClRaceShowGhost, cl_race_show_ghost, 1, 0, 1, CFGFLAG_CLIENT | 
 MACRO_CONFIG_INT(ClRaceSaveGhost, cl_race_save_ghost, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Save ghost")
 MACRO_CONFIG_INT(ClRaceGhostStrictMap, cl_race_ghost_strict_map, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Match ghosts by map version instead of only map name")
 MACRO_CONFIG_INT(ClRaceGhostSaveBest, cl_race_ghost_save_best, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Save only ghosts that are better than the previous record.")
-MACRO_CONFIG_INT(ClRaceGhostAlpha, cl_race_ghost_alpha, 40, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Visbility of ghosts (alpha value, 0 invisible, 100 fully visible)")
+MACRO_CONFIG_INT(ClRaceGhostAlpha, cl_race_ghost_alpha, 40, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Visibility of ghosts (alpha value, 0 invisible, 100 fully visible)")
 
 MACRO_CONFIG_INT(SvResetPickups, sv_reset_pickups, 0, 0, 1, CFGFLAG_SERVER | CFGFLAG_GAME, "Whether the weapons are reset on passing the start tile or not")
 MACRO_CONFIG_INT(ClShowOthers, cl_show_others, 0, 0, 2, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show players in other teams (2 to show own team only)")
@@ -694,7 +695,7 @@ MACRO_CONFIG_STR(SvBannedVersions, sv_banned_versions, 128, "", CFGFLAG_SERVER, 
 
 // netlimit
 MACRO_CONFIG_INT(SvNetlimit, sv_netlimit, 0, 0, 10000, CFGFLAG_SERVER, "Netlimit: Maximum amount of traffic a client is allowed to use (in kb/s)")
-MACRO_CONFIG_INT(SvNetlimitAlpha, sv_netlimit_alpha, 50, 1, 100, CFGFLAG_SERVER, "Netlimit: Alpha of Exponention moving average")
+MACRO_CONFIG_INT(SvNetlimitAlpha, sv_netlimit_alpha, 50, 1, 100, CFGFLAG_SERVER, "Netlimit: Alpha of Exponentiation moving average")
 
 MACRO_CONFIG_INT(SvConnlimit, sv_connlimit, 5, 0, 100, CFGFLAG_SERVER, "Connlimit: Number of connections an IP is allowed to do in a timespan")
 MACRO_CONFIG_INT(SvConnlimitTime, sv_connlimit_time, 20, 0, 1000, CFGFLAG_SERVER, "Connlimit: Time in which IP's connections are counted")

@@ -307,8 +307,7 @@ const char *CServer::DnsblStateStr(EDnsblState State)
 		return "white";
 	}
 
-	dbg_assert(false, "unreachable");
-	dbg_break();
+	dbg_assert_failed("unreachable");
 }
 
 IConsole::EAccessLevel CServer::ConsoleAccessLevel(int ClientId) const
@@ -324,8 +323,7 @@ IConsole::EAccessLevel CServer::ConsoleAccessLevel(int ClientId) const
 		return IConsole::EAccessLevel::HELPER;
 	};
 
-	dbg_assert(false, "invalid auth level: %d", AuthLevel);
-	dbg_break();
+	dbg_assert_failed("invalid auth level: %d", AuthLevel);
 }
 
 bool CServer::IsClientNameAvailable(int ClientId, const char *pNameRequest)
@@ -602,7 +600,7 @@ int CServer::Init()
 	m_CurrentGameTick = MIN_TICK;
 
 	m_AnnouncementLastLine = -1;
-	mem_zero(m_aPrevStates, sizeof(m_aPrevStates));
+	std::fill(std::begin(m_aPrevStates), std::end(m_aPrevStates), 0);
 
 	return 0;
 }
@@ -2325,7 +2323,7 @@ void CServer::CacheServerInfo(CCache *pCache, int Type, bool SendClients)
 	case SERVERINFO_64_LEGACY: Remaining = 24; break;
 	case SERVERINFO_VANILLA: Remaining = VANILLA_MAX_CLIENTS; break;
 	case SERVERINFO_INGAME: Remaining = VANILLA_MAX_CLIENTS; break;
-	default: dbg_assert(false, "unreachable"); return;
+	default: dbg_assert_failed("unreachable");
 	}
 
 	// Use the following strategy for sending:
@@ -2541,7 +2539,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 		}
 		else
 		{
-			dbg_assert(false, "unknown serverinfo type");
+			dbg_assert_failed("unknown serverinfo type");
 		}
 
 		p.AddRaw(Chunk.m_vData.data(), Chunk.m_vData.size());
@@ -3483,9 +3481,21 @@ void CServer::ConStatus(IConsole::IResult *pResult, void *pUser)
 			aAuthStr[0] = '\0';
 			if(pThis->m_aClients[i].m_AuthKey >= 0)
 			{
-				const char *pAuthStr = pThis->GetAuthedState(i) == AUTHED_ADMIN ? "(Admin)" :
-												  pThis->GetAuthedState(i) == AUTHED_MOD ? "(Mod)" :
-																	   pThis->GetAuthedState(i) == AUTHED_HELPER ? "(Helper)" : "";
+				const char *pAuthStr = "";
+				const int AuthState = pThis->GetAuthedState(i);
+
+				if(AuthState == AUTHED_ADMIN)
+				{
+					pAuthStr = "(Admin)";
+				}
+				else if(AuthState == AUTHED_MOD)
+				{
+					pAuthStr = "(Mod)";
+				}
+				else if(AuthState == AUTHED_HELPER)
+				{
+					pAuthStr = "(Helper)";
+				}
 
 				str_format(aAuthStr, sizeof(aAuthStr), " key=%s %s", pThis->m_AuthManager.KeyIdent(pThis->m_aClients[i].m_AuthKey), pAuthStr);
 			}

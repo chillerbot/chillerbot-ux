@@ -8,6 +8,8 @@
 #include <engine/client.h>
 #include <engine/shared/config.h>
 
+#include <generated/protocol.h>
+
 #include <game/client/components/camera.h>
 #include <game/client/components/chat.h>
 #include <game/client/components/menus.h>
@@ -18,9 +20,10 @@
 CControls::CControls()
 {
 	mem_zero(&m_aLastData, sizeof(m_aLastData));
-	mem_zero(m_aMousePos, sizeof(m_aMousePos));
-	mem_zero(m_aMousePosOnAction, sizeof(m_aMousePosOnAction));
-	mem_zero(m_aTargetPos, sizeof(m_aTargetPos));
+	std::fill(std::begin(m_aMousePos), std::end(m_aMousePos), vec2(0.0f, 0.0f));
+	std::fill(std::begin(m_aMousePosOnAction), std::end(m_aMousePosOnAction), vec2(0.0f, 0.0f));
+	std::fill(std::begin(m_aTargetPos), std::end(m_aTargetPos), vec2(0.0f, 0.0f));
+	std::fill(std::begin(m_aMouseInputType), std::end(m_aMouseInputType), EMouseInputType::ABSOLUTE);
 }
 
 void CControls::OnReset()
@@ -195,6 +198,19 @@ int CControls::SnapInput(int *pData)
 
 	if(Client()->ServerCapAnyPlayerFlag() && GameClient()->m_Camera.CamType() == CCamera::CAMTYPE_SPEC)
 		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_SPEC_CAM;
+
+	switch(m_aMouseInputType[g_Config.m_ClDummy])
+	{
+	case CControls::EMouseInputType::AUTOMATED:
+		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_INPUT_ABSOLUTE;
+		break;
+	case CControls::EMouseInputType::ABSOLUTE:
+		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_INPUT_ABSOLUTE | PLAYERFLAG_INPUT_MANUAL;
+		break;
+	case CControls::EMouseInputType::RELATIVE:
+		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_INPUT_MANUAL;
+		break;
+	}
 
 	bool Send = m_aLastData[g_Config.m_ClDummy].m_PlayerFlags != m_aInputData[g_Config.m_ClDummy].m_PlayerFlags;
 
@@ -371,7 +387,10 @@ bool CControls::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
 	{
 		vec2 AbsoluteDirection;
 		if(Input()->GetActiveJoystick()->Absolute(&AbsoluteDirection.x, &AbsoluteDirection.y))
+		{
 			m_aMousePos[g_Config.m_ClDummy] = AbsoluteDirection * GetMaxMouseDistance();
+			GameClient()->m_Controls.m_aMouseInputType[g_Config.m_ClDummy] = CControls::EMouseInputType::ABSOLUTE;
+		}
 		return true;
 	}
 
@@ -391,9 +410,7 @@ bool CControls::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
 			Factor = g_Config.m_InpControllerSens / 100.0f;
 			break;
 		default:
-			dbg_msg("assert", "CControls::OnCursorMove CursorType %d", (int)CursorType);
-			dbg_break();
-			break;
+			dbg_assert_failed("CControls::OnCursorMove CursorType %d", (int)CursorType);
 		}
 	}
 
@@ -401,6 +418,7 @@ bool CControls::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
 		Factor *= GameClient()->m_Camera.m_Zoom;
 
 	m_aMousePos[g_Config.m_ClDummy] += vec2(x, y) * Factor;
+	GameClient()->m_Controls.m_aMouseInputType[g_Config.m_ClDummy] = CControls::EMouseInputType::RELATIVE;
 	ClampMousePos();
 	return true;
 }

@@ -1416,7 +1416,7 @@ void CClient::ProcessServerInfo(int RawType, NETADDR *pFrom, const void *pData, 
 				return;
 			break;
 		default:
-			dbg_assert(false, "unknown serverinfo type");
+			dbg_assert_failed("unknown serverinfo type");
 		}
 
 		if(SavedType == SERVERINFO_EXTENDED)
@@ -2075,7 +2075,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 					unsigned char aTmpBuffer3[CSnapshot::MAX_SIZE];
 					CSnapshot *pTmpBuffer3 = (CSnapshot *)aTmpBuffer3; // Fix compiler warning for strict-aliasing
 
-					// reset snapshoting
+					// reset snapshotting
 					m_aSnapshotParts[Conn] = 0;
 
 					// find snapshot that we should use as delta
@@ -2319,7 +2319,8 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 			m_ExpectedMaplistEntries = -1;
 		}
 	}
-	else if((pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0)
+	// the client handles only vital messages https://github.com/ddnet/ddnet/issues/11178
+	else if((pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 || Msg == NETMSGTYPE_SV_PREINPUT)
 	{
 		// game message
 		if(!Dummy)
@@ -3466,7 +3467,7 @@ bool CClient::InitNetworkClient(char *pError, size_t ErrorSize)
 	BindAddr.type = NETTYPE_ALL;
 	for(unsigned int i = 0; i < std::size(m_aNetClient); i++)
 	{
-		int &PortRef = i == CONN_MAIN ? g_Config.m_ClPort : i == CONN_DUMMY ? g_Config.m_ClDummyPort : g_Config.m_ClContactPort;
+		int &PortRef = i == CONN_MAIN ? g_Config.m_ClPort : (i == CONN_DUMMY ? g_Config.m_ClDummyPort : g_Config.m_ClContactPort);
 		if(PortRef < 1024) // Reject users setting ports that we don't want to use
 		{
 			PortRef = 0;
@@ -4238,7 +4239,7 @@ int CClient::HandleChecksum(int Conn, CUuid Uuid, CUnpacker *pUnpacker)
 	if(Start <= (int)sizeof(m_Checksum.m_aBytes))
 	{
 		mem_zero(&m_Checksum.m_Data.m_Config, sizeof(m_Checksum.m_Data.m_Config));
-#define CHECKSUM_RECORD(Flags) (((Flags)&CFGFLAG_CLIENT) == 0 || ((Flags)&CFGFLAG_INSENSITIVE) != 0)
+#define CHECKSUM_RECORD(Flags) (((Flags) & CFGFLAG_CLIENT) == 0 || ((Flags) & CFGFLAG_INSENSITIVE) != 0)
 #define MACRO_CONFIG_INT(Name, ScriptName, Def, Min, Max, Flags, Desc) \
 	if(CHECKSUM_RECORD(Flags)) \
 	{ \
@@ -4319,7 +4320,7 @@ void CClient::ConchainWindowScreen(IConsole::IResult *pResult, void *pUserData, 
 	if(pSelf->Graphics() && pResult->NumArguments())
 	{
 		if(g_Config.m_GfxScreen != pResult->GetInteger(0))
-			pSelf->Graphics()->SwitchWindowScreen(pResult->GetInteger(0));
+			pSelf->Graphics()->SwitchWindowScreen(pResult->GetInteger(0), true);
 	}
 	else
 		pfnCallback(pResult, pCallbackUserData);
