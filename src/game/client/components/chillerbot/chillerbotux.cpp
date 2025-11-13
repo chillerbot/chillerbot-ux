@@ -762,8 +762,8 @@ void CChillerBotUX::SelectCampArea(int Key)
 		// UNSET IF CLOSE
 		vec2 Current = vec2(GameClient()->m_Snap.m_pLocalCharacter->m_X, GameClient()->m_Snap.m_pLocalCharacter->m_Y);
 		vec2 CrackPos1 = vec2(m_CampHackX1, m_CampHackY1);
-		float dist = distance(CrackPos1, Current);
-		if(dist < 100.0f)
+		float Dist = distance(CrackPos1, Current);
+		if(Dist < 100.0f)
 		{
 			m_CampHackX1 = 0;
 			m_CampHackY1 = 0;
@@ -771,8 +771,8 @@ void CChillerBotUX::SelectCampArea(int Key)
 			return;
 		}
 		vec2 CrackPos2 = vec2(m_CampHackX2, m_CampHackY2);
-		dist = distance(CrackPos2, Current);
-		if(dist < 100.0f)
+		Dist = distance(CrackPos2, Current);
+		if(Dist < 100.0f)
 		{
 			m_CampHackX2 = 0;
 			m_CampHackY2 = 0;
