@@ -109,11 +109,11 @@ public:
 	bool IsMenu() { return m_Menu; }
 	/**
 	 * Draw menu option in the input window
-	 * 
+	 *
 	 * @param pName name of the menu item
 	 * @param Active is the item selected?
 	 * @param Offset current render offset
-	 * 
+	 *
 	 * @return returns the x coordinate on the screen
 	 *         of the end. Which can be used by the next
 	 *         item to start drawing there.
