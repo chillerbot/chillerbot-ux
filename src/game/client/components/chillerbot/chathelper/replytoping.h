@@ -6,7 +6,7 @@
 
 	Description:
 		One instance per message and reply.
-		Trys to respond to common teeworlds chat messages.
+		Tries to respond to common teeworlds chat messages.
 
 	Example:
 		char aResponse[1024];

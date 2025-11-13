@@ -1,7 +1,7 @@
 #ifndef BASE_CCURSES_H
 #define BASE_CCURSES_H
 
-// ChillerDragon's abstraction wraper on ncurses
+// ChillerDragon's abstraction wrapper on ncurses
 // ccurses
 // prefixes all curses methods with ccurses_
 

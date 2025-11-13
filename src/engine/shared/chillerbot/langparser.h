@@ -25,8 +25,8 @@ public:
 	*/
 	int StrFindIndex(const char *pHaystack, const char *pNeedle);
 
-	// Searches for pWord in pText case insenstive
-	// has to have word bounaries
+	// Searches for pWord in pText case insensitive
+	// has to have word boundaries
 	// so pText "helloweener" does not match pWord "hello"
 	// returns beginning of match or NULL
 	const char *FindWord(const char *pText, const char *pWord);

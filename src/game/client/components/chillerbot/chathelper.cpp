@@ -63,14 +63,14 @@ void CChatHelper::OnRender()
 	{
 		for(auto &Ping : m_aLastPings)
 		{
-			if(!Ping.m_ReciveTime)
+			if(!Ping.m_ReceiveTime)
 				continue;
-			if(Ping.m_ReciveTime < TimeNow - time_freq() * 60)
+			if(Ping.m_ReceiveTime < TimeNow - time_freq() * 60)
 			{
 				Ping.m_aName[0] = '\0';
 				Ping.m_aClan[0] = '\0';
 				Ping.m_aMessage[0] = '\0';
-				Ping.m_ReciveTime = 0;
+				Ping.m_ReceiveTime = 0;
 			}
 		}
 		if(m_NextGreetClear < TimeNow)

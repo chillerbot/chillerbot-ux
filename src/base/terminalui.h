@@ -35,13 +35,13 @@ public:
 	{
 		CTermWindow();
 		m_Search = false;
-		m_CurserOffset = 0;
+		m_CursorOffset = 0;
 		Open();
 		OpenMenu();
 		m_SelectedMenuItem = MENU_ITEM_BROWSER;
 	}
 	bool m_Search;
-	int m_CurserOffset;
+	int m_CursorOffset;
 	int m_Height;
 	bool m_Active;
 	bool m_Menu;
@@ -123,7 +123,7 @@ public:
 	void SetSearch(bool Search)
 	{
 		m_Search = Search;
-		m_CurserOffset = Search ? 3 : 0;
+		m_CursorOffset = Search ? 3 : 0;
 	}
 	void DrawBorders();
 };

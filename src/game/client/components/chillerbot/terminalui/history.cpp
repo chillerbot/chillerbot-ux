@@ -112,7 +112,7 @@ void CTerminalUI::ShiftHistoryFromHighToLow(int Type)
 {
 	// if there is no element at the top we wont shift
 	// to avoid infinite loops
-	// if your hist is starting at offset 2 you did somehting wrong anyways
+	// if your hist is starting at offset 2 you did something wrong anyways
 	if(m_aaInputHistory[Type][(INPUT_HISTORY_MAX_LEN - 1)][0] == '\0')
 		return;
 	while(m_aaInputHistory[Type][0][0] == '\0')

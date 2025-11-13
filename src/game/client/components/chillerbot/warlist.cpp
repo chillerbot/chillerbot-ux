@@ -886,7 +886,7 @@ void CWarList::ConWarlist(IConsole::IResult *pResult, void *pUserData)
 	}
 	else
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", "unkown warlist command try help");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", "unknown warlist command try help");
 	}
 }
 

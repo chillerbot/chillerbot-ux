@@ -53,7 +53,7 @@ private:
 	/*
 		m_aaCurrentServerAddrsNoPort
 
-		Cut off first occurence of ":" so only supporting ipv4
+		Cut off first occurrence of ":" so only supporting ipv4
 	*/
 	char m_aaCurrentServerAddrsNoPort[MAX_SERVER_ADDRESSES][64];
 	bool IsCurrentAddr(const char *pHost);

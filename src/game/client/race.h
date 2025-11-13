@@ -76,7 +76,7 @@ public:
 		Calls IsNearFinish internally.
 		It creates multiple 4x4 check boxes to cover the full given are.
 		Around position Pos with the size of RadiusInTiles.
-		Only indecies on the border are looked at.
+		Only indices on the border are looked at.
 
 		<----- radius ---->
 
@@ -100,7 +100,7 @@ public:
 		Calls IsNearStart internally.
 		It creates multiple 4x4 check boxes to cover the full given are.
 		Around position Pos with the size of RadiusInTiles.
-		Only indecies on the border are looked at.
+		Only indices on the border are looked at.
 
 		<----- radius ---->
 

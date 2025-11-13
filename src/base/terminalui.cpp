@@ -319,7 +319,7 @@ int CInputWindow::RenderMenuItem(const char *pName, bool Active, int Offset)
 
 void curses_log_push(const char *pStr, const SLOG_COLOR *pColor)
 {
-	// if ncurses is not intialized yet (terminalui.OnInit()) just print to stdout
+	// if ncurses is not initialized yet (terminalui.OnInit()) just print to stdout
 	if(!g_LogWindow.m_pCursesWin)
 	{
 		puts(pStr);

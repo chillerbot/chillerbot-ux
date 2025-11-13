@@ -77,7 +77,7 @@ bool CChillPw::IsCurrentAddr(const char *pHost)
 			// if it has a port and it does not match skip to next entry
 			if(str_find(m_aaCurrentServerAddrs[i], ":"))
 				continue;
-			// skip all non default port entrys
+			// skip all non default port entries
 			if(!str_endswith(pHost, ":8303"))
 				continue;
 			// if hostname without port does not match skip
@@ -124,7 +124,7 @@ void CChillPw::ConStatus()
 		else
 			FoundDummy++;
 	}
-	str_format(aBuf, sizeof(aBuf), "curret host: '%s' (%d addresses)", m_aaCurrentServerAddrs[0], m_NumAddrs);
+	str_format(aBuf, sizeof(aBuf), "current host: '%s' (%d addresses)", m_aaCurrentServerAddrs[0], m_NumAddrs);
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillpw", aBuf);
 	// main
 	str_format(aBuf, sizeof(aBuf), "  [main] known passwords: %d", Found);

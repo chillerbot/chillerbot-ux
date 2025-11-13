@@ -131,7 +131,7 @@ void CVibeBot::ConEmoteBot(IConsole::IResult *pResult, void *pUserData)
 		Mode = E_MUSIC;
 	else if(str_comp(pResult->GetString(0), "off"))
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "emotebot", "unkown emote.");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "emotebot", "unknown emote.");
 	}
 	pSelf->SetEmoteBot(
 		Mode,
@@ -155,7 +155,7 @@ void CVibeBot::ConVibe(IConsole::IResult *pResult, void *pUserData)
 		Mode = VB_MUSIC;
 	else if(str_comp(pResult->GetString(0), "off"))
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "vibebot", "unkown mode use 'vibes' to list all modes.");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "vibebot", "unknown mode use 'vibes' to list all modes.");
 	}
 	pSelf->SetMode(Mode, pResult->NumArguments() > 1 ? pResult->GetInteger(1) : g_Config.m_ClDummy);
 }

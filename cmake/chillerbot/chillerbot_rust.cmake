@@ -19,7 +19,7 @@ list(APPEND TARGETS_OWN rust-bridge-chillerbot)
 # overwrite variables if current content matches expected
 #
 # could probably also use list(APPEND ..) but lets me strict for now
-# to be alerted if somehing changes before weird build errors occur
+# to be alerted if something changes before weird build errors occur
 
 if(RUST_TARGETS STREQUAL "engine_shared")
     message(STATUS " * patching RUST_TARGETS ...")

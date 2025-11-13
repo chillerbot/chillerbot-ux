@@ -146,7 +146,7 @@ void CTerminalUI::InputDraw()
 		aBuf[x - 2] = '\0'; // prevent line wrapping and cut on screen border
 	wattron(g_InputWin.m_pCursesWin, COLOR_PAIR(WHITE_ON_BLACK));
 	wattron(g_InputWin.m_pCursesWin, A_BOLD);
-	mvwprintw(g_InputWin.m_pCursesWin, 1, 1 + g_InputWin.m_CurserOffset, "%s", aBuf);
+	mvwprintw(g_InputWin.m_pCursesWin, 1, 1 + g_InputWin.m_CursorOffset, "%s", aBuf);
 	refresh();
 	wattroff(g_InputWin.m_pCursesWin, A_BOLD);
 	wattroff(g_InputWin.m_pCursesWin, COLOR_PAIR(CYAN_ON_BLACK));
@@ -430,7 +430,7 @@ bool CTerminalUI::OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput)
 	//
 	// I tested it and could not witness ANY delay with my bare eyes
 	// that might be caused by some bug thats spamming inputs somewhere
-	// so if that gets fixed we might have to revist this if we want
+	// so if that gets fixed we might have to revisit this if we want
 	// playerflags to stay snappy
 	if(!WouldSend)
 		return false;
@@ -1131,7 +1131,7 @@ void CTerminalUI::ResetCompletion()
 
 void CTerminalUI::UpdateCursor()
 {
-	int Offset = g_InputWin.m_CurserOffset;
+	int Offset = g_InputWin.m_CursorOffset;
 	if(IsSearchInputMode())
 		Offset = str_length("(reverse-i-search)`");
 	wmove(g_InputWin.m_pCursesWin, 1, m_InputCursor + 1 + Offset);

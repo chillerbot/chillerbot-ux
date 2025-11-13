@@ -130,7 +130,7 @@ void CTerminalUI::RenderPlayers(int offX, int offY, int w, int h)
 {
 	float Scale = 1.0; // chillerbot tile size is always one character
 	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
-	int render_dist = 16; // render tiles surroundign the tee
+	int render_dist = 16; // render tiles surroundings the tee
 	ScreenX0 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f) - (render_dist);
 	ScreenY0 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) - (render_dist / 2);
 	ScreenX1 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f) + (render_dist);
@@ -233,7 +233,7 @@ void CTerminalUI::RenderTilemap(CTile *pTiles, int offX, int offY, int WinWidth,
 	// dbg_msg("render", "teeX: %.2f", static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X)/32.0f);
 	Scale = 1.0; // chillerbot tile size is always one character
 	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
-	int render_dist = 16; // render tiles surroundign the tee
+	int render_dist = 16; // render tiles surroundings the tee
 	ScreenX0 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f) - (render_dist);
 	ScreenY0 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y) / 32.0f) - (render_dist / 2);
 	ScreenX1 = (static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X) / 32.0f) + (render_dist);
@@ -294,7 +294,7 @@ void CTerminalUI::RenderTilemap(CTile *pTiles, int offX, int offY, int WinWidth,
 				if(Index)
 				{
 					// dbg_msg("map", "draw tile=%d at x: %.2f y: %.2f w: %.2f h: %.2f", Index, x*Scale, y*Scale, Scale, Scale);
-					// dbg_msg("map", "absolut tile x: %d y: %d       tee x: %.2f y: %.2f", renderX, renderY, static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X)/32.0f, static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
+					// dbg_msg("map", "absolute tile x: %d y: %d       tee x: %.2f y: %.2f", renderX, renderY, static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_X)/32.0f, static_cast<float>(GameClient()->m_Snap.m_pLocalCharacter->m_Y)/32.0f);
 					// dbg_msg("map", "array pos  tile x: %d y: %d\n", renderX, renderY);
 					if(Index == TILE_SOLID)
 					{

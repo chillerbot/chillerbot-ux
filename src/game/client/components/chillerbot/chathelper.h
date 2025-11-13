@@ -91,7 +91,7 @@ private:
 			m_aName[0] = '\0';
 			m_aClan[0] = '\0';
 			m_aMessage[0] = '\0';
-			m_ReciveTime = 0;
+			m_ReceiveTime = 0;
 			m_Team = 0;
 		}
 
@@ -104,7 +104,7 @@ private:
 		char m_aClan[32];
 		char m_aMessage[2048];
 		int m_Team;
-		int64_t m_ReciveTime;
+		int64_t m_ReceiveTime;
 	};
 
 	enum
@@ -130,7 +130,7 @@ private:
 		str_copy(m_aLastPings[0].m_aClan, pClan, sizeof(m_aLastPings[0].m_aClan));
 		str_copy(m_aLastPings[0].m_aMessage, pMessage, sizeof(m_aLastPings[0].m_aMessage));
 		m_aLastPings[0].m_Team = Team;
-		m_aLastPings[0].m_ReciveTime = time_get();
+		m_aLastPings[0].m_ReceiveTime = time_get();
 	}
 	void PopPing(char *pName, int SizeOfName, char *pClan, int SizeOfClan, char *pMessage, int SizeOfMessage, int *pTeam)
 	{
@@ -171,7 +171,7 @@ private:
 		SPAM_INSULT
 	};
 
-	// is the message a ping without any additonal message
+	// is the message a ping without any additional message
 	// such as "name" or "name:"
 	bool IsNoContextPing(const char *pMsg);
 

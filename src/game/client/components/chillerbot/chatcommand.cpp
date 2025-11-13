@@ -100,7 +100,7 @@ bool CChatCommand::ParseChatCmd(char Prefix, int ClientId, int Team, const char 
 			// if we reached the r parameter
 			if(NumArgs == RestOffset)
 			{
-				// strip spaces from the beggining
+				// strip spaces from the beginning
 				// add spaces in the middle and end
 				if(ppArgs[NumArgs][0])
 				{

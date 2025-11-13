@@ -187,7 +187,7 @@ class CTerminalUI : public CComponent
 	/*
 		m_InputHistory
 
-		All indecies of currently selected history entries
+		All indices of currently selected history entries
 		pointing to the strings in m_aaInputHistory
 	*/
 	int m_InputHistory[NUM_INPUTS];
@@ -353,7 +353,7 @@ class CTerminalUI : public CComponent
 			show a generic message that can be closed with an OK button
 			so very similar to POPUP_MESSAGE
 			but it also closes it self when the user gets otherwise
-			for example when the server browser is opend
+			for example when the server browser is opened
 		*/
 		POPUP_NOT_IMPORTANT,
 		POPUP_DISCONNECTED, // TODO: implement
