@@ -131,9 +131,22 @@ function wait_for_fifo() {
 
 ./DDNet-Server "sv_input_fifo server.fifo;sv_port 17822;sv_spamprotection 0;sv_spam_mute_duration 0" > server.log &
 
+client_bin=''
+for candidate in chillerbot-ux chillerbot-zx term-ux term-zx; do
+	if [ -f "$candidate" ]; then
+		client_bin="$candidate"
+		break
+	fi
+done
+
+if [ "$client_bin" = "" ]; then
+	echo "Error: no client binary found in $PWD"
+	exit 1
+fi
+
 # support chillerbot-zx
 # shellcheck disable=SC2211
-./chillerbot-* \
+./"$client_bin" \
 	"cl_input_fifo client1.fifo;
 	cl_shownotifications 0;
 	snd_volume 0;
