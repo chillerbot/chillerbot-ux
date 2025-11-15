@@ -734,6 +734,7 @@ void CGameClient::OnReset()
 
 	std::fill(std::begin(m_aDDRaceMsgSent), std::end(m_aDDRaceMsgSent), false);
 	std::fill(std::begin(m_aShowOthers), std::end(m_aShowOthers), SHOW_OTHERS_NOT_SET);
+	std::fill(std::begin(m_aEnableSpectatorCount), std::end(m_aEnableSpectatorCount), -1);
 	std::fill(std::begin(m_aLastUpdateTick), std::end(m_aLastUpdateTick), 0);
 
 	m_PredictedDummyId = -1;
@@ -969,6 +970,7 @@ void CGameClient::OnDummyDisconnect()
 	m_aLocalIds[1] = -1;
 	m_aDDRaceMsgSent[1] = false;
 	m_aShowOthers[1] = SHOW_OTHERS_NOT_SET;
+	m_aEnableSpectatorCount[1] = -1;
 	m_aLastNewPredictedTick[1] = -1;
 	m_PredictedDummyId = -1;
 }
@@ -2236,6 +2238,21 @@ void CGameClient::OnNewSnapshot()
 
 		// update state
 		m_aShowOthers[g_Config.m_ClDummy] = g_Config.m_ClShowOthers;
+	}
+
+	if(m_aEnableSpectatorCount[0] == -1 || m_aEnableSpectatorCount[0] != g_Config.m_ClShowhudSpectatorCount)
+	{
+		CNetMsg_Cl_EnableSpectatorCount Msg;
+		Msg.m_Enable = g_Config.m_ClShowhudSpectatorCount;
+		Client()->SendPackMsg(0, &Msg, MSGFLAG_VITAL);
+		m_aEnableSpectatorCount[0] = g_Config.m_ClShowhudSpectatorCount;
+	}
+	if(Client()->DummyConnected() && (m_aEnableSpectatorCount[1] == -1 || m_aEnableSpectatorCount[1] != g_Config.m_ClShowhudSpectatorCount))
+	{
+		CNetMsg_Cl_EnableSpectatorCount Msg;
+		Msg.m_Enable = g_Config.m_ClShowhudSpectatorCount;
+		Client()->SendPackMsg(1, &Msg, MSGFLAG_VITAL);
+		m_aEnableSpectatorCount[1] = g_Config.m_ClShowhudSpectatorCount;
 	}
 
 	float ShowDistanceZoom = m_Camera.m_Zoom;

@@ -225,7 +225,8 @@ public:
 	CGameWorld m_World;
 
 	// helper functions
-	class CCharacter *GetPlayerChar(int ClientId);
+	CCharacter *GetPlayerChar(int ClientId);
+	const CCharacter *GetPlayerChar(int ClientId) const;
 	bool EmulateBug(int Bug) const;
 	std::vector<SSwitchers> &Switchers() { return m_World.m_Core.m_vSwitchers; }
 
@@ -347,6 +348,7 @@ public:
 	void OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int ClientId);
 	void OnEmoticonNetMessage(const CNetMsg_Cl_Emoticon *pMsg, int ClientId);
 	void OnKillNetMessage(const CNetMsg_Cl_Kill *pMsg, int ClientId);
+	void OnEnableSpectatorCountNetMessage(const CNetMsg_Cl_EnableSpectatorCount *pMsg, int ClientId);
 	void OnStartInfoNetMessage(const CNetMsg_Cl_StartInfo *pMsg, int ClientId);
 
 	bool OnClientDataPersist(int ClientId, void *pData) override;
@@ -547,6 +549,9 @@ private:
 	static void ConPracticeEndlessHook(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeUnEndlessHook(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeToggleInvincible(IConsole::IResult *pResult, void *pUserData);
+	static void ConPracticeToggleCollision(IConsole::IResult *pResult, void *pUserData);
+	static void ConPracticeToggleHookCollision(IConsole::IResult *pResult, void *pUserData);
+	static void ConPracticeToggleHitOthers(IConsole::IResult *pResult, void *pUserData);
 
 	static void ConPracticeAddWeapon(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeRemoveWeapon(IConsole::IResult *pResult, void *pUserData);

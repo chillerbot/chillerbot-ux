@@ -590,12 +590,12 @@ public:
 		{
 			m_Active = true;
 			m_JoinTick = Tick;
-		};
+		}
 		void JoinSpec(int Tick)
 		{
 			m_Active = false;
 			m_IngameTicks += Tick - m_JoinTick;
-		};
+		}
 		int GetIngameTicks(int Tick) const { return m_IngameTicks + Tick - m_JoinTick; }
 		float GetFPM(int Tick, int TickSpeed) const { return (float)(m_Frags * TickSpeed * 60) / GetIngameTicks(Tick); }
 	};
@@ -911,6 +911,7 @@ private:
 
 	bool m_aDDRaceMsgSent[NUM_DUMMIES];
 	int m_aShowOthers[NUM_DUMMIES];
+	int m_aEnableSpectatorCount[NUM_DUMMIES]; // current setting as sent to the server, -1 if not yet sent
 
 	std::vector<std::shared_ptr<CManagedTeeRenderInfo>> m_vpManagedTeeRenderInfos;
 	void UpdateManagedTeeRenderInfos();

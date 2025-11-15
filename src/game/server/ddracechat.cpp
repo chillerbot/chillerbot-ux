@@ -1196,6 +1196,7 @@ void CGameContext::AttemptJoinTeam(int ClientId, int Team)
 			Team = EmptyTeam.value();
 		}
 
+		char aError[512];
 		if(pPlayer->m_LastDDRaceTeamChange + (int64_t)Server()->TickSpeed() * g_Config.m_SvTeamChangeDelay > Server()->Tick())
 		{
 			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
@@ -1214,9 +1215,9 @@ void CGameContext::AttemptJoinTeam(int ClientId, int Team)
 			str_format(aBuf, sizeof(aBuf), "This team already has the maximum allowed size of %d players", g_Config.m_SvMaxTeamSize);
 			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", aBuf);
 		}
-		else if(const char *pError = m_pController->Teams().SetCharacterTeam(pPlayer->GetCid(), Team))
+		else if(!m_pController->Teams().SetCharacterTeam(pPlayer->GetCid(), Team, aError, sizeof(aError)))
 		{
-			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pError);
+			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", aError);
 		}
 		else
 		{
@@ -2404,6 +2405,54 @@ void CGameContext::ConPracticeToggleInvincible(IConsole::IResult *pResult, void 
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	if(pSelf->GetPracticeCharacter(pResult))
 		ConToggleInvincible(pResult, pUserData);
+}
+
+void CGameContext::ConPracticeToggleCollision(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	auto *pChr = pSelf->GetPracticeCharacter(pResult);
+	if(!pChr)
+		return;
+
+	pChr->SetCollisionDisabled(!pChr->Core()->m_CollisionDisabled);
+}
+
+void CGameContext::ConPracticeToggleHookCollision(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	auto *pChr = pSelf->GetPracticeCharacter(pResult);
+	if(!pChr)
+		return;
+
+	pChr->SetHookHitDisabled(!pChr->Core()->m_HookHitDisabled);
+}
+
+void CGameContext::ConPracticeToggleHitOthers(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	auto *pChr = pSelf->GetPracticeCharacter(pResult);
+	if(!pChr)
+		return;
+
+	if(pResult->NumArguments() == 0 || str_comp(pResult->GetString(0), "all") == 0)
+	{
+		bool IsEnabled = (pChr->HammerHitDisabled() && pChr->ShotgunHitDisabled() &&
+				  pChr->GrenadeHitDisabled() && pChr->LaserHitDisabled());
+		pChr->SetHammerHitDisabled(!IsEnabled);
+		pChr->SetShotgunHitDisabled(!IsEnabled);
+		pChr->SetGrenadeHitDisabled(!IsEnabled);
+		pChr->SetLaserHitDisabled(!IsEnabled);
+		return;
+	}
+
+	if(str_comp(pResult->GetString(0), "hammer") == 0)
+		pChr->SetHammerHitDisabled(!pChr->HammerHitDisabled());
+	else if(str_comp(pResult->GetString(0), "shotgun") == 0)
+		pChr->SetShotgunHitDisabled(!pChr->ShotgunHitDisabled());
+	else if(str_comp(pResult->GetString(0), "grenade") == 0)
+		pChr->SetGrenadeHitDisabled(!pChr->GrenadeHitDisabled());
+	else if(str_comp(pResult->GetString(0), "laser") == 0)
+		pChr->SetLaserHitDisabled(!pChr->LaserHitDisabled());
 }
 
 void CGameContext::ConPracticeAddWeapon(IConsole::IResult *pResult, void *pUserData)
