@@ -183,7 +183,7 @@ public:
 	void ReloadList();
 
 	int NumEnemies() const { return m_WarDirs + m_TraitorDirs; }
-	int NumTeam() const { return m_TeamDirs; };
+	int NumTeam() const { return m_TeamDirs; }
 };
 
 #endif

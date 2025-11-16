@@ -58,7 +58,7 @@ class CTerminalUI : public CComponent
 			if(Key == m_aLastPressedKey[i])
 				return true;
 		return false;
-	};
+	}
 	void KeyHistoryToStr(char *pBuf, int Size)
 	{
 		str_copy(pBuf, "", Size);
@@ -68,7 +68,7 @@ class CTerminalUI : public CComponent
 			str_format(aBuf, sizeof(aBuf), " %d/%c", m_aLastPressedKey[i], m_aLastPressedKey[i]);
 			str_append(pBuf, aBuf, Size);
 		}
-	};
+	}
 	void TrackKey(int Key)
 	{
 		for(int i = 0; i < KEY_HISTORY_LEN - 1; i++)
@@ -76,7 +76,7 @@ class CTerminalUI : public CComponent
 			m_aLastPressedKey[i] = m_aLastPressedKey[i + 1];
 		}
 		m_aLastPressedKey[KEY_HISTORY_LEN - 1] = Key;
-	};
+	}
 
 	enum
 	{
@@ -127,7 +127,7 @@ class CTerminalUI : public CComponent
 		default:
 			return "INVALID";
 		}
-	};
+	}
 	const char *GetInputModeSlug(int Mode)
 	{
 		switch(Mode)
@@ -159,7 +159,7 @@ class CTerminalUI : public CComponent
 		default:
 			return "invalid";
 		}
-	};
+	}
 
 	// returns true if the curses chat input is open
 	// either public chat or team chat
@@ -201,7 +201,7 @@ class CTerminalUI : public CComponent
 			str_format(aBuf, sizeof(aBuf), "%d: %s", i, m_aaInputHistory[Type][i]);
 			str_append(pBuf, aBuf, Size);
 		}
-	};
+	}
 	void AddInputHistory(int Type, const char *pInput)
 	{
 		// we get a free max hist size
