@@ -332,6 +332,11 @@ void CGameClient::InitializeLanguage()
 	g_Localization.Load(g_Config.m_ClLanguagefile, Storage(), Console());
 }
 
+void CGameClient::ForceUpdateConsoleRemoteCompletionSuggestions()
+{
+	m_GameConsole.ForceUpdateRemoteCompletionSuggestions();
+}
+
 void CGameClient::OnInit()
 {
 	const int64_t OnInitStart = time_get();
@@ -1925,7 +1930,10 @@ void CGameClient::OnNewSnapshot()
 				m_Snap.m_SpecInfo.m_Zoom = pDDNetSpecInfo->m_Zoom / 1000.0f;
 				m_Snap.m_SpecInfo.m_Deadzone = pDDNetSpecInfo->m_Deadzone;
 				m_Snap.m_SpecInfo.m_FollowFactor = pDDNetSpecInfo->m_FollowFactor;
-				m_Snap.m_SpecInfo.m_SpectatorCount = pDDNetSpecInfo->m_SpectatorCount;
+			}
+			else if(Item.m_Type == NETOBJTYPE_SPECTATORCOUNT)
+			{
+				m_Snap.m_pSpectatorCount = (const CNetObj_SpectatorCount *)Item.m_pData;
 			}
 			else if(Item.m_Type == NETOBJTYPE_GAMEINFO)
 			{
@@ -3265,7 +3273,7 @@ IGameClient *CreateGameClient()
 	return new CGameClient();
 }
 
-int CGameClient::IntersectCharacter(vec2 HookPos, vec2 NewPos, vec2 &NewPos2, int OwnId)
+int CGameClient::IntersectCharacter(vec2 HookPos, vec2 NewPos, vec2 &NewPos2, int OwnId, vec2 *pPlayerPosition)
 {
 	float Distance = 0.0f;
 	int ClosestId = -1;
@@ -3303,6 +3311,8 @@ int CGameClient::IntersectCharacter(vec2 HookPos, vec2 NewPos, vec2 &NewPos2, in
 					NewPos2 = ClosestPoint;
 					ClosestId = i;
 					Distance = distance(HookPos, Position);
+					if(pPlayerPosition)
+						*pPlayerPosition = Position;
 				}
 			}
 		}

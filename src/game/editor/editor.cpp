@@ -240,7 +240,7 @@ void CEditor::DeleteSelectedQuads()
 		i--;
 	}
 
-	m_EditorHistory.RecordAction(std::make_shared<CEditorActionDeleteQuad>(this, m_SelectedGroup, m_vSelectedLayers[0], vSelectedQuads, vDeletedQuads));
+	m_Map.m_EditorHistory.RecordAction(std::make_shared<CEditorActionDeleteQuad>(&m_Map, m_SelectedGroup, m_vSelectedLayers[0], vSelectedQuads, vDeletedQuads));
 }
 
 bool CEditor::IsQuadSelected(int Index) const
@@ -843,16 +843,16 @@ void CEditor::DoToolbarLayers(CUIRect ToolBar)
 		// undo/redo group
 		ToolbarTop.VSplitLeft(25.0f, &Button, &ToolbarTop);
 		static int s_UndoButton = 0;
-		if(DoButton_FontIcon(&s_UndoButton, FONT_ICON_UNDO, m_EditorHistory.CanUndo() - 1, &Button, BUTTONFLAG_LEFT, "[Ctrl+Z] Undo the last action.", IGraphics::CORNER_L))
+		if(DoButton_FontIcon(&s_UndoButton, FONT_ICON_UNDO, m_Map.m_EditorHistory.CanUndo() - 1, &Button, BUTTONFLAG_LEFT, "[Ctrl+Z] Undo the last action.", IGraphics::CORNER_L))
 		{
-			m_EditorHistory.Undo();
+			m_Map.m_EditorHistory.Undo();
 		}
 
 		ToolbarTop.VSplitLeft(25.0f, &Button, &ToolbarTop);
 		static int s_RedoButton = 0;
-		if(DoButton_FontIcon(&s_RedoButton, FONT_ICON_REDO, m_EditorHistory.CanRedo() - 1, &Button, BUTTONFLAG_LEFT, "[Ctrl+Y] Redo the last action.", IGraphics::CORNER_R))
+		if(DoButton_FontIcon(&s_RedoButton, FONT_ICON_REDO, m_Map.m_EditorHistory.CanRedo() - 1, &Button, BUTTONFLAG_LEFT, "[Ctrl+Y] Redo the last action.", IGraphics::CORNER_R))
 		{
-			m_EditorHistory.Redo();
+			m_Map.m_EditorHistory.Redo();
 		}
 
 		ToolbarTop.VSplitLeft(5.0f, nullptr, &ToolbarTop);
@@ -1107,19 +1107,18 @@ void CEditor::DoSoundSource(int LayerIndex, CSoundSource *pSource, int Index)
 	float CenterY = fx2f(pSource->m_Position.y);
 
 	const bool IgnoreGrid = Input()->AltIsPressed();
-	static CSoundSourceOperationTracker s_Tracker(this);
 
 	if(s_Operation == ESoundSourceOp::OP_NONE)
 	{
 		if(!Ui()->MouseButton(0))
-			s_Tracker.End();
+			m_Map.m_SoundSourceOperationTracker.End();
 	}
 
 	if(Ui()->CheckActiveItem(pSource))
 	{
 		if(s_Operation != ESoundSourceOp::OP_NONE)
 		{
-			s_Tracker.Begin(pSource, s_Operation, LayerIndex);
+			m_Map.m_SoundSourceOperationTracker.Begin(pSource, s_Operation, LayerIndex);
 		}
 
 		if(m_MouseDeltaWorld != vec2(0.0f, 0.0f))
@@ -1764,7 +1763,7 @@ void CEditor::DoQuad(int LayerIndex, const std::shared_ptr<CLayerQuads> &pLayer,
 			// check if we only should move pivot
 			if(s_Operation == OP_MOVE_PIVOT)
 			{
-				m_QuadTracker.BeginQuadTrack(pLayer, m_vSelectedQuads, -1, LayerIndex);
+				m_Map.m_QuadTracker.BeginQuadTrack(pLayer, m_vSelectedQuads, -1, LayerIndex);
 
 				s_LastOffset = GetDragOffset(); // Update offset
 				ApplyAxisAlignment(s_LastOffset); // Apply axis alignment to the offset
@@ -1780,7 +1779,7 @@ void CEditor::DoQuad(int LayerIndex, const std::shared_ptr<CLayerQuads> &pLayer,
 			}
 			else if(s_Operation == OP_MOVE_ALL)
 			{
-				m_QuadTracker.BeginQuadTrack(pLayer, m_vSelectedQuads, -1, LayerIndex);
+				m_Map.m_QuadTracker.BeginQuadTrack(pLayer, m_vSelectedQuads, -1, LayerIndex);
 
 				// Compute drag offset
 				s_LastOffset = GetDragOffset();
@@ -1800,7 +1799,7 @@ void CEditor::DoQuad(int LayerIndex, const std::shared_ptr<CLayerQuads> &pLayer,
 			}
 			else if(s_Operation == OP_ROTATE)
 			{
-				m_QuadTracker.BeginQuadTrack(pLayer, m_vSelectedQuads, -1, LayerIndex);
+				m_Map.m_QuadTracker.BeginQuadTrack(pLayer, m_vSelectedQuads, -1, LayerIndex);
 
 				for(size_t i = 0; i < m_vSelectedQuads.size(); ++i)
 				{
@@ -1873,7 +1872,7 @@ void CEditor::DoQuad(int LayerIndex, const std::shared_ptr<CLayerQuads> &pLayer,
 				Ui()->DisableMouseLock();
 				s_Operation = OP_NONE;
 				Ui()->SetActiveItem(nullptr);
-				m_QuadTracker.EndQuadTrack();
+				m_Map.m_QuadTracker.EndQuadTrack();
 			}
 			else if(Ui()->MouseButton(1))
 			{
@@ -1903,7 +1902,7 @@ void CEditor::DoQuad(int LayerIndex, const std::shared_ptr<CLayerQuads> &pLayer,
 				}
 				else if(s_Operation == OP_MOVE_PIVOT || s_Operation == OP_MOVE_ALL)
 				{
-					m_QuadTracker.EndQuadTrack();
+					m_Map.m_QuadTracker.EndQuadTrack();
 				}
 
 				Ui()->DisableMouseLock();
@@ -2053,7 +2052,7 @@ void CEditor::DoQuadPoint(int LayerIndex, const std::shared_ptr<CLayerQuads> &pL
 
 			if(s_Operation == OP_MOVEPOINT)
 			{
-				m_QuadTracker.BeginQuadTrack(pLayer, m_vSelectedQuads, -1, LayerIndex);
+				m_Map.m_QuadTracker.BeginQuadTrack(pLayer, m_vSelectedQuads, -1, LayerIndex);
 
 				s_LastOffset = GetDragOffset(); // Update offset
 				ApplyAxisAlignment(s_LastOffset); // Apply axis alignment to offset
@@ -2076,9 +2075,9 @@ void CEditor::DoQuadPoint(int LayerIndex, const std::shared_ptr<CLayerQuads> &pL
 			{
 				int SelectedPoints = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
 
-				m_QuadTracker.BeginQuadPointPropTrack(pLayer, m_vSelectedQuads, SelectedPoints, -1, LayerIndex);
-				m_QuadTracker.AddQuadPointPropTrack(EQuadPointProp::PROP_TEX_U);
-				m_QuadTracker.AddQuadPointPropTrack(EQuadPointProp::PROP_TEX_V);
+				m_Map.m_QuadTracker.BeginQuadPointPropTrack(pLayer, m_vSelectedQuads, SelectedPoints, -1, LayerIndex);
+				m_Map.m_QuadTracker.AddQuadPointPropTrack(EQuadPointProp::PROP_TEX_U);
+				m_Map.m_QuadTracker.AddQuadPointPropTrack(EQuadPointProp::PROP_TEX_V);
 
 				for(int Selected : m_vSelectedQuads)
 				{
@@ -2148,11 +2147,11 @@ void CEditor::DoQuadPoint(int LayerIndex, const std::shared_ptr<CLayerQuads> &pL
 
 				if(s_Operation == OP_MOVEPOINT)
 				{
-					m_QuadTracker.EndQuadTrack();
+					m_Map.m_QuadTracker.EndQuadTrack();
 				}
 				else if(s_Operation == OP_MOVEUV)
 				{
-					m_QuadTracker.EndQuadPointPropTrackAll();
+					m_Map.m_QuadTracker.EndQuadPointPropTrackAll();
 				}
 
 				Ui()->DisableMouseLock();
@@ -2382,7 +2381,7 @@ void CEditor::DoQuadKnife(int QuadIndex)
 		pResult->m_aPoints[4].y = ((pResult->m_aPoints[0].y + pResult->m_aPoints[3].y) / 2 + (pResult->m_aPoints[1].y + pResult->m_aPoints[2].y) / 2) / 2;
 
 		m_QuadKnifeCount = 0;
-		m_EditorHistory.RecordAction(std::make_shared<CEditorActionNewQuad>(this, m_SelectedGroup, m_vSelectedLayers[0]));
+		m_Map.m_EditorHistory.RecordAction(std::make_shared<CEditorActionNewQuad>(&m_Map, m_SelectedGroup, m_vSelectedLayers[0]));
 	}
 
 	// Render
@@ -2442,155 +2441,167 @@ void CEditor::DoQuadKnife(int QuadIndex)
 	Graphics()->QuadsEnd();
 }
 
-void CEditor::DoQuadEnvelopes(const std::vector<CQuad> &vQuads, IGraphics::CTextureHandle Texture)
+void CEditor::DoQuadEnvelopes(const CLayerQuads *pLayerQuads)
 {
-	size_t Num = vQuads.size();
-	std::shared_ptr<CEnvelope> *apEnvelope = new std::shared_ptr<CEnvelope>[Num];
-	for(size_t i = 0; i < Num; i++)
-		apEnvelope[i] = nullptr;
-
-	for(size_t i = 0; i < Num; i++)
+	const std::vector<CQuad> &vQuads = pLayerQuads->m_vQuads;
+	if(vQuads.empty())
 	{
-		if((m_ActiveEnvelopePreview == EEnvelopePreview::SELECTED && vQuads[i].m_PosEnv == m_SelectedEnvelope) || m_ActiveEnvelopePreview == EEnvelopePreview::ALL)
-			if(vQuads[i].m_PosEnv >= 0 && vQuads[i].m_PosEnv < (int)m_Map.m_vpEnvelopes.size())
-				apEnvelope[i] = m_Map.m_vpEnvelopes[vQuads[i].m_PosEnv];
+		return;
 	}
 
-	// Draw Lines
+	std::vector<std::pair<const CQuad *, CEnvelope *>> vQuadsWithEnvelopes;
+	vQuadsWithEnvelopes.reserve(vQuads.size());
+	for(const auto &Quad : vQuads)
+	{
+		if(m_ActiveEnvelopePreview != EEnvelopePreview::ALL &&
+			!(m_ActiveEnvelopePreview == EEnvelopePreview::SELECTED && Quad.m_PosEnv == m_SelectedEnvelope))
+		{
+			continue;
+		}
+		if(Quad.m_PosEnv < 0 ||
+			Quad.m_PosEnv >= (int)m_Map.m_vpEnvelopes.size() ||
+			m_Map.m_vpEnvelopes[Quad.m_PosEnv]->m_vPoints.empty())
+		{
+			continue;
+		}
+		vQuadsWithEnvelopes.emplace_back(&Quad, m_Map.m_vpEnvelopes[Quad.m_PosEnv].get());
+	}
+	if(vQuadsWithEnvelopes.empty())
+	{
+		return;
+	}
+
+	GetSelectedGroup()->MapScreen();
+
+	// Draw lines between points
 	Graphics()->TextureClear();
 	IGraphics::CLineItemBatch LineItemBatch;
 	Graphics()->LinesBatchBegin(&LineItemBatch);
-	Graphics()->SetColor(80.0f / 255, 150.0f / 255, 230.f / 255, 0.5f);
-	for(size_t j = 0; j < Num; j++)
+	Graphics()->SetColor(ColorRGBA(0.0f, 1.0f, 1.0f, 0.75f));
+	for(const auto &[pQuad, pEnvelope] : vQuadsWithEnvelopes)
 	{
-		if(!apEnvelope[j] || apEnvelope[j]->m_vPoints.empty())
+		if(pEnvelope->m_vPoints.size() < 2)
+		{
 			continue;
+		}
 
-		// QuadParams
-		const CPoint *pPivotPoint = &vQuads[j].m_aPoints[4];
+		const CPoint *pPivotPoint = &pQuad->m_aPoints[4];
 		const vec2 PivotPoint = vec2(fx2f(pPivotPoint->x), fx2f(pPivotPoint->y));
 
-		const float StartTime = apEnvelope[j]->m_vPoints[0].m_Time.AsSeconds();
-		const float EndTime = apEnvelope[j]->m_vPoints[apEnvelope[j]->m_vPoints.size() - 1].m_Time.AsSeconds();
-		const float TimeRange = EndTime - StartTime;
-		const int Steps = std::clamp(round_to_int(TimeRange * 10.0f), 250, 2500);
-		const float StepTime = TimeRange / static_cast<float>(Steps);
-
-		ColorRGBA Result = ColorRGBA(0.0f, 0.0f, 0.0f, 0.0f);
-		apEnvelope[j]->Eval(StartTime, Result, 2);
-		vec2 Pos0 = PivotPoint + vec2(Result.r, Result.g);
-		float PrevTime = StartTime;
-		for(int Step = 1; Step <= Steps; Step++)
+		for(int PointIndex = 0; PointIndex <= (int)pEnvelope->m_vPoints.size() - 2; PointIndex++)
 		{
-			float CurrentTime = StartTime + Step * StepTime;
-			if(CurrentTime >= EndTime)
+			const auto &PointStart = pEnvelope->m_vPoints[PointIndex];
+			const auto &PointEnd = pEnvelope->m_vPoints[PointIndex + 1];
+			const float PointStartTime = PointStart.m_Time.AsSeconds();
+			const float PointEndTime = PointEnd.m_Time.AsSeconds();
+			const float TimeRange = PointEndTime - PointStartTime;
+
+			int Steps;
+			if(PointStart.m_Curvetype == CURVETYPE_BEZIER)
 			{
-				CurrentTime = EndTime - 0.001f;
-				if(CurrentTime <= PrevTime)
-					break;
+				Steps = std::clamp(round_to_int(TimeRange * 10.0f), 50, 150);
 			}
-			Result = ColorRGBA(0.0f, 0.0f, 0.0f, 0.0f);
-			apEnvelope[j]->Eval(CurrentTime, Result, 2);
+			else
+			{
+				Steps = 1;
+			}
+			ColorRGBA StartPosition = PointStart.ColorValue();
+			for(int Step = 1; Step <= Steps; Step++)
+			{
+				ColorRGBA EndPosition;
+				if(Step == Steps)
+				{
+					EndPosition = PointEnd.ColorValue();
+				}
+				else
+				{
+					const float SectionEndTime = PointStartTime + TimeRange * (Step / (float)Steps);
+					EndPosition = ColorRGBA(0.0f, 0.0f, 0.0f, 0.0f);
+					pEnvelope->Eval(SectionEndTime, EndPosition, 2);
+				}
 
-			const vec2 Pos1 = PivotPoint + vec2(Result.r, Result.g);
+				const vec2 Pos0 = PivotPoint + vec2(StartPosition.r, StartPosition.g);
+				const vec2 Pos1 = PivotPoint + vec2(EndPosition.r, EndPosition.g);
+				const IGraphics::CLineItem Item = IGraphics::CLineItem(Pos0, Pos1);
+				Graphics()->LinesBatchDraw(&LineItemBatch, &Item, 1);
 
-			const IGraphics::CLineItem Item = IGraphics::CLineItem(Pos0.x, Pos0.y, Pos1.x, Pos1.y);
-			Graphics()->LinesBatchDraw(&LineItemBatch, &Item, 1);
-
-			Pos0 = Pos1;
-			PrevTime = CurrentTime;
+				StartPosition = EndPosition;
+			}
 		}
 	}
 	Graphics()->LinesBatchEnd(&LineItemBatch);
 
-	// Draw Quads
-	Graphics()->TextureSet(Texture);
-	Graphics()->QuadsBegin();
-
-	for(size_t j = 0; j < Num; j++)
+	// Draw quads at points
+	if(pLayerQuads->m_Image >= 0 && pLayerQuads->m_Image < (int)m_Map.m_vpImages.size())
 	{
-		if(!apEnvelope[j])
-			continue;
-
-		// QuadParams
-		for(size_t i = 0; i < apEnvelope[j]->m_vPoints.size(); i++)
+		Graphics()->TextureSet(m_Map.m_vpImages[pLayerQuads->m_Image]->m_Texture);
+	}
+	else
+	{
+		Graphics()->TextureClear();
+	}
+	Graphics()->QuadsBegin();
+	for(const auto &[pQuad, pEnvelope] : vQuadsWithEnvelopes)
+	{
+		for(size_t PointIndex = 0; PointIndex < pEnvelope->m_vPoints.size(); PointIndex++)
 		{
-			// Calc Env Position
-			float OffsetX = fx2f(apEnvelope[j]->m_vPoints[i].m_aValues[0]);
-			float OffsetY = fx2f(apEnvelope[j]->m_vPoints[i].m_aValues[1]);
-			const float Rotation = fx2f(apEnvelope[j]->m_vPoints[i].m_aValues[2]) / 360.0f * pi * 2;
+			const CEnvPoint_runtime &EnvPoint = pEnvelope->m_vPoints[PointIndex];
+			const vec2 Offset = vec2(fx2f(EnvPoint.m_aValues[0]), fx2f(EnvPoint.m_aValues[1]));
+			const float Rotation = fx2f(EnvPoint.m_aValues[2]) / 180.0f * pi;
 
-			// Set Colours
-			float Alpha = (m_SelectedQuadEnvelope == vQuads[j].m_PosEnv && IsEnvPointSelected(i)) ? 0.65f : 0.35f;
-			IGraphics::CColorVertex aArray[] = {
-				IGraphics::CColorVertex(0, vQuads[j].m_aColors[0].r, vQuads[j].m_aColors[0].g, vQuads[j].m_aColors[0].b, Alpha),
-				IGraphics::CColorVertex(1, vQuads[j].m_aColors[1].r, vQuads[j].m_aColors[1].g, vQuads[j].m_aColors[1].b, Alpha),
-				IGraphics::CColorVertex(2, vQuads[j].m_aColors[2].r, vQuads[j].m_aColors[2].g, vQuads[j].m_aColors[2].b, Alpha),
-				IGraphics::CColorVertex(3, vQuads[j].m_aColors[3].r, vQuads[j].m_aColors[3].g, vQuads[j].m_aColors[3].b, Alpha)};
-			Graphics()->SetColorVertex(aArray, std::size(aArray));
+			const float Alpha = (m_SelectedQuadEnvelope == pQuad->m_PosEnv && IsEnvPointSelected(PointIndex)) ? 0.65f : 0.35f;
+			Graphics()->SetColor4(
+				ColorRGBA(pQuad->m_aColors[0].r, pQuad->m_aColors[0].g, pQuad->m_aColors[0].b, pQuad->m_aColors[0].a).Multiply(1.0f / 255.0f).WithMultipliedAlpha(Alpha),
+				ColorRGBA(pQuad->m_aColors[1].r, pQuad->m_aColors[1].g, pQuad->m_aColors[1].b, pQuad->m_aColors[1].a).Multiply(1.0f / 255.0f).WithMultipliedAlpha(Alpha),
+				ColorRGBA(pQuad->m_aColors[3].r, pQuad->m_aColors[3].g, pQuad->m_aColors[3].b, pQuad->m_aColors[3].a).Multiply(1.0f / 255.0f).WithMultipliedAlpha(Alpha),
+				ColorRGBA(pQuad->m_aColors[2].r, pQuad->m_aColors[2].g, pQuad->m_aColors[2].b, pQuad->m_aColors[2].a).Multiply(1.0f / 255.0f).WithMultipliedAlpha(Alpha));
 
-			// Rotation
 			const CPoint *pPoints;
 			CPoint aRotated[4];
 			if(Rotation != 0.0f)
 			{
-				std::copy_n(vQuads[j].m_aPoints, std::size(aRotated), aRotated);
+				std::copy_n(pQuad->m_aPoints, std::size(aRotated), aRotated);
 				for(auto &Point : aRotated)
 				{
-					Rotate(&vQuads[j].m_aPoints[4], &Point, Rotation);
+					Rotate(&pQuad->m_aPoints[4], &Point, Rotation);
 				}
 				pPoints = aRotated;
 			}
 			else
 			{
-				pPoints = vQuads[j].m_aPoints;
+				pPoints = pQuad->m_aPoints;
 			}
-
-			// Set Texture Coords
 			Graphics()->QuadsSetSubsetFree(
-				fx2f(vQuads[j].m_aTexcoords[0].x), fx2f(vQuads[j].m_aTexcoords[0].y),
-				fx2f(vQuads[j].m_aTexcoords[1].x), fx2f(vQuads[j].m_aTexcoords[1].y),
-				fx2f(vQuads[j].m_aTexcoords[2].x), fx2f(vQuads[j].m_aTexcoords[2].y),
-				fx2f(vQuads[j].m_aTexcoords[3].x), fx2f(vQuads[j].m_aTexcoords[3].y));
+				fx2f(pQuad->m_aTexcoords[0].x), fx2f(pQuad->m_aTexcoords[0].y),
+				fx2f(pQuad->m_aTexcoords[1].x), fx2f(pQuad->m_aTexcoords[1].y),
+				fx2f(pQuad->m_aTexcoords[2].x), fx2f(pQuad->m_aTexcoords[2].y),
+				fx2f(pQuad->m_aTexcoords[3].x), fx2f(pQuad->m_aTexcoords[3].y));
 
-			// Set Quad Coords & Draw
-			IGraphics::CFreeformItem Freeform(
-				fx2f(pPoints[0].x) + OffsetX, fx2f(pPoints[0].y) + OffsetY,
-				fx2f(pPoints[1].x) + OffsetX, fx2f(pPoints[1].y) + OffsetY,
-				fx2f(pPoints[2].x) + OffsetX, fx2f(pPoints[2].y) + OffsetY,
-				fx2f(pPoints[3].x) + OffsetX, fx2f(pPoints[3].y) + OffsetY);
+			const IGraphics::CFreeformItem Freeform(
+				fx2f(pPoints[0].x) + Offset.x, fx2f(pPoints[0].y) + Offset.y,
+				fx2f(pPoints[1].x) + Offset.x, fx2f(pPoints[1].y) + Offset.y,
+				fx2f(pPoints[2].x) + Offset.x, fx2f(pPoints[2].y) + Offset.y,
+				fx2f(pPoints[3].x) + Offset.x, fx2f(pPoints[3].y) + Offset.y);
 			Graphics()->QuadsDrawFreeform(&Freeform, 1);
 		}
 	}
 	Graphics()->QuadsEnd();
 
-	// Draw QuadPoints
+	// Draw quad envelope point handles
 	Graphics()->TextureClear();
 	Graphics()->QuadsBegin();
-	for(size_t j = 0; j < Num; j++)
+	for(const auto &[pQuad, pEnvelope] : vQuadsWithEnvelopes)
 	{
-		if(!apEnvelope[j])
-			continue;
-
-		for(size_t i = 0; i < apEnvelope[j]->m_vPoints.size(); i++)
-			DoQuadEnvPoint(&vQuads[j], j, i);
+		for(size_t PointIndex = 0; PointIndex < pEnvelope->m_vPoints.size(); PointIndex++)
+		{
+			DoQuadEnvPoint(pQuad, pEnvelope, pQuad - vQuads.data(), PointIndex);
+		}
 	}
 	Graphics()->QuadsEnd();
-	delete[] apEnvelope;
 }
 
-void CEditor::DoQuadEnvPoint(const CQuad *pQuad, int QuadIndex, int PointIndex)
+void CEditor::DoQuadEnvPoint(const CQuad *pQuad, CEnvelope *pEnvelope, int QuadIndex, int PointIndex)
 {
-	enum
-	{
-		OP_NONE = 0,
-		OP_MOVE,
-		OP_ROTATE,
-	};
-
-	static int s_Operation = OP_NONE;
-
-	std::shared_ptr<CEnvelope> pEnvelope = m_Map.m_vpEnvelopes[pQuad->m_PosEnv];
 	CEnvPoint_runtime *pPoint = &pEnvelope->m_vPoints[PointIndex];
 	const vec2 Center = vec2(fx2f(pQuad->m_aPoints[4].x) + fx2f(pPoint->m_aValues[0]), fx2f(pQuad->m_aPoints[4].y) + fx2f(pPoint->m_aValues[1]));
 	const bool IgnoreGrid = Input()->AltIsPressed();
@@ -2599,7 +2610,7 @@ void CEditor::DoQuadEnvPoint(const CQuad *pQuad, int QuadIndex, int PointIndex)
 	{
 		if(m_MouseDeltaWorld != vec2(0.0f, 0.0f))
 		{
-			if(s_Operation == OP_MOVE)
+			if(m_QuadEnvelopePointOperation == EQuadEnvelopePointOperation::MOVE)
 			{
 				vec2 Pos = Ui()->MouseWorldPos();
 				if(MapView()->MapGrid()->IsEnabled() && !IgnoreGrid)
@@ -2609,7 +2620,7 @@ void CEditor::DoQuadEnvPoint(const CQuad *pQuad, int QuadIndex, int PointIndex)
 				pPoint->m_aValues[0] = f2fx(Pos.x) - pQuad->m_aPoints[4].x;
 				pPoint->m_aValues[1] = f2fx(Pos.y) - pQuad->m_aPoints[4].y;
 			}
-			else if(s_Operation == OP_ROTATE)
+			else if(m_QuadEnvelopePointOperation == EQuadEnvelopePointOperation::ROTATE)
 			{
 				pPoint->m_aValues[2] += 10 * Ui()->MouseDeltaX();
 			}
@@ -2618,17 +2629,15 @@ void CEditor::DoQuadEnvPoint(const CQuad *pQuad, int QuadIndex, int PointIndex)
 		if(!Ui()->MouseButton(0))
 		{
 			Ui()->DisableMouseLock();
-			s_Operation = OP_NONE;
+			m_QuadEnvelopePointOperation = EQuadEnvelopePointOperation::NONE;
 			Ui()->SetActiveItem(nullptr);
 		}
 
-		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+		Graphics()->SetColor(ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	else if(Ui()->HotItem() == pPoint && m_CurrentQuadIndex == QuadIndex)
 	{
-		m_pUiGotContext = pPoint;
-
-		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+		Graphics()->SetColor(ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
 		str_copy(m_aTooltip, "Left mouse button to move. Hold ctrl to rotate. Hold alt to ignore grid.");
 
 		if(Ui()->MouseButton(0))
@@ -2636,20 +2645,15 @@ void CEditor::DoQuadEnvPoint(const CQuad *pQuad, int QuadIndex, int PointIndex)
 			if(Input()->ModifierIsPressed())
 			{
 				Ui()->EnableMouseLock(pPoint);
-				s_Operation = OP_ROTATE;
-
-				SelectQuad(QuadIndex);
+				m_QuadEnvelopePointOperation = EQuadEnvelopePointOperation::ROTATE;
 			}
 			else
 			{
-				s_Operation = OP_MOVE;
-
-				SelectQuad(QuadIndex);
+				m_QuadEnvelopePointOperation = EQuadEnvelopePointOperation::MOVE;
 			}
-
+			SelectQuad(QuadIndex);
 			SelectEnvPoint(PointIndex);
 			m_SelectedQuadEnvelope = pQuad->m_PosEnv;
-
 			Ui()->SetActiveItem(pPoint);
 		}
 		else
@@ -2659,7 +2663,9 @@ void CEditor::DoQuadEnvPoint(const CQuad *pQuad, int QuadIndex, int PointIndex)
 		}
 	}
 	else
-		Graphics()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+	{
+		Graphics()->SetColor(ColorRGBA(0.0f, 1.0f, 1.0f, 1.0f));
+	}
 
 	IGraphics::CQuadItem QuadItem(Center.x, Center.y, 5.0f * m_MouseWorldScale, 5.0f * m_MouseWorldScale);
 	Graphics()->QuadsDraw(&QuadItem, 1);
@@ -2994,8 +3000,8 @@ void CEditor::DoMapEditor(CUIRect View)
 							std::shared_ptr<CLayer> pBrush = m_pBrush->IsEmpty() ? nullptr : m_pBrush->m_vpLayers[BrushIndex];
 							apEditLayers[k].second->FillSelection(m_pBrush->IsEmpty(), pBrush.get(), r);
 						}
-						std::shared_ptr<IEditorAction> Action = std::make_shared<CEditorBrushDrawAction>(this, m_SelectedGroup);
-						m_EditorHistory.RecordAction(Action);
+						std::shared_ptr<IEditorAction> Action = std::make_shared<CEditorBrushDrawAction>(&m_Map, m_SelectedGroup);
+						m_Map.m_EditorHistory.RecordAction(Action);
 					}
 					else
 					{
@@ -3218,10 +3224,10 @@ void CEditor::DoMapEditor(CUIRect View)
 		{
 			if(s_Operation == OP_BRUSH_DRAW)
 			{
-				std::shared_ptr<IEditorAction> pAction = std::make_shared<CEditorBrushDrawAction>(this, m_SelectedGroup);
+				std::shared_ptr<IEditorAction> pAction = std::make_shared<CEditorBrushDrawAction>(&m_Map, m_SelectedGroup);
 
 				if(!pAction->IsEmpty()) // Avoid recording tile draw action when placing quads only
-					m_EditorHistory.RecordAction(pAction);
+					m_Map.m_EditorHistory.RecordAction(pAction);
 			}
 
 			s_Operation = OP_NONE;
@@ -3245,16 +3251,13 @@ void CEditor::DoMapEditor(CUIRect View)
 	if(!m_ShowPicker)
 		MapView()->ProofMode()->RenderScreenSizes();
 
-	if(!m_ShowPicker && m_ShowEnvelopePreview && m_ActiveEnvelopePreview != EEnvelopePreview::NONE && GetSelectedLayer(0) && GetSelectedLayer(0)->m_Type == LAYERTYPE_QUADS)
+	if(!m_ShowPicker && m_ShowEnvelopePreview && m_ActiveEnvelopePreview != EEnvelopePreview::NONE)
 	{
-		GetSelectedGroup()->MapScreen();
-
-		std::shared_ptr<CLayerQuads> pLayer = std::static_pointer_cast<CLayerQuads>(GetSelectedLayer(0));
-		IGraphics::CTextureHandle Texture;
-		if(pLayer->m_Image >= 0 && pLayer->m_Image < (int)m_Map.m_vpImages.size())
-			Texture = m_Map.m_vpImages[pLayer->m_Image]->m_Texture;
-
-		DoQuadEnvelopes(pLayer->m_vQuads, Texture);
+		const std::shared_ptr<CLayer> pSelectedLayer = GetSelectedLayer(0);
+		if(pSelectedLayer != nullptr && pSelectedLayer->m_Type == LAYERTYPE_QUADS)
+		{
+			DoQuadEnvelopes(static_cast<const CLayerQuads *>(pSelectedLayer.get()));
+		}
 		m_ActiveEnvelopePreview = EEnvelopePreview::NONE;
 	}
 
@@ -4044,13 +4047,13 @@ void CEditor::RenderLayers(CUIRect LayersBox)
 		if(s_PreviousOperation == OP_GROUP_DRAG)
 		{
 			s_PreviousOperation = OP_NONE;
-			m_EditorHistory.RecordAction(std::make_shared<CEditorActionEditGroupProp>(this, m_SelectedGroup, EGroupProp::PROP_ORDER, s_InitialGroupIndex, m_SelectedGroup));
+			m_Map.m_EditorHistory.RecordAction(std::make_shared<CEditorActionEditGroupProp>(&m_Map, m_SelectedGroup, EGroupProp::PROP_ORDER, s_InitialGroupIndex, m_SelectedGroup));
 		}
 		else if(s_PreviousOperation == OP_LAYER_DRAG)
 		{
 			if(s_InitialGroupIndex != m_SelectedGroup)
 			{
-				m_EditorHistory.RecordAction(std::make_shared<CEditorActionEditLayersGroupAndOrder>(this, s_InitialGroupIndex, s_vInitialLayerIndices, m_SelectedGroup, m_vSelectedLayers));
+				m_Map.m_EditorHistory.RecordAction(std::make_shared<CEditorActionEditLayersGroupAndOrder>(&m_Map, s_InitialGroupIndex, s_vInitialLayerIndices, m_SelectedGroup, m_vSelectedLayers));
 			}
 			else
 			{
@@ -4061,9 +4064,9 @@ void CEditor::RenderLayers(CUIRect LayersBox)
 				for(int k = 0; k < (int)vLayerIndices.size(); k++)
 				{
 					int LayerIndex = vLayerIndices[k];
-					vpActions.push_back(std::make_shared<CEditorActionEditLayerProp>(this, m_SelectedGroup, LayerIndex, ELayerProp::PROP_ORDER, s_vInitialLayerIndices[k], LayerIndex));
+					vpActions.push_back(std::make_shared<CEditorActionEditLayerProp>(&m_Map, m_SelectedGroup, LayerIndex, ELayerProp::PROP_ORDER, s_vInitialLayerIndices[k], LayerIndex));
 				}
-				m_EditorHistory.RecordAction(std::make_shared<CEditorActionBulk>(this, vpActions, nullptr, true));
+				m_Map.m_EditorHistory.RecordAction(std::make_shared<CEditorActionBulk>(&m_Map, vpActions, nullptr, true));
 			}
 			s_PreviousOperation = OP_NONE;
 		}
@@ -4710,7 +4713,7 @@ bool CEditor::IsEnvelopeUsed(int EnvelopeIndex) const
 
 void CEditor::RemoveUnusedEnvelopes()
 {
-	m_EnvelopeEditorHistory.BeginBulk();
+	m_Map.m_EnvelopeEditorHistory.BeginBulk();
 	int DeletedCount = 0;
 	for(size_t EnvelopeIndex = 0; EnvelopeIndex < m_Map.m_vpEnvelopes.size();)
 	{
@@ -4723,13 +4726,13 @@ void CEditor::RemoveUnusedEnvelopes()
 			// deleting removes the shared ptr from the map
 			std::shared_ptr<CEnvelope> pEnvelope = m_Map.m_vpEnvelopes[EnvelopeIndex];
 			auto vpObjectReferences = m_Map.DeleteEnvelope(EnvelopeIndex);
-			m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeDelete>(this, EnvelopeIndex, vpObjectReferences, pEnvelope));
+			m_Map.m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeDelete>(&m_Map, EnvelopeIndex, vpObjectReferences, pEnvelope));
 			DeletedCount++;
 		}
 	}
 	char aDisplay[256];
 	str_format(aDisplay, sizeof(aDisplay), "Tool 'Remove unused envelopes': delete %d envelopes", DeletedCount);
-	m_EnvelopeEditorHistory.EndBulk(aDisplay);
+	m_Map.m_EnvelopeEditorHistory.EndBulk(aDisplay);
 }
 
 void CEditor::ZoomAdaptOffsetX(float ZoomFactor, const CUIRect &View)
@@ -5024,25 +5027,25 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 		// redo button
 		ToolBar.VSplitRight(25.0f, &ToolBar, &Button);
 		static int s_RedoButton = 0;
-		if(DoButton_FontIcon(&s_RedoButton, FONT_ICON_REDO, m_EnvelopeEditorHistory.CanRedo() ? 0 : -1, &Button, BUTTONFLAG_LEFT, "[Ctrl+Y] Redo the last action.", IGraphics::CORNER_R, 11.0f) == 1)
+		if(DoButton_FontIcon(&s_RedoButton, FONT_ICON_REDO, m_Map.m_EnvelopeEditorHistory.CanRedo() ? 0 : -1, &Button, BUTTONFLAG_LEFT, "[Ctrl+Y] Redo the last action.", IGraphics::CORNER_R, 11.0f) == 1)
 		{
-			m_EnvelopeEditorHistory.Redo();
+			m_Map.m_EnvelopeEditorHistory.Redo();
 		}
 
 		// undo button
 		ToolBar.VSplitRight(25.0f, &ToolBar, &Button);
 		ToolBar.VSplitRight(10.0f, &ToolBar, nullptr);
 		static int s_UndoButton = 0;
-		if(DoButton_FontIcon(&s_UndoButton, FONT_ICON_UNDO, m_EnvelopeEditorHistory.CanUndo() ? 0 : -1, &Button, BUTTONFLAG_LEFT, "[Ctrl+Z] Undo the last action.", IGraphics::CORNER_L, 11.0f) == 1)
+		if(DoButton_FontIcon(&s_UndoButton, FONT_ICON_UNDO, m_Map.m_EnvelopeEditorHistory.CanUndo() ? 0 : -1, &Button, BUTTONFLAG_LEFT, "[Ctrl+Z] Undo the last action.", IGraphics::CORNER_L, 11.0f) == 1)
 		{
-			m_EnvelopeEditorHistory.Undo();
+			m_Map.m_EnvelopeEditorHistory.Undo();
 		}
 
 		ToolBar.VSplitRight(50.0f, &ToolBar, &Button);
 		static int s_NewSoundButton = 0;
 		if(DoButton_Editor(&s_NewSoundButton, "Sound+", 0, &Button, BUTTONFLAG_LEFT, "Create a new sound envelope."))
 		{
-			m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionEnvelopeAdd>(this, CEnvelope::EType::SOUND));
+			m_Map.m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionEnvelopeAdd>(&m_Map, CEnvelope::EType::SOUND));
 			pEnvelope = m_Map.m_vpEnvelopes[m_SelectedEnvelope];
 		}
 
@@ -5051,7 +5054,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 		static int s_New4dButton = 0;
 		if(DoButton_Editor(&s_New4dButton, "Color+", 0, &Button, BUTTONFLAG_LEFT, "Create a new color envelope."))
 		{
-			m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionEnvelopeAdd>(this, CEnvelope::EType::COLOR));
+			m_Map.m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionEnvelopeAdd>(&m_Map, CEnvelope::EType::COLOR));
 			pEnvelope = m_Map.m_vpEnvelopes[m_SelectedEnvelope];
 		}
 
@@ -5060,7 +5063,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 		static int s_New2dButton = 0;
 		if(DoButton_Editor(&s_New2dButton, "Pos.+", 0, &Button, BUTTONFLAG_LEFT, "Create a new position envelope."))
 		{
-			m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionEnvelopeAdd>(this, CEnvelope::EType::POSITION));
+			m_Map.m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionEnvelopeAdd>(&m_Map, CEnvelope::EType::POSITION));
 			pEnvelope = m_Map.m_vpEnvelopes[m_SelectedEnvelope];
 		}
 
@@ -5073,7 +5076,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 			if(DoButton_Editor(&s_DeleteButton, "✗", 0, &Button, BUTTONFLAG_LEFT, "Delete this envelope."))
 			{
 				auto vpObjectReferences = m_Map.DeleteEnvelope(m_SelectedEnvelope);
-				m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeDelete>(this, m_SelectedEnvelope, vpObjectReferences, pEnvelope));
+				m_Map.m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeDelete>(&m_Map, m_SelectedEnvelope, vpObjectReferences, pEnvelope));
 
 				m_SelectedEnvelope = m_Map.m_vpEnvelopes.empty() ? -1 : std::clamp(m_SelectedEnvelope, 0, (int)m_Map.m_vpEnvelopes.size() - 1);
 				pEnvelope = m_Map.m_vpEnvelopes.empty() ? nullptr : m_Map.m_vpEnvelopes[m_SelectedEnvelope];
@@ -5095,7 +5098,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 				m_SelectedEnvelope = m_Map.MoveEnvelope(MoveFrom, MoveTo);
 				if(m_SelectedEnvelope != MoveFrom)
 				{
-					m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeEdit>(this, m_SelectedEnvelope, CEditorActionEnvelopeEdit::EEditType::ORDER, MoveFrom, m_SelectedEnvelope));
+					m_Map.m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeEdit>(&m_Map, m_SelectedEnvelope, CEditorActionEnvelopeEdit::EEditType::ORDER, MoveFrom, m_SelectedEnvelope));
 					pEnvelope = m_Map.m_vpEnvelopes[m_SelectedEnvelope];
 					m_Map.OnModify();
 				}
@@ -5111,7 +5114,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 				m_SelectedEnvelope = m_Map.MoveEnvelope(MoveFrom, MoveTo);
 				if(m_SelectedEnvelope != MoveFrom)
 				{
-					m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeEdit>(this, m_SelectedEnvelope, CEditorActionEnvelopeEdit::EEditType::ORDER, MoveFrom, m_SelectedEnvelope));
+					m_Map.m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeEdit>(&m_Map, m_SelectedEnvelope, CEditorActionEnvelopeEdit::EEditType::ORDER, MoveFrom, m_SelectedEnvelope));
 					pEnvelope = m_Map.m_vpEnvelopes[m_SelectedEnvelope];
 					m_Map.OnModify();
 				}
@@ -5265,17 +5268,8 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 			}
 		}
 
-		// toggle sync button
 		ToolBar.VSplitLeft(15.0f, nullptr, &ToolBar);
 		ToolBar.VSplitLeft(40.0f, &Button, &ToolBar);
-
-		static int s_SyncButton;
-		if(DoButton_Editor(&s_SyncButton, "Sync", pEnvelope->m_Synchronized, &Button, BUTTONFLAG_LEFT, "Synchronize envelope animation to server time."))
-		{
-			m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeEdit>(this, m_SelectedEnvelope, CEditorActionEnvelopeEdit::EEditType::SYNC, pEnvelope->m_Synchronized, !pEnvelope->m_Synchronized));
-			pEnvelope->m_Synchronized = !pEnvelope->m_Synchronized;
-			m_Map.OnModify();
-		}
 
 		static int s_EnvelopeEditorId = 0;
 		static int s_EnvelopeEditorButtonUsed = -1;
@@ -5355,7 +5349,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 					}
 
 					if(!TimeFound)
-						m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionAddEnvelopePoint>(this, m_SelectedEnvelope, FixedTime, Channels));
+						m_Map.m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionAddEnvelopePoint>(&m_Map, m_SelectedEnvelope, FixedTime, Channels));
 
 					if(FixedTime < CFixedTime(0))
 						RemoveTimeOffsetEnvelope(pEnvelope);
@@ -5591,7 +5585,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 						const int Direction = Input()->ShiftIsPressed() ? -1 : 1;
 						pEnvelope->m_vPoints[i].m_Curvetype = (pEnvelope->m_vPoints[i].m_Curvetype + Direction + NUM_CURVETYPES) % NUM_CURVETYPES;
 
-						m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeEditPoint>(this,
+						m_Map.m_EnvelopeEditorHistory.RecordAction(std::make_shared<CEditorActionEnvelopeEditPoint>(&m_Map,
 							m_SelectedEnvelope, i, 0, CEditorActionEnvelopeEditPoint::EEditType::CURVE_TYPE, PrevCurve, pEnvelope->m_vPoints[i].m_Curvetype));
 						m_Map.OnModify();
 					}
@@ -5628,11 +5622,11 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 			{
 				UpdateHotEnvelopePoint(View, pEnvelope.get(), s_ActiveChannels);
 				if(!Ui()->MouseButton(0))
-					m_EnvOpTracker.Stop(false);
+					m_Map.m_EnvOpTracker.Stop(false);
 			}
 			else
 			{
-				m_EnvOpTracker.Begin(s_Operation);
+				m_Map.m_EnvOpTracker.Begin(s_Operation);
 			}
 
 			Ui()->ClipEnable(&View);
@@ -5820,7 +5814,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 							{
 								if(Input()->ShiftIsPressed())
 								{
-									m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionDeleteEnvelopePoint>(this, m_SelectedEnvelope, i));
+									m_Map.m_EnvelopeEditorHistory.Execute(std::make_shared<CEditorActionDeleteEnvelopePoint>(&m_Map, m_SelectedEnvelope, i));
 								}
 								else
 								{
@@ -6233,7 +6227,7 @@ void CEditor::RenderEnvelopeEditor(CUIRect View)
 			if(Ui()->MouseButton(0))
 			{
 				s_Operation = EEnvelopeEditorOp::OP_NONE;
-				m_EnvOpTracker.Stop(false);
+				m_Map.m_EnvOpTracker.Stop(false);
 			}
 			else if(Ui()->MouseButton(1) || Ui()->ConsumeHotkey(CUi::HOTKEY_ESCAPE))
 			{
@@ -6461,11 +6455,11 @@ void CEditor::RenderEditorHistory(CUIRect View)
 
 	CEditorHistory *pCurrentHistory;
 	if(s_HistoryType == EDITOR_HISTORY)
-		pCurrentHistory = &m_EditorHistory;
+		pCurrentHistory = &m_Map.m_EditorHistory;
 	else if(s_HistoryType == ENVELOPE_HISTORY)
-		pCurrentHistory = &m_EnvelopeEditorHistory;
+		pCurrentHistory = &m_Map.m_EnvelopeEditorHistory;
 	else if(s_HistoryType == SERVER_SETTINGS_HISTORY)
-		pCurrentHistory = &m_ServerSettingsHistory;
+		pCurrentHistory = &m_Map.m_ServerSettingsHistory;
 	else
 		return;
 
@@ -7420,20 +7414,11 @@ void CEditor::Reset(bool CreateDefault)
 	m_pContainerPannedLast = nullptr;
 
 	m_ActiveEnvelopePreview = EEnvelopePreview::NONE;
+	m_QuadEnvelopePointOperation = EQuadEnvelopePointOperation::NONE;
 	m_ShiftBy = 1;
 
 	m_ResetZoomEnvelope = true;
 	m_SettingsCommandInput.Clear();
-
-	m_EditorHistory.Clear();
-	m_EnvelopeEditorHistory.Clear();
-	m_ServerSettingsHistory.Clear();
-
-	m_QuadTracker.m_pEditor = this;
-
-	m_EnvOpTracker.m_pEditor = this;
-	m_EnvOpTracker.Reset();
-
 	m_MapSettingsCommandContext.Reset();
 }
 
@@ -7549,7 +7534,7 @@ void CEditor::PlaceBorderTiles()
 	}
 
 	int GameGroupIndex = std::find(m_Map.m_vpGroups.begin(), m_Map.m_vpGroups.end(), m_Map.m_pGameGroup) - m_Map.m_vpGroups.begin();
-	m_EditorHistory.RecordAction(std::make_shared<CEditorBrushDrawAction>(this, GameGroupIndex), "Tool 'Make borders'");
+	m_Map.m_EditorHistory.RecordAction(std::make_shared<CEditorBrushDrawAction>(&m_Map, GameGroupIndex), "Tool 'Make borders'");
 
 	m_Map.OnModify();
 }
@@ -8129,7 +8114,7 @@ bool CEditor::Append(const char *pFilename, int StorageType, bool IgnoreHistory)
 	auto IndexMap = m_Map.SortImages();
 
 	if(!IgnoreHistory)
-		m_EditorHistory.RecordAction(std::make_shared<CEditorActionAppendMap>(this, pFilename, Info, IndexMap));
+		m_Map.m_EditorHistory.RecordAction(std::make_shared<CEditorActionAppendMap>(&m_Map, pFilename, Info, IndexMap));
 
 	m_Map.CheckIntegrity();
 
@@ -8141,15 +8126,15 @@ CEditorHistory &CEditor::ActiveHistory()
 {
 	if(m_ActiveExtraEditor == EXTRAEDITOR_SERVER_SETTINGS)
 	{
-		return m_ServerSettingsHistory;
+		return m_Map.m_ServerSettingsHistory;
 	}
 	else if(m_ActiveExtraEditor == EXTRAEDITOR_ENVELOPES)
 	{
-		return m_EnvelopeEditorHistory;
+		return m_Map.m_EnvelopeEditorHistory;
 	}
 	else
 	{
-		return m_EditorHistory;
+		return m_Map.m_EditorHistory;
 	}
 }
 

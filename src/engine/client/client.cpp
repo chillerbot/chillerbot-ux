@@ -777,6 +777,7 @@ void CClient::DisconnectWithReason(const char *pReason)
 	m_pConsole->DeregisterTempAll();
 	m_ExpectedMaplistEntries = -1;
 	m_vMaplistEntries.clear();
+	GameClient()->ForceUpdateConsoleRemoteCompletionSuggestions();
 	m_aNetClient[CONN_MAIN].Disconnect(pReason);
 	SetState(IClient::STATE_OFFLINE);
 	m_pMap->Unload();
@@ -1928,6 +1929,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 			if(!Unpacker.Error())
 			{
 				m_pConsole->RegisterTemp(pName, pParams, CFGFLAG_SERVER, pHelp);
+				GameClient()->ForceUpdateConsoleRemoteCompletionSuggestions();
 			}
 			m_GotRconCommands++;
 		}
@@ -1937,6 +1939,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 			if(!Unpacker.Error())
 			{
 				m_pConsole->DeregisterTemp(pName);
+				GameClient()->ForceUpdateConsoleRemoteCompletionSuggestions();
 			}
 		}
 		else if((pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 && Msg == NETMSG_RCON_AUTH_STATUS)
@@ -1962,6 +1965,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 					m_pConsole->DeregisterTempAll();
 					m_ExpectedRconCommands = -1;
 					m_vMaplistEntries.clear();
+					GameClient()->ForceUpdateConsoleRemoteCompletionSuggestions();
 					m_ExpectedMaplistEntries = -1;
 				}
 			}
@@ -2291,6 +2295,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 				if(pMapName[0] != '\0')
 				{
 					m_vMaplistEntries.emplace_back(pMapName);
+					GameClient()->ForceUpdateConsoleRemoteCompletionSuggestions();
 				}
 			}
 		}
@@ -2301,6 +2306,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 				return;
 
 			m_vMaplistEntries.clear();
+			GameClient()->ForceUpdateConsoleRemoteCompletionSuggestions();
 			m_ExpectedMaplistEntries = ExpectedMaplistEntries;
 		}
 		else if(Conn == CONN_MAIN && (pPacket->m_Flags & NET_CHUNKFLAG_VITAL) != 0 && Msg == NETMSG_MAPLIST_GROUP_END)
@@ -2603,6 +2609,17 @@ void CClient::PumpNetwork()
 			SetState(IClient::STATE_LOADING);
 			SetLoadingStateDetail(IClient::LOADING_STATE_DETAIL_INITIAL);
 			SendInfo(CONN_MAIN);
+		}
+
+		// progress on dummy connect when the connection is online
+		if(m_DummySendConnInfo && m_aNetClient[CONN_DUMMY].State() == NETSTATE_ONLINE)
+		{
+			m_DummySendConnInfo = false;
+			SendInfo(CONN_DUMMY);
+			m_aNetClient[CONN_DUMMY].Update();
+			SendReady(CONN_DUMMY);
+			GameClient()->SendDummyInfo(true);
+			SendEnterGame(CONN_DUMMY);
 		}
 	}
 
@@ -3229,18 +3246,6 @@ void CClient::Run()
 			else
 				log_error("editor", "editing passed map file '%s' failed", m_aCmdEditMap);
 			m_aCmdEditMap[0] = 0;
-		}
-
-		// progress on dummy connect when the connection is online
-		if(m_DummySendConnInfo && m_aNetClient[CONN_DUMMY].State() == NETSTATE_ONLINE)
-		{
-			m_DummySendConnInfo = false;
-
-			SendInfo(CONN_DUMMY);
-			m_aNetClient[CONN_DUMMY].Update();
-			SendReady(CONN_DUMMY);
-			GameClient()->SendDummyInfo(true);
-			SendEnterGame(CONN_DUMMY);
 		}
 
 		// update input

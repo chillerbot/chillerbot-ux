@@ -468,6 +468,7 @@ MACRO_CONFIG_STR(SvRegisterUrl, sv_register_url, 128, "https://master1.ddnet.org
 MACRO_CONFIG_INT(SvRegisterPort, sv_register_port, 0, 0, 65535, CFGFLAG_SERVER, "Port for the master server to register the server with, useful if you are behind NAT, otherwise you only need sv_port")
 MACRO_CONFIG_STR(SvRegisterCommunityToken, sv_register_community_token, 128, "", CFGFLAG_SERVER, "Token to register this server to a particular community")
 MACRO_CONFIG_INT(SvFlag, sv_flag, -1, -1, 999, CFGFLAG_SERVER, "Country flag to group this community under (ISO 3166-1 numeric)")
+MACRO_CONFIG_STR(SvOfficialTutorial, sv_official_tutorial, 128, "", CFGFLAG_SERVER, "Don't set this, used to mark official tutorial servers")
 MACRO_CONFIG_STR(SvMapsBaseUrl, sv_maps_base_url, 128, "", CFGFLAG_SERVER, "Base path used to provide HTTPS map download URL to the clients")
 MACRO_CONFIG_STR(SvRconPassword, sv_rcon_password, 128, "", CFGFLAG_SERVER | CFGFLAG_NONTEEHISTORIC, "Remote console password (full access)")
 MACRO_CONFIG_STR(SvRconModPassword, sv_rcon_mod_password, 128, "", CFGFLAG_SERVER | CFGFLAG_NONTEEHISTORIC, "Remote console password for moderators (limited access)")
@@ -649,7 +650,7 @@ MACRO_CONFIG_INT(SvResetPickups, sv_reset_pickups, 0, 0, 1, CFGFLAG_SERVER | CFG
 MACRO_CONFIG_INT(ClShowOthers, cl_show_others, 0, 0, 2, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show players in other teams (2 to show own team only)")
 MACRO_CONFIG_INT(ClShowOthersAlpha, cl_show_others_alpha, 40, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show players in other teams (alpha value, 0 invisible, 100 fully visible)")
 MACRO_CONFIG_INT(ClOverlayEntities, cl_overlay_entities, 0, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Overlay game tiles with a percentage of opacity")
-MACRO_CONFIG_INT(ClShowQuads, cl_showquads, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show quads (only interesting for mappers, or if your system has extremely bad performance)")
+MACRO_CONFIG_INT(ClShowQuads, cl_showquads, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show background quads (only interesting for mappers, or if your system has extremely bad performance)")
 MACRO_CONFIG_COL(ClBackgroundColor, cl_background_color, 128, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Background color") // 0 0 128
 MACRO_CONFIG_COL(ClBackgroundEntitiesColor, cl_background_entities_color, 128, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Background (entities) color") // 0 0 128
 MACRO_CONFIG_STR(ClBackgroundEntities, cl_background_entities, IO_MAX_PATH_LENGTH, "", CFGFLAG_CLIENT | CFGFLAG_SAVE, "Background (entities)")
