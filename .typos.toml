@@ -1,5 +1,18 @@
 [files]
 extend-exclude = [
+	# chillerbot-ux
+	"scripts/chillerbot_test.sh",
+	"src/engine/shared/chillerbot/langparser.cpp",
+	# https://github.com/crate-ci/typos/issues/1420
+	# https://github.com/crate-ci/typos/issues/1419
+	"src/game/client/components/chillerbot/chathelper/check_war_others.cpp",
+	"src/game/client/components/chillerbot/chathelper/check_war_self.cpp",
+	"src/game/client/components/chillerbot/chathelper/replytoping.cpp",
+	"src/game/client/components/chillerbot/chathelper/smalltalk.cpp",
+	"src/test/chillerbot.cpp",
+	"src/test/langparser.cpp",
+
+	# ddnet
 	"build-*/",
 	"build/",
 	"data/countryflags",
@@ -14,22 +27,17 @@ extend-exclude = [
 	# tests with invalid words
 	"src/test/shell_execute.cpp",
 	"src/test/str.cpp",
-
-	# chillerbot-ux
-	"scripts/chillerbot_test.sh",
-	"src/engine/shared/chillerbot/langparser.cpp",
-	# https://github.com/crate-ci/typos/issues/1420
-	# https://github.com/crate-ci/typos/issues/1419
-	"src/game/client/components/chillerbot/chathelper/check_war_others.cpp",
-	"src/game/client/components/chillerbot/chathelper/check_war_self.cpp",
-	"src/game/client/components/chillerbot/chathelper/replytoping.cpp",
-	"src/game/client/components/chillerbot/chathelper/smalltalk.cpp",
-	"src/test/chillerbot.cpp",
-	"src/test/langparser.cpp",
+	"src/test/shell_execute_test.cpp",
+	"src/test/str_test.cpp",
 ]
 
 [default]
 extend-ignore-re = [
+	# chillerbot-ux
+	# https://github.com/crate-ci/typos/issues/1421
+	"templeos",
+
+	# ddnet
 	'lod',
 	'LOD',
 	'Lod',
@@ -44,8 +52,4 @@ extend-ignore-re = [
 	'0x510E527FUL',
 	'I\*\*nteger',
 	's\*\*tring',
-
-	# chillerbot-ux
-	# https://github.com/crate-ci/typos/issues/1421
-	"templeos",
 ]
