@@ -2312,8 +2312,6 @@ void CMenus::OnWindowResize()
 
 void CMenus::OnRender()
 {
-	Ui()->StartCheck();
-
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		SetActive(true);
 
@@ -2332,12 +2330,12 @@ void CMenus::OnRender()
 		}
 		else if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		{
-			Ui()->FinishCheck();
 			Ui()->ClearHotkeys();
 			return;
 		}
 	}
 
+	Ui()->StartCheck();
 	UpdateColors();
 
 	Ui()->Update();
