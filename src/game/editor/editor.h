@@ -14,14 +14,9 @@
 #include "smooth_value.h"
 
 #include <base/bezier.h>
-#include <base/system.h>
 
-#include <engine/console.h>
 #include <engine/editor.h>
-#include <engine/engine.h>
 #include <engine/graphics.h>
-#include <engine/shared/datafile.h>
-#include <engine/shared/jobs.h>
 
 #include <game/client/ui.h>
 #include <game/client/ui_listbox.h>
@@ -223,9 +218,7 @@ public:
 
 		m_BrushColorEnabled = true;
 
-		m_aFilename[0] = '\0';
-		m_aFilenamePending[0] = '\0';
-		m_ValidSaveFilename = false;
+		m_aFilenamePendingLoad[0] = '\0';
 
 		m_PopupEventActivated = false;
 		m_PopupEventWasActivated = false;
@@ -261,6 +254,7 @@ public:
 
 		m_QuadKnifeActive = false;
 		m_QuadKnifeCount = 0;
+		m_QuadKnifeSelectedQuadIndex = -1;
 		std::fill(std::begin(m_aQuadKnifePoints), std::end(m_aQuadKnifePoints), vec2(0.0f, 0.0f));
 
 		for(size_t i = 0; i < std::size(m_aSavedColors); ++i)
@@ -347,19 +341,16 @@ public:
 	 */
 	float m_LastAutosaveUpdateTime = -1.0f;
 	void HandleAutosave();
-	bool PerformAutosave();
 	void HandleWriterFinishJobs();
 
 	// TODO: The name of the ShowFileDialogError function is not accurate anymore, this is used for generic error messages.
 	//       Popups in UI should be shared_ptrs to make this even more generic.
-	struct SStringKeyComparator
+	class CStringKeyComparator
 	{
-		bool operator()(const char *pLhs, const char *pRhs) const
-		{
-			return str_comp(pLhs, pRhs) < 0;
-		}
+	public:
+		bool operator()(const char *pLhs, const char *pRhs) const;
 	};
-	std::map<const char *, CUi::SMessagePopupContext *, SStringKeyComparator> m_PopupMessageContexts;
+	std::map<const char *, CUi::SMessagePopupContext *, CStringKeyComparator> m_PopupMessageContexts;
 	[[gnu::format(printf, 2, 3)]] void ShowFileDialogError(const char *pFormat, ...);
 
 	void Reset(bool CreateDefault = true);
@@ -427,9 +418,10 @@ public:
 
 	bool m_BrushColorEnabled;
 
-	char m_aFilename[IO_MAX_PATH_LENGTH];
-	char m_aFilenamePending[IO_MAX_PATH_LENGTH];
-	bool m_ValidSaveFilename;
+	/**
+	 * File which is pending to be loaded by @link POPEVENT_LOADDROP @endlink.
+	 */
+	char m_aFilenamePendingLoad[IO_MAX_PATH_LENGTH] = "";
 
 	enum
 	{
@@ -547,8 +539,6 @@ public:
 
 	std::vector<int> m_vSelectedLayers;
 	std::vector<int> m_vSelectedQuads;
-	int m_SelectedQuadPoint;
-	int m_SelectedQuadIndex;
 	int m_SelectedGroup;
 	int m_SelectedQuadPoints;
 	int m_SelectedEnvelope;
@@ -562,6 +552,7 @@ public:
 
 	bool m_QuadKnifeActive;
 	int m_QuadKnifeCount;
+	int m_QuadKnifeSelectedQuadIndex;
 	vec2 m_aQuadKnifePoints[4];
 
 	// Color palette and pipette
@@ -645,8 +636,24 @@ public:
 		CLayerTiles::SCommonPropState m_CommonPropState;
 	};
 	static CUi::EPopupMenuFunctionResult PopupLayer(void *pContext, CUIRect View, bool Active);
+	class CQuadPopupContext : public SPopupMenuId
+	{
+	public:
+		CEditor *m_pEditor;
+		int m_SelectedQuadIndex;
+		int m_Color;
+	};
+	CQuadPopupContext m_QuadPopupContext;
 	static CUi::EPopupMenuFunctionResult PopupQuad(void *pContext, CUIRect View, bool Active);
 	static CUi::EPopupMenuFunctionResult PopupSource(void *pContext, CUIRect View, bool Active);
+	class CPointPopupContext : public SPopupMenuId
+	{
+	public:
+		CEditor *m_pEditor;
+		int m_SelectedQuadPoint;
+		int m_SelectedQuadIndex;
+	};
+	CPointPopupContext m_PointPopupContext;
 	static CUi::EPopupMenuFunctionResult PopupPoint(void *pContext, CUIRect View, bool Active);
 	static CUi::EPopupMenuFunctionResult PopupEnvPoint(void *pContext, CUIRect View, bool Active);
 	static CUi::EPopupMenuFunctionResult PopupEnvPointMulti(void *pContext, CUIRect View, bool Active);

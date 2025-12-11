@@ -3,11 +3,13 @@
 
 #include <engine/client.h>
 #include <engine/console.h>
+#include <engine/engine.h>
 #include <engine/gfx/image_manipulation.h>
 #include <engine/graphics.h>
 #include <engine/serverbrowser.h>
 #include <engine/shared/config.h>
 #include <engine/shared/datafile.h>
+#include <engine/shared/filecollection.h>
 #include <engine/sound.h>
 #include <engine/storage.h>
 
@@ -41,7 +43,7 @@ CDataFileWriterFinishJob::CDataFileWriterFinishJob(const char *pRealFilename, co
 	str_copy(m_aTempFilename, pTempFilename);
 }
 
-bool CEditorMap::Save(const char *pFilename, const std::function<void(const char *pErrorMessage)> &ErrorHandler)
+bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 {
 	char aFilenameTmp[IO_MAX_PATH_LENGTH];
 	IStorage::FormatTmpPath(aFilenameTmp, sizeof(aFilenameTmp), pFilename);
@@ -416,7 +418,7 @@ bool CEditorMap::Save(const char *pFilename, const std::function<void(const char
 	return true;
 }
 
-bool CEditorMap::PerformPreSaveSanityChecks(const std::function<void(const char *pErrorMessage)> &ErrorHandler)
+bool CEditorMap::PerformPreSaveSanityChecks(const FErrorHandler &ErrorHandler)
 {
 	bool Success = true;
 	char aErrorMessage[256];
@@ -444,7 +446,7 @@ bool CEditorMap::PerformPreSaveSanityChecks(const std::function<void(const char 
 	return Success;
 }
 
-bool CEditorMap::Load(const char *pFilename, int StorageType, const std::function<void(const char *pErrorMessage)> &ErrorHandler)
+bool CEditorMap::Load(const char *pFilename, int StorageType, const FErrorHandler &ErrorHandler)
 {
 	CDataFileReader DataFile;
 	if(!DataFile.Open(m_pEditor->Storage(), pFilename, StorageType))
@@ -1049,6 +1051,8 @@ bool CEditorMap::Load(const char *pFilename, int StorageType, const std::functio
 		}
 	}
 
+	str_copy(m_aFilename, pFilename);
+
 	CheckIntegrity();
 	PerformSanityChecks(ErrorHandler);
 
@@ -1056,7 +1060,7 @@ bool CEditorMap::Load(const char *pFilename, int StorageType, const std::functio
 	return true;
 }
 
-void CEditorMap::PerformSanityChecks(const std::function<void(const char *pErrorMessage)> &ErrorHandler)
+void CEditorMap::PerformSanityChecks(const FErrorHandler &ErrorHandler)
 {
 	// Check if there are any images with a width or height that is not divisible by 16 which are
 	// used in tile layers. Reset the image for these layers, to prevent crashes with some drivers.
@@ -1088,5 +1092,43 @@ void CEditorMap::PerformSanityChecks(const std::function<void(const char *pError
 			}
 		}
 		++ImageIndex;
+	}
+}
+
+bool CEditorMap::PerformAutosave(const std::function<void(const char *pErrorMessage)> &ErrorHandler)
+{
+	char aDate[20];
+	char aAutosavePath[IO_MAX_PATH_LENGTH];
+	str_timestamp(aDate, sizeof(aDate));
+	char aFilenameNoExt[IO_MAX_PATH_LENGTH];
+	if(m_aFilename[0] == '\0')
+	{
+		str_copy(aFilenameNoExt, "unnamed");
+	}
+	else
+	{
+		const char *pFilename = fs_filename(m_aFilename);
+		str_truncate(aFilenameNoExt, sizeof(aFilenameNoExt), pFilename, str_length(pFilename) - str_length(".map"));
+	}
+	str_format(aAutosavePath, sizeof(aAutosavePath), "maps/auto/%s_%s.map", aFilenameNoExt, aDate);
+
+	m_LastSaveTime = Editor()->Client()->GlobalTime();
+	if(Save(aAutosavePath, ErrorHandler))
+	{
+		m_ModifiedAuto = false;
+		// Clean up autosaves
+		if(g_Config.m_EdAutosaveMax)
+		{
+			CFileCollection AutosavedMaps;
+			AutosavedMaps.Init(Editor()->Storage(), "maps/auto", aFilenameNoExt, ".map", g_Config.m_EdAutosaveMax);
+		}
+		return true;
+	}
+	else
+	{
+		char aErrorMessage[IO_MAX_PATH_LENGTH + 128];
+		str_format(aErrorMessage, sizeof(aErrorMessage), "Failed to automatically save map to file '%s'.", aAutosavePath);
+		ErrorHandler(aErrorMessage);
+		return false;
 	}
 }

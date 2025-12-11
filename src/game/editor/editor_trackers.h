@@ -1,18 +1,20 @@
 #ifndef GAME_EDITOR_EDITOR_TRACKERS_H
 #define GAME_EDITOR_EDITOR_TRACKERS_H
 
+#include <game/client/ui.h>
 #include <game/editor/map_object.h>
 #include <game/editor/mapitems.h>
-#include <game/editor/mapitems/layer_quads.h>
 #include <game/mapitems.h>
 
 #include <map>
 #include <memory>
 #include <vector>
 
-class CLayerTiles;
+class CLayer;
 class CLayerGroup;
+class CLayerQuads;
 class CLayerSounds;
+class CLayerTiles;
 class CSoundSource;
 
 class CQuadEditTracker : public CMapObject
@@ -21,6 +23,7 @@ public:
 	explicit CQuadEditTracker(CEditorMap *pMap);
 
 	bool QuadPointChanged(const std::vector<CPoint> &vCurrentPoints, int QuadIndex);
+	bool QuadColorChanged(const std::vector<CColor> &vCurrentColors, int QuadIndex);
 
 	void BeginQuadTrack(const std::shared_ptr<CLayerQuads> &pLayer, const std::vector<int> &vSelectedQuads, int GroupIndex = -1, int LayerIndex = -1);
 	void EndQuadTrack();
@@ -37,6 +40,7 @@ private:
 	std::vector<int> m_vSelectedQuads;
 	int m_SelectedQuadPoints;
 	std::map<int, std::vector<CPoint>> m_InitialPoints;
+	std::map<int, std::vector<CColor>> m_InitialColors;
 
 	bool m_Tracking = false;
 	std::shared_ptr<CLayerQuads> m_pLayer;

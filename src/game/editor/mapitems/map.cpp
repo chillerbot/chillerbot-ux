@@ -11,6 +11,7 @@
 #include <game/editor/mapitems/layer_sounds.h>
 #include <game/editor/mapitems/layer_tiles.h>
 #include <game/editor/mapitems/sound.h>
+#include <game/editor/references.h>
 
 void CEditorMap::CMapInfo::Reset()
 {
@@ -237,6 +238,8 @@ void CEditorMap::ModifySoundIndex(const FIndexModifyFunction &IndexModifyFunctio
 
 void CEditorMap::Clean()
 {
+	m_aFilename[0] = '\0';
+	m_ValidSaveFilename = false;
 	ResetModifiedState();
 
 	m_vpGroups.clear();

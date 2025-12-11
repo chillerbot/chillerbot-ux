@@ -1,10 +1,23 @@
 #ifndef GAME_EDITOR_EDITOR_ACTIONS_H
 #define GAME_EDITOR_EDITOR_ACTIONS_H
 
-#include "editor.h"
 #include "editor_action.h"
 
-#include <game/editor/references.h>
+#include <game/editor/mapitems/envelope.h>
+#include <game/editor/mapitems/layer_speedup.h>
+#include <game/editor/mapitems/layer_switch.h>
+#include <game/editor/mapitems/layer_tele.h>
+#include <game/editor/mapitems/layer_tiles.h>
+#include <game/editor/mapitems/layer_tune.h>
+#include <game/editor/quadart.h>
+#include <game/mapitems.h>
+
+#include <memory>
+#include <string>
+#include <vector>
+
+class CEditorMap;
+class IEditorEnvelopeReference;
 
 class CEditorActionLayerBase : public IEditorAction
 {
@@ -99,6 +112,24 @@ private:
 	int m_QuadIndex;
 	std::vector<CPoint> m_vPreviousPoints;
 	std::vector<CPoint> m_vCurrentPoints;
+
+	void Apply(const std::vector<CPoint> &vValue);
+};
+
+class CEditorActionEditQuadColor : public CEditorActionLayerBase
+{
+public:
+	CEditorActionEditQuadColor(CEditorMap *pMap, int GroupIndex, int LayerIndex, int QuadIndex, std::vector<CColor> const &vPreviousColors, std::vector<CColor> const &vCurrentColors);
+
+	void Undo() override;
+	void Redo() override;
+
+private:
+	int m_QuadIndex;
+	std::vector<CColor> m_vPreviousColors;
+	std::vector<CColor> m_vCurrentColors;
+
+	void Apply(std::vector<CColor> &vValue);
 };
 
 class CEditorActionEditQuadProp : public CEditorActionLayerBase

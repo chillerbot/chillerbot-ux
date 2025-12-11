@@ -115,7 +115,7 @@ class CGameContext : public IGameServer
 	CCollision m_Collision;
 	protocol7::CNetObjHandler m_NetObjHandler7;
 	CNetObjHandler m_NetObjHandler;
-	CTuningParams m_aTuningList[NUM_TUNEZONES];
+	CTuningParams m_aTuningList[TuneZone::NUM];
 	std::vector<std::string> m_vCensorlist;
 
 	bool m_TeeHistorianActive;
@@ -245,8 +245,8 @@ public:
 	char m_aVoteReason[VOTE_REASON_LENGTH];
 	int m_NumVoteOptions;
 	int m_VoteEnforce;
-	char m_aaZoneEnterMsg[NUM_TUNEZONES][256]; // 0 is used for switching from or to area without tunings
-	char m_aaZoneLeaveMsg[NUM_TUNEZONES][256];
+	char m_aaZoneEnterMsg[TuneZone::NUM][256]; // 0 is used for switching from or to area without tunings
+	char m_aaZoneLeaveMsg[TuneZone::NUM][256];
 
 	void CreateAllEntities(bool Initial);
 	CPlayer *CreatePlayer(int ClientId, int StartTeam, bool Afk, int LastWhisperTo);
@@ -302,6 +302,7 @@ public:
 	void SendServerAlert(const char *pMessage);
 	void SendModeratorAlert(const char *pMessage, int ToClientId);
 	void SendBroadcast(const char *pText, int ClientId, bool IsImportant = true);
+	void SendSkinChange7(int ClientId);
 
 	void List(int ClientId, const char *pFilter);
 

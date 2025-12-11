@@ -10,6 +10,7 @@
 
 #include "detect.h"
 #include "fs.h"
+#include "mem.h"
 #include "str.h"
 #include "types.h"
 
@@ -131,84 +132,6 @@ void dbg_assert_set_handler(DBG_ASSERT_HANDLER handler);
  * @see dbg_assert
  */
 [[gnu::format(printf, 2, 3)]] void dbg_msg(const char *sys, const char *fmt, ...);
-
-/**
- * Memory management utilities.
- *
- * @defgroup Memory Memory
- */
-
-/**
- * Copies a a memory block.
- *
- * @ingroup Memory
- *
- * @param dest Destination.
- * @param source Source to copy.
- * @param size Size of the block to copy.
- *
- * @remark This functions DOES NOT handle cases where the source and destination is overlapping.
- *
- * @see mem_move
- */
-void mem_copy(void *dest, const void *source, size_t size);
-
-/**
- * Copies a a memory block.
- *
- * @ingroup Memory
- *
- * @param dest Destination.
- * @param source Source to copy.
- * @param size Size of the block to copy.
- *
- * @remark This functions handles the cases where the source and destination is overlapping.
- *
- * @see mem_copy
- */
-void mem_move(void *dest, const void *source, size_t size);
-
-/**
- * Sets a complete memory block to 0.
- *
- * @ingroup Memory
- *
- * @param block Pointer to the block to zero out.
- * @param size Size of the block.
- */
-template<typename T>
-inline void mem_zero(T *block, size_t size)
-{
-	static_assert((std::is_trivially_constructible<T>::value && std::is_trivially_destructible<T>::value) || std::is_fundamental<T>::value);
-	memset(block, 0, size);
-}
-
-/**
- * Compares two blocks of memory
- *
- * @ingroup Memory
- *
- * @param a First block of data.
- * @param b Second block of data.
- * @param size Size of the data to compare.
- *
- * @return `< 0` if block a is less than block b.
- * @return `0` if block a is equal to block b.
- * @return `> 0` if block a is greater than block b.
- */
-int mem_comp(const void *a, const void *b, size_t size);
-
-/**
- * Checks whether a block of memory contains null bytes.
- *
- * @ingroup Memory
- *
- * @param block Pointer to the block to check for nulls.
- * @param size Size of the block.
- *
- * @return `true` if the block has a null byte, `false` otherwise.
- */
-bool mem_has_null(const void *block, size_t size);
 
 /**
  * File I/O related operations.
@@ -1214,17 +1137,6 @@ void net_unix_set_addr(UNIXSOCKETADDR *addr, const char *path);
  */
 void net_unix_close(UNIXSOCKET sock);
 
-#elif defined(CONF_FAMILY_WINDOWS)
-
-/**
- * Formats a Windows error code as a human-readable string.
- *
- * @param error The Windows error code.
- *
- * @return A new std::string representing the error code.
- */
-std::string windows_format_system_message(unsigned long error);
-
 #endif
 
 /**
@@ -1776,20 +1688,6 @@ enum class EShellExecuteWindowState
 	BACKGROUND,
 };
 
-#if defined(CONF_FAMILY_WINDOWS)
-/**
- * Converts an array of arguments into a wide string with proper escaping for Windows command-line usage.
- *
- * @ingroup Shell
- *
- * @param arguments Array of arguments.
- * @param num_arguments The number of arguments.
- *
- * @return Wide string of arguments with escaped quotes.
- */
-std::wstring windows_args_to_wide(const char **arguments, size_t num_arguments);
-#endif
-
 /**
  * Executes a given file.
  *
@@ -2001,141 +1899,5 @@ public:
 	}
 	CCmdlineFix(const CCmdlineFix &) = delete;
 };
-
-#if defined(CONF_FAMILY_WINDOWS)
-/**
- * Converts a UTF-8 encoded string to a wide character string
- * for use with the Windows API.
- *
- * @ingroup Shell
- *
- * @param str The UTF-8 encoded string to convert.
- *
- * @return The argument as a wide character string.
- *
- * @remark The strings are treated as null-terminated strings.
- * @remark Fails with assertion error if passed UTF-8 is invalid.
- */
-std::wstring windows_utf8_to_wide(const char *str);
-
-/**
- * Converts a wide character string obtained from the Windows API
- * to a UTF-8 encoded string.
- *
- * @ingroup Shell
- *
- * @param wide_str The wide character string to convert.
- *
- * @return The argument as a UTF-8 encoded string, wrapped in an optional.
- * The optional is empty, if the wide string contains invalid codepoints.
- *
- * @remark The strings are treated as null-terminated strings.
- */
-std::optional<std::string> windows_wide_to_utf8(const wchar_t *wide_str);
-
-/**
- * This is a RAII wrapper to initialize/uninitialize the Windows COM library,
- * which may be necessary for using the @link open_file @endlink and
- * @link open_link @endlink functions.
- * Must be used on every thread. It's automatically used on threads created
- * with @link thread_init @endlink. Pass `true` to the constructor on threads
- * that own a window (i.e. pump a message queue).
- *
- * @ingroup Shell
- */
-class CWindowsComLifecycle
-{
-public:
-	CWindowsComLifecycle(bool HasWindow);
-	~CWindowsComLifecycle();
-	CWindowsComLifecycle(const CWindowsComLifecycle &) = delete;
-};
-
-/**
- * Registers a protocol handler.
- *
- * @ingroup Shell
- *
- * @param protocol_name The name of the protocol.
- * @param executable The absolute path of the executable that will be associated with the protocol.
- * @param updated Pointer to a variable that will be set to `true`, iff the shell needs to be updated.
- *
- * @return `true` on success, `false` on failure.
- *
- * @remark The caller must later call @link shell_update @endlink, iff the shell needs to be updated.
- */
-bool shell_register_protocol(const char *protocol_name, const char *executable, bool *updated);
-
-/**
- * Registers a file extension.
- *
- * @ingroup Shell
- *
- * @param extension The file extension, including the leading dot.
- * @param description A readable description for the file extension.
- * @param executable_name A unique name that will used to describe the application.
- * @param executable The absolute path of the executable that will be associated with the file extension.
- * @param updated Pointer to a variable that will be set to `true`, iff the shell needs to be updated.
- *
- * @return `true` on success, `false` on failure.
- *
- * @remark The caller must later call @link shell_update @endlink, iff the shell needs to be updated.
- */
-bool shell_register_extension(const char *extension, const char *description, const char *executable_name, const char *executable, bool *updated);
-
-/**
- * Registers an application.
- *
- * @ingroup Shell
- *
- * @param name Readable name of the application.
- * @param executable The absolute path of the executable being registered.
- * @param updated Pointer to a variable that will be set to `true`, iff the shell needs to be updated.
- *
- * @return `true` on success, `false` on failure.
- *
- * @remark The caller must later call @link shell_update @endlink, iff the shell needs to be updated.
- */
-bool shell_register_application(const char *name, const char *executable, bool *updated);
-
-/**
- * Unregisters a protocol or file extension handler.
- *
- * @ingroup Shell
- *
- * @param shell_class The shell class to delete.
- * For protocols this is the name of the protocol.
- * For file extensions this is the program ID associated with the file extension.
- * @param updated Pointer to a variable that will be set to `true`, iff the shell needs to be updated.
- *
- * @return `true` on success, `false` on failure.
- *
- * @remark The caller must later call @link shell_update @endlink, iff the shell needs to be updated.
- */
-bool shell_unregister_class(const char *shell_class, bool *updated);
-
-/**
- * Unregisters an application.
- *
- * @ingroup Shell
- *
- * @param executable The absolute path of the executable being unregistered.
- * @param updated Pointer to a variable that will be set to `true`, iff the shell needs to be updated.
- *
- * @return `true` on success, `false` on failure.
- *
- * @remark The caller must later call @link shell_update @endlink, iff the shell needs to be updated.
- */
-bool shell_unregister_application(const char *executable, bool *updated);
-
-/**
- * Notifies the system that a protocol or file extension has been changed and the shell needs to be updated.
- *
- * @ingroup Shell
- *
- * @remark This is a potentially expensive operation, so it should only be called when necessary.
- */
-void shell_update();
-#endif
 
 #endif
