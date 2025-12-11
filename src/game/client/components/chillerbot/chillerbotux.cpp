@@ -172,7 +172,7 @@ void CChillerBotUX::OnUpdate()
 	{
 		if(Client.m_Active)
 		{
-			if(Client.ClientId() == GameClient()->m_Snap.m_LocalClientId || Client.ClientId() == GameClient()->GetPredictedDummyId())
+			if(Client.ClientId() == GameClient()->m_Snap.m_LocalClientId)
 			{
 				m_aClientData[Client.ClientId()].m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX; //force chillerbot client for us
 			}

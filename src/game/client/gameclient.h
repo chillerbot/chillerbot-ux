@@ -970,10 +970,6 @@ private:
 
 	void OnSaveCodeNetMessage(const CNetMsg_Sv_SaveCode *pMsg);
 	void StoreSave(const char *pTeamMembers, const char *pGeneratedCode) const;
-
-	//chillerbot
-public:
-	int GetPredictedDummyId() const { return m_PredictedDummyId; }
 };
 
 ColorRGBA CalculateNameColor(ColorHSLA TextColorHSL);
