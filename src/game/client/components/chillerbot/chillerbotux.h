@@ -192,6 +192,10 @@ public:
 	bool IsCustomClientId(int Country);
 	int m_SendingCustomClientTicks = -1;
 	int HandleClientCountry(int Country, int ClientId);
+
+	// returns true if `ClientId`
+	// matches our current or our dummies current client id
+	bool IsOurClientId(int ClientId);
 };
 
 #endif

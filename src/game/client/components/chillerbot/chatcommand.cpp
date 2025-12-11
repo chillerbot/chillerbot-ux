@@ -161,7 +161,7 @@ void CChatCommand::OnMessage(int MsgType, void *pRawMsg)
 		// ignore own messages
 		// they get processed on send
 		// if the server spoofs us we drop it
-		else if(ClientId != GameClient()->m_aLocalIds[0] && (!GameClient()->Client()->DummyConnected() || ClientId != GameClient()->m_aLocalIds[1]))
+		else if(!GameClient()->m_ChillerBotUX.IsOurClientId(ClientId))
 		{
 			OnChatMsg(ClientId, pMsg->m_Team, pMsg->m_pMessage);
 		}

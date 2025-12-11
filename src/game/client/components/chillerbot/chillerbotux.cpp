@@ -172,7 +172,7 @@ void CChillerBotUX::OnUpdate()
 	{
 		if(Client.m_Active)
 		{
-			if(Client.ClientId() == GameClient()->m_Snap.m_LocalClientId)
+			if(IsOurClientId(Client.ClientId()))
 			{
 				m_aClientData[Client.ClientId()].m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX; //force chillerbot client for us
 			}
@@ -1509,4 +1509,13 @@ void CChillerBotUX::CChillerClientData::Reset()
 {
 	m_CustomClient = 0;
 	m_SentCustomClient = false;
+}
+
+bool CChillerBotUX::IsOurClientId(int ClientId)
+{
+	if(ClientId == GameClient()->m_aLocalIds[0])
+		return true;
+	if(!GameClient()->Client()->DummyConnected())
+		return false;
+	return ClientId == GameClient()->m_aLocalIds[1];
 }
