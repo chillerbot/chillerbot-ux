@@ -117,7 +117,6 @@ private:
 	class IClient *m_pClient = nullptr;
 	class IConfigManager *m_pConfigManager = nullptr;
 	class CConfig *m_pConfig = nullptr;
-	class IConsole *m_pConsole = nullptr;
 	class IEngine *m_pEngine = nullptr;
 	class IGraphics *m_pGraphics = nullptr;
 	class ITextRender *m_pTextRender = nullptr;
@@ -160,7 +159,6 @@ public:
 	class IClient *Client() const { return m_pClient; }
 	class IConfigManager *ConfigManager() const { return m_pConfigManager; }
 	class CConfig *Config() const { return m_pConfig; }
-	class IConsole *Console() const { return m_pConsole; }
 	class IEngine *Engine() const { return m_pEngine; }
 	class IGraphics *Graphics() const { return m_pGraphics; }
 	class ISound *Sound() const { return m_pSound; }
@@ -251,11 +249,6 @@ public:
 		m_SelectedTangentInPoint = std::pair(-1, -1);
 		m_SelectedTangentOutPoint = std::pair(-1, -1);
 		m_CurrentQuadIndex = -1;
-
-		m_QuadKnifeActive = false;
-		m_QuadKnifeCount = 0;
-		m_QuadKnifeSelectedQuadIndex = -1;
-		std::fill(std::begin(m_aQuadKnifePoints), std::end(m_aQuadKnifePoints), vec2(0.0f, 0.0f));
 
 		for(size_t i = 0; i < std::size(m_aSavedColors); ++i)
 		{
@@ -550,11 +543,6 @@ public:
 	std::pair<int, int> m_SelectedTangentOutPoint;
 	bool m_UpdateEnvPointInfo;
 
-	bool m_QuadKnifeActive;
-	int m_QuadKnifeCount;
-	int m_QuadKnifeSelectedQuadIndex;
-	vec2 m_aQuadKnifePoints[4];
-
 	// Color palette and pipette
 	ColorRGBA m_aSavedColors[8];
 	ColorRGBA m_PipetteColor = ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
@@ -583,9 +571,7 @@ public:
 	CEditorMap m_Map;
 	std::deque<std::shared_ptr<CDataFileWriterFinishJob>> m_WriterFinishJobs;
 
-	int m_ShiftBy;
-
-	void EnvelopeEval(int TimeOffsetMillis, int Env, ColorRGBA &Result, size_t Channels) override;
+	void EnvelopeEval(int TimeOffsetMillis, int EnvelopeIndex, ColorRGBA &Result, size_t Channels) override;
 
 	CLineInputBuffered<256> m_SettingsCommandInput;
 	CMapSettingsBackend m_MapSettingsBackend;

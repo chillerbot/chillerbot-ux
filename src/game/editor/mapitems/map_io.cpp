@@ -1,8 +1,9 @@
 #include "image.h"
 #include "sound.h"
 
+#include <base/log.h>
+
 #include <engine/client.h>
-#include <engine/console.h>
 #include <engine/engine.h>
 #include <engine/gfx/image_manipulation.h>
 #include <engine/graphics.h>
@@ -48,9 +49,7 @@ bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 	char aFilenameTmp[IO_MAX_PATH_LENGTH];
 	IStorage::FormatTmpPath(aFilenameTmp, sizeof(aFilenameTmp), pFilename);
 
-	char aBuf[IO_MAX_PATH_LENGTH + 64];
-	str_format(aBuf, sizeof(aBuf), "saving to '%s'...", aFilenameTmp);
-	m_pEditor->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "editor", aBuf);
+	log_info("editor/save", "Saving map to '%s'...", aFilenameTmp);
 
 	if(!PerformPreSaveSanityChecks(ErrorHandler))
 	{
@@ -60,6 +59,7 @@ bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 	CDataFileWriter Writer;
 	if(!Writer.Open(m_pEditor->Storage(), aFilenameTmp))
 	{
+		char aBuf[IO_MAX_PATH_LENGTH + 64];
 		str_format(aBuf, sizeof(aBuf), "Error: Failed to open file '%s' for writing.", aFilenameTmp);
 		ErrorHandler(aBuf);
 		return false;
@@ -156,6 +156,8 @@ bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 	int AutomapperCount = 0;
 	for(const auto &pGroup : m_vpGroups)
 	{
+		log_trace("editor/save", "Saving group");
+
 		CMapItemGroup GItem;
 		GItem.m_Version = 3;
 
@@ -178,7 +180,7 @@ bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 		{
 			if(pLayer->m_Type == LAYERTYPE_TILES)
 			{
-				m_pEditor->Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "editor", "saving tiles layer");
+				log_trace("editor/save", "Saving tiles layer");
 				std::shared_ptr<CLayerTiles> pLayerTiles = std::static_pointer_cast<CLayerTiles>(pLayer);
 				pLayerTiles->PrepareForSave();
 
@@ -265,7 +267,7 @@ bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 			}
 			else if(pLayer->m_Type == LAYERTYPE_QUADS)
 			{
-				m_pEditor->Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "editor", "saving quads layer");
+				log_trace("editor/save", "Saving quads layer");
 				std::shared_ptr<CLayerQuads> pLayerQuads = std::static_pointer_cast<CLayerQuads>(pLayer);
 				CMapItemLayerQuads Item;
 				Item.m_Version = 2;
@@ -298,7 +300,7 @@ bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 			}
 			else if(pLayer->m_Type == LAYERTYPE_SOUNDS)
 			{
-				m_pEditor->Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "editor", "saving sounds layer");
+				log_trace("editor/save", "Saving sounds layer");
 				std::shared_ptr<CLayerSounds> pLayerSounds = std::static_pointer_cast<CLayerSounds>(pLayer);
 				CMapItemLayerSounds Item;
 				Item.m_Version = 2;
@@ -338,7 +340,7 @@ bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 	}
 
 	// save envelopes
-	m_pEditor->Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "editor", "saving envelopes");
+	log_trace("editor/save", "Saving envelopes");
 	int PointCount = 0;
 	for(size_t e = 0; e < m_vpEnvelopes.size(); e++)
 	{
@@ -355,7 +357,7 @@ bool CEditorMap::Save(const char *pFilename, const FErrorHandler &ErrorHandler)
 	}
 
 	// save points
-	m_pEditor->Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "editor", "saving envelope points");
+	log_trace("editor/save", "Saving envelope points");
 	bool BezierUsed = false;
 	for(const auto &pEnvelope : m_vpEnvelopes)
 	{
@@ -984,11 +986,11 @@ bool CEditorMap::Load(const char *pFilename, int StorageType, const FErrorHandle
 	{
 		const CMapBasedEnvelopePointAccess EnvelopePoints(&DataFile);
 
-		int EnvStart, EnvNum;
-		DataFile.GetType(MAPITEMTYPE_ENVELOPE, &EnvStart, &EnvNum);
-		for(int e = 0; e < EnvNum; e++)
+		int EnvelopeStart, EnvelopeNum;
+		DataFile.GetType(MAPITEMTYPE_ENVELOPE, &EnvelopeStart, &EnvelopeNum);
+		for(int EnvelopeIndex = 0; EnvelopeIndex < EnvelopeNum; EnvelopeIndex++)
 		{
-			CMapItemEnvelope *pItem = (CMapItemEnvelope *)DataFile.GetItem(EnvStart + e);
+			CMapItemEnvelope *pItem = (CMapItemEnvelope *)DataFile.GetItem(EnvelopeStart + EnvelopeIndex);
 			int Channels = pItem->m_Channels;
 			if(Channels <= 0 || Channels == 2 || Channels > CEnvPoint::MAX_CHANNELS)
 			{
@@ -998,26 +1000,26 @@ bool CEditorMap::Load(const char *pFilename, int StorageType, const FErrorHandle
 			if(Channels != pItem->m_Channels)
 			{
 				char aBuf[128];
-				str_format(aBuf, sizeof(aBuf), "Error: Envelope %d had an invalid number of channels, %d, which was changed to %d.", e, pItem->m_Channels, Channels);
+				str_format(aBuf, sizeof(aBuf), "Error: Envelope %d had an invalid number of channels, %d, which was changed to %d.", EnvelopeIndex, pItem->m_Channels, Channels);
 				ErrorHandler(aBuf);
 			}
 
-			std::shared_ptr<CEnvelope> pEnv = std::make_shared<CEnvelope>(Channels);
-			pEnv->m_vPoints.resize(pItem->m_NumPoints);
-			for(int p = 0; p < pItem->m_NumPoints; p++)
+			std::shared_ptr<CEnvelope> pEnvelope = std::make_shared<CEnvelope>(Channels);
+			pEnvelope->m_vPoints.resize(pItem->m_NumPoints);
+			for(int PointIndex = 0; PointIndex < pItem->m_NumPoints; PointIndex++)
 			{
-				const CEnvPoint *pPoint = EnvelopePoints.GetPoint(pItem->m_StartPoint + p);
+				const CEnvPoint *pPoint = EnvelopePoints.GetPoint(pItem->m_StartPoint + PointIndex);
 				if(pPoint != nullptr)
-					mem_copy(&pEnv->m_vPoints[p], pPoint, sizeof(CEnvPoint));
-				const CEnvPointBezier *pPointBezier = EnvelopePoints.GetBezier(pItem->m_StartPoint + p);
+					mem_copy(&pEnvelope->m_vPoints[PointIndex], pPoint, sizeof(CEnvPoint));
+				const CEnvPointBezier *pPointBezier = EnvelopePoints.GetBezier(pItem->m_StartPoint + PointIndex);
 				if(pPointBezier != nullptr)
-					mem_copy(&pEnv->m_vPoints[p].m_Bezier, pPointBezier, sizeof(CEnvPointBezier));
+					mem_copy(&pEnvelope->m_vPoints[PointIndex].m_Bezier, pPointBezier, sizeof(CEnvPointBezier));
 			}
 			if(pItem->m_aName[0] != -1) // compatibility with old maps
-				IntsToStr(pItem->m_aName, std::size(pItem->m_aName), pEnv->m_aName, std::size(pEnv->m_aName));
-			m_vpEnvelopes.push_back(pEnv);
+				IntsToStr(pItem->m_aName, std::size(pItem->m_aName), pEnvelope->m_aName, std::size(pEnvelope->m_aName));
+			m_vpEnvelopes.push_back(pEnvelope);
 			if(pItem->m_Version >= 2)
-				pEnv->m_Synchronized = pItem->m_Synchronized;
+				pEnvelope->m_Synchronized = pItem->m_Synchronized;
 		}
 	}
 

@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "scoreboard.h"
 
+#include <engine/console.h>
 #include <engine/demo.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
@@ -611,7 +612,7 @@ void CScoreboard::RenderScoreboard(CUIRect Scoreboard, int Team, int CountStart,
 			// score
 			if(Race7)
 			{
-				if(pInfo->m_Score == -1)
+				if(pInfo->m_Score == protocol7::FinishTime::NOT_FINISHED)
 				{
 					aBuf[0] = '\0';
 				}
@@ -625,7 +626,7 @@ void CScoreboard::RenderScoreboard(CUIRect Scoreboard, int Team, int CountStart,
 			}
 			else if(TimeScore)
 			{
-				if(pInfo->m_Score == -9999)
+				if(pInfo->m_Score == FinishTime::NOT_FINISHED_TIMESCORE)
 				{
 					aBuf[0] = '\0';
 				}
@@ -1119,7 +1120,7 @@ CUi::EPopupMenuFunctionResult CScoreboard::PopupScoreboard(void *pContext, CUIRe
 			if(IsSpectating)
 			{
 				pScoreboard->GameClient()->m_Spectator.Spectate(SPEC_FREEVIEW);
-				pScoreboard->Console()->ExecuteLine("say /spec");
+				pScoreboard->Console()->ExecuteLine("say /spec", IConsole::CLIENT_ID_UNSPECIFIED);
 			}
 			else
 			{
@@ -1136,7 +1137,7 @@ CUi::EPopupMenuFunctionResult CScoreboard::PopupScoreboard(void *pContext, CUIRe
 					str_escape(&pDst, Client.m_aName, aEscapedCommand + sizeof(aEscapedCommand));
 					str_append(aEscapedCommand, "\"");
 
-					pScoreboard->Console()->ExecuteLine(aEscapedCommand);
+					pScoreboard->Console()->ExecuteLine(aEscapedCommand, IConsole::CLIENT_ID_UNSPECIFIED);
 				}
 			}
 		}

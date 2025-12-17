@@ -337,24 +337,20 @@ void CPlayer::Snap(int SnappingClient)
 	// This is the time sent to the player while ingame (do not confuse to the one reported to the master server).
 	// Due to clients expecting this as a negative value, we have to make sure it's negative.
 	// Special numbers:
-	// -9999: means no time and isn't displayed in the scoreboard.
+	// -9999 or FinishTime::NOT_FINISHED: means no time and isn't displayed in the scoreboard.
 	if(m_Score.has_value())
 	{
 		// shift the time by a second if the player actually took 9999
 		// seconds to finish the map.
-		if(m_Score.value() == 9999)
-			Score = -10000;
+		if(-m_Score.value() == FinishTime::NOT_FINISHED_TIMESCORE)
+			Score = -m_Score.value() - 1;
 		else
 			Score = -m_Score.value();
 	}
 	else
 	{
-		Score = -9999;
+		Score = FinishTime::NOT_FINISHED_TIMESCORE;
 	}
-
-	// send 0 if times of others are not shown
-	if(SnappingClient != m_ClientId && g_Config.m_SvHideScore)
-		Score = -9999;
 
 	if(!Server()->IsSixup(SnappingClient))
 	{
@@ -363,7 +359,7 @@ void CPlayer::Snap(int SnappingClient)
 			return;
 
 		pPlayerInfo->m_Latency = Latency;
-		pPlayerInfo->m_Score = Score;
+		pPlayerInfo->m_Score = !g_Config.m_SvHideScore || SnappingClient == m_ClientId ? Score : FinishTime::NOT_FINISHED_TIMESCORE;
 		pPlayerInfo->m_Local = (int)(m_ClientId == SnappingClient && (m_Paused != PAUSE_PAUSED || SnappingClientVersion >= VERSION_DDNET_OLD));
 		pPlayerInfo->m_ClientId = TranslatedId;
 		pPlayerInfo->m_Team = m_Team;
@@ -386,7 +382,7 @@ void CPlayer::Snap(int SnappingClient)
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_ADMIN;
 
 		// Times are in milliseconds for 0.7
-		pPlayerInfo->m_Score = m_Score.has_value() ? GameServer()->Score()->PlayerData(m_ClientId)->m_BestTime * 1000 : -1;
+		pPlayerInfo->m_Score = m_Score.has_value() && (!g_Config.m_SvHideScore || SnappingClient == m_ClientId) ? GameServer()->Score()->PlayerData(m_ClientId)->m_BestTime * 1000 : protocol7::FinishTime::NOT_FINISHED;
 		pPlayerInfo->m_Latency = Latency;
 	}
 
@@ -485,6 +481,23 @@ void CPlayer::Snap(int SnappingClient)
 	if(m_Paused == PAUSE_PAUSED)
 		pDDNetPlayer->m_Flags |= EXPLAYERFLAG_PAUSED;
 
+	// set precise finish time instead of timescore
+	if(m_Score.has_value() && (!g_Config.m_SvHideScore || SnappingClient == m_ClientId))
+	{
+		// same as in str_time_float
+		int64_t TimeMilliseconds = static_cast<int64_t>(std::roundf(GameServer()->Score()->PlayerData(m_ClientId)->m_BestTime * 1000.0f));
+		int Seconds = static_cast<int>(TimeMilliseconds / 1000);
+		int Millis = static_cast<int>(TimeMilliseconds % 1000);
+
+		pDDNetPlayer->m_FinishTimeSeconds = Seconds;
+		pDDNetPlayer->m_FinishTimeMillis = Millis;
+	}
+	else
+	{
+		pDDNetPlayer->m_FinishTimeSeconds = FinishTime::NOT_FINISHED_MILLIS;
+		pDDNetPlayer->m_FinishTimeMillis = 0;
+	}
+
 	if(Server()->IsSixup(SnappingClient) && m_pCharacter && m_pCharacter->m_DDRaceState == ERaceState::STARTED &&
 		GameServer()->m_apPlayers[SnappingClient]->m_TimerType == TIMERTYPE_SIXUP)
 	{
@@ -543,7 +556,7 @@ void CPlayer::FakeSnap()
 	pPlayerInfo->m_Latency = m_Latency.m_Min;
 	pPlayerInfo->m_Local = 1;
 	pPlayerInfo->m_ClientId = FakeId;
-	pPlayerInfo->m_Score = -9999;
+	pPlayerInfo->m_Score = FinishTime::NOT_FINISHED_TIMESCORE;
 	pPlayerInfo->m_Team = TEAM_SPECTATORS;
 
 	CNetObj_SpectatorInfo *pSpectatorInfo = Server()->SnapNewItem<CNetObj_SpectatorInfo>(FakeId);
