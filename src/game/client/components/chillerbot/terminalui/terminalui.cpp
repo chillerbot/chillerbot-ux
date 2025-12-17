@@ -410,7 +410,7 @@ void CTerminalUI::OnRender()
 	}
 
 	if(cl_InterruptSignaled)
-		Console()->ExecuteLine("quit");
+		Console()->ExecuteLine("quit", IConsole::CLIENT_ID_UNSPECIFIED);
 
 	if(!GameClient()->m_Snap.m_pLocalCharacter)
 		return;
@@ -571,7 +571,7 @@ int CTerminalUI::GetInput()
 			m_LockKeyUntilRelease = c;
 
 			if(InputMode() == INPUT_LOCAL_CONSOLE)
-				GameClient()->Console()->ExecuteLine(g_aInputStr);
+				GameClient()->Console()->ExecuteLine(g_aInputStr, IConsole::CLIENT_ID_UNSPECIFIED);
 			else if(InputMode() == INPUT_REMOTE_CONSOLE)
 			{
 				if(GameClient()->Client()->RconAuthed())
@@ -1231,7 +1231,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 			{
 				char aBuf[128];
 				str_format(aBuf, sizeof(aBuf), "connect %s", pItem->m_aAddress);
-				Console()->ExecuteLine(aBuf);
+				Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
 			}
 		}
 	}
@@ -1242,7 +1242,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	}
 	else if(Key == 'h' && m_LastKeyPress < time_get() - time_freq() / 2)
 	{
-		Console()->ExecuteLine("reply_to_last_ping");
+		Console()->ExecuteLine("reply_to_last_ping", IConsole::CLIENT_ID_UNSPECIFIED);
 	}
 	else if(Key == 'b')
 	{
