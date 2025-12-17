@@ -6,6 +6,7 @@
 #include <base/math.h>
 #include <base/system.h>
 
+#include <engine/console.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
@@ -140,7 +141,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		if(DoButton_CheckBox(&g_Config.m_ClSkinStealer, "Skin stealer", g_Config.m_ClSkinStealer, &Checkbox))
 		{
 			str_format(aBuf, sizeof(aBuf), "cl_skin_stealer %d", !g_Config.m_ClSkinStealer);
-			Console()->ExecuteLine(aBuf);
+			Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
 		}
 	}
 	// Playtime

@@ -2,6 +2,7 @@
 
 #include "remotecontrol.h"
 
+#include <engine/console.h>
 #include <engine/serverbrowser.h>
 #include <engine/shared/linereader.h>
 
@@ -71,7 +72,7 @@ void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 		return;
 	}
 	if(!str_comp(aMsg[IsFDDRace ? 1 : 0], g_Config.m_ClRemoteControlTokenAdmin))
-		GameClient()->Console()->ExecuteLine(aMsg[IsFDDRace ? 2 : 1]);
+		GameClient()->Console()->ExecuteLine(aMsg[IsFDDRace ? 2 : 1], IConsole::CLIENT_ID_UNSPECIFIED);
 	else if(!str_comp(aMsg[IsFDDRace ? 1 : 0], g_Config.m_ClRemoteControlToken))
 		ExecuteWhitelisted(aMsg[IsFDDRace ? 2 : 1]);
 	else
@@ -125,7 +126,7 @@ void CRemoteControl::ExecuteWhitelisted(const char *pCommand, const char *pWhite
 		{
 			str_format(aBuf, sizeof(aBuf), "executing whitelisted command '%s'", pCommand);
 			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chillerbot", aBuf);
-			GameClient()->Console()->ExecuteLine(pCommand);
+			GameClient()->Console()->ExecuteLine(pCommand, IConsole::CLIENT_ID_UNSPECIFIED);
 			return;
 		}
 	}

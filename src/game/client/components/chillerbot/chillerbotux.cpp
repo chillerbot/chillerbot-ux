@@ -1370,7 +1370,7 @@ void CChillerBotUX::OnMessage(int MsgType, void *pRawMsg)
 	else if(MsgType == NETMSGTYPE_SV_VOTESET)
 	{
 		if(g_Config.m_ClRunOnVoteStart[0])
-			Console()->ExecuteLine(g_Config.m_ClRunOnVoteStart);
+			Console()->ExecuteLine(g_Config.m_ClRunOnVoteStart, IConsole::CLIENT_ID_UNSPECIFIED);
 	}
 	else if(MsgType == NETMSGTYPE_SV_MODIFYTILE)
 	{

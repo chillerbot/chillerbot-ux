@@ -5,6 +5,7 @@
 #include <base/log.h>
 #include <base/system.h>
 
+#include <engine/console.h>
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
 #include <engine/shared/protocol.h>
@@ -312,7 +313,7 @@ bool CChillPw::AuthChatAccount(int Dummy, int Offset)
 			continue;
 		if(Offset > ++Found)
 			continue;
-		Console()->ExecuteLine(m_aaPasswords[i]);
+		Console()->ExecuteLine(m_aaPasswords[i], IConsole::CLIENT_ID_UNSPECIFIED);
 		return true;
 	}
 	return false;
