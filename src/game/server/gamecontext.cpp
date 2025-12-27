@@ -1760,7 +1760,7 @@ void CGameContext::OnClientEnter(int ClientId)
 		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), "This server has an initial chat delay, you will need to wait %d seconds before talking.", g_Config.m_SvChatInitialDelay);
 		SendChatTarget(ClientId, aBuf);
-		m_Mutes.Mute(Server()->ClientAddr(ClientId), g_Config.m_SvChatInitialDelay, "Initial chat delay", true);
+		m_Mutes.Mute(Server()->ClientAddr(ClientId), g_Config.m_SvChatInitialDelay, "Initial chat delay", Server()->ClientName(ClientId), true);
 	}
 
 	LogEvent("Connect", ClientId);
@@ -2788,7 +2788,6 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 
 		// reload scores
 		Score()->PlayerData(ClientId)->Reset();
-		m_apPlayers[ClientId]->m_Score.reset();
 		Score()->LoadPlayerData(ClientId);
 
 		SixupNeedsUpdate = true;
@@ -3753,9 +3752,9 @@ void CGameContext::ConVote(IConsole::IResult *pResult, void *pUserData)
 	CGameContext *pSelf = (CGameContext *)pUserData;
 
 	if(str_comp_nocase(pResult->GetString(0), "yes") == 0)
-		pSelf->ForceVote(pResult->m_ClientId, true);
+		pSelf->ForceVote(true);
 	else if(str_comp_nocase(pResult->GetString(0), "no") == 0)
-		pSelf->ForceVote(pResult->m_ClientId, false);
+		pSelf->ForceVote(false);
 }
 
 void CGameContext::ConVotes(IConsole::IResult *pResult, void *pUserData)
@@ -4763,7 +4762,7 @@ void CGameContext::SendRecord(int ClientId)
 {
 	CNetMsg_Sv_Record Msg;
 	CNetMsg_Sv_RecordLegacy MsgLegacy;
-	MsgLegacy.m_PlayerTimeBest = Msg.m_PlayerTimeBest = round_to_int(Score()->PlayerData(ClientId)->m_BestTime * 100.0f);
+	MsgLegacy.m_PlayerTimeBest = Msg.m_PlayerTimeBest = round_to_int(Score()->PlayerData(ClientId)->m_BestTime.value_or(0.0f) * 100.0f);
 	MsgLegacy.m_ServerTimeBest = Msg.m_ServerTimeBest = m_pController->m_CurrentRecord.has_value() && !g_Config.m_SvHideScore ? round_to_int(m_pController->m_CurrentRecord.value() * 100.0f) : 0; //TODO: finish this
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientId);
 	if(!Server()->IsSixup(ClientId) && GetClientVersion(ClientId) < VERSION_DDNET_MSG_LEGACY)
@@ -4772,7 +4771,7 @@ void CGameContext::SendRecord(int ClientId)
 	}
 }
 
-void CGameContext::SendFinish(int ClientId, float Time, float PreviousBestTime)
+void CGameContext::SendFinish(int ClientId, float Time, std::optional<float> PreviousBestTime)
 {
 	int ClientVersion = m_apPlayers[ClientId]->GetClientVersion();
 
@@ -4784,9 +4783,9 @@ void CGameContext::SendFinish(int ClientId, float Time, float PreviousBestTime)
 		MsgLegacy.m_Check = Msg.m_Check = 0;
 		MsgLegacy.m_Finish = Msg.m_Finish = 1;
 
-		if(PreviousBestTime)
+		if(PreviousBestTime.has_value())
 		{
-			float Diff100 = (Time - PreviousBestTime) * 100;
+			float Diff100 = (Time - PreviousBestTime.value()) * 100;
 			MsgLegacy.m_Check = Msg.m_Check = (int)Diff100;
 		}
 		if(VERSION_DDRACE <= ClientVersion)
@@ -4806,12 +4805,12 @@ void CGameContext::SendFinish(int ClientId, float Time, float PreviousBestTime)
 	RaceFinishMsg.m_ClientId = ClientId;
 	RaceFinishMsg.m_Time = Time * 1000;
 	RaceFinishMsg.m_Diff = 0;
-	if(PreviousBestTime)
+	if(PreviousBestTime.has_value())
 	{
-		float Diff = absolute(Time - PreviousBestTime);
-		RaceFinishMsg.m_Diff = Diff * 1000 * (Time < PreviousBestTime ? -1 : 1);
+		float Diff = absolute(Time - PreviousBestTime.value());
+		RaceFinishMsg.m_Diff = Diff * 1000 * (Time < PreviousBestTime.value() ? -1 : 1);
 	}
-	RaceFinishMsg.m_RecordPersonal = (Time < PreviousBestTime || !PreviousBestTime);
+	RaceFinishMsg.m_RecordPersonal = (!PreviousBestTime.has_value() || Time < PreviousBestTime.value());
 	RaceFinishMsg.m_RecordServer = Time < m_pController->m_CurrentRecord;
 	Server()->SendPackMsg(&RaceFinishMsg, MSGFLAG_VITAL | MSGFLAG_NORECORD, g_Config.m_SvHideScore ? ClientId : -1);
 }
@@ -5249,7 +5248,7 @@ bool CGameContext::PlayerModerating() const
 	return std::any_of(std::begin(m_apPlayers), std::end(m_apPlayers), [](const CPlayer *pPlayer) { return pPlayer && pPlayer->m_Moderating; });
 }
 
-void CGameContext::ForceVote(int EnforcerId, bool Success)
+void CGameContext::ForceVote(bool Success)
 {
 	// check if there is a vote running
 	if(!m_VoteCloseTime)

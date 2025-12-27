@@ -81,6 +81,8 @@ public:
 	bool m_Initialized = false;
 	bool m_InitialDelay;
 	char m_aReason[128];
+	char m_aClientName[MAX_NAME_LENGTH];
+	bool m_NameKnown;
 
 	int SecondsLeft() const;
 };
@@ -90,7 +92,7 @@ class CMutes
 public:
 	CMutes(const char *pSystemName);
 
-	bool Mute(const NETADDR *pAddr, int Seconds, const char *pReason, bool InitialDelay);
+	bool Mute(const NETADDR *pAddr, int Seconds, const char *pReason, const char *pClientName, bool InitialDelay);
 	void UnmuteIndex(int Index);
 	void UnmuteAddr(const NETADDR *pAddr);
 	void UnmuteExpired();
@@ -395,7 +397,7 @@ public:
 	bool PlayerExists(int ClientId) const override { return m_apPlayers[ClientId]; }
 	// Returns true if someone is actively moderating.
 	bool PlayerModerating() const;
-	void ForceVote(int EnforcerId, bool Success);
+	void ForceVote(bool Success);
 
 	// Checks if player can vote and notify them about the reason
 	bool RateLimitPlayerVote(int ClientId);
@@ -633,7 +635,7 @@ public:
 	bool IsRunningKickOrSpecVote(int ClientId) const;
 
 	void SendRecord(int ClientId);
-	void SendFinish(int ClientId, float Time, float PreviousBestTime);
+	void SendFinish(int ClientId, float Time, std::optional<float> PreviousBestTime);
 	void SendSaveCode(int Team, int TeamSize, int State, const char *pError, const char *pSaveRequester, const char *pServerName, const char *pGeneratedCode, const char *pCode);
 	void OnSetAuthed(int ClientId, int Level) override;
 

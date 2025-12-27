@@ -3,9 +3,9 @@ import csv
 import os
 import sys
 
-import clang.cindex  # pylint: disable=import-error
+import clang.cindex
 
-from clang.cindex import CursorKind, LinkageKind, StorageClass, TypeKind  # pylint: disable=import-error
+from clang.cindex import CursorKind, LinkageKind, StorageClass, TypeKind
 
 try:
 	from tqdm import tqdm
@@ -55,7 +55,7 @@ def get_complex_type(typ):
 		return get_complex_type(typ.get_pointee())
 	if typ.kind == TypeKind.POINTER:
 		return "p" + get_complex_type(typ.get_pointee())
-	if is_array_type(type):
+	if is_array_type(typ):
 		return "a" + get_complex_type(typ.element_type)
 	if typ.kind == TypeKind.FUNCTIONPROTO:
 		return "fn"
@@ -89,7 +89,7 @@ def is_static_member_definition_hack(node):
 def is_const(typ):
 	if typ.is_const_qualified():
 		return True
-	if is_array_type(type):
+	if is_array_type(typ):
 		return is_const(typ.element_type)
 	return False
 
@@ -149,7 +149,7 @@ def process_source_file(out, file, extra_args, break_on):
 				"name": node.spelling,
 			})
 			if node.spelling == break_on:
-				breakpoint()  # pylint: disable=forgotten-debug-statement
+				breakpoint()
 
 
 def main():
