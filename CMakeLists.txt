@@ -2029,6 +2029,8 @@ set_src(BASE GLOB_RECURSE src/base
   color.h
   crashdump.cpp
   curses.h
+  dbg.cpp
+  dbg.h
   detect.h
   dynamic.h
   fs.cpp
