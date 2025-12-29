@@ -188,7 +188,8 @@ jobs:
         ${{ matrix.cmake-path }}cmake -E env ${{ matrix.cmake-init-env }} ${{ matrix.cmake-path }}cmake ${{ matrix.cmake-args }} -DHEADLESS_CLIENT=ON -DCMAKE_BUILD_TYPE=Debug -Werror=dev -DDOWNLOAD_GTEST=ON -DDEV=ON -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG=. ..
         ${{ matrix.workaround-issue10203-run-after-configure }}
         ${{ matrix.cmake-path }}cmake --build . --config Debug
-        mv chillerbot-ux.exe DDNet.exe || true
+
+        cp chillerbot-ux${{ matrix.executable-suffix }} DDNet${{ matrix.executable-suffix }} || true
 
     - name: Build headless client with code coverage
       if: contains(matrix.os, 'ubuntu-latest')
