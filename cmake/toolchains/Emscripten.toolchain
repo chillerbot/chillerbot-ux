@@ -1,3 +1,7 @@
+if(NOT DEFINED ENV{EMSDK})
+  message(FATAL_ERROR "EMSDK environment variable must specify path of Emscripten SDK")
+endif()
+
 set(WASM_CXX_FLAGS "")
 set(WASM_LINKER_FLAGS "")
 
@@ -25,6 +29,8 @@ set(WASM_LINKER_FLAGS "${WASM_LINKER_FLAGS} -s FULL_ES3=1")
 
 # Make sure C callback functions are available to JS.
 set(WASM_LINKER_FLAGS "${WASM_LINKER_FLAGS} -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\\$autoResumeAudioContext,\\$dynCall]")
+set(WASM_LINKER_FLAGS "${WASM_LINKER_FLAGS} -s EXPORTED_FUNCTIONS=_main,_EmscriptenCallbackDropFile")
+set(WASM_LINKER_FLAGS "${WASM_LINKER_FLAGS} -s EXPORTED_RUNTIME_METHODS=ccall")
 
 # Very important: use same stack size that other platforms have, as the default of 64 KiB that Emscripten uses is too small for our code and causes stack overflows.
 set(WASM_LINKER_FLAGS "${WASM_LINKER_FLAGS} -s STACK_SIZE=1MB")
@@ -54,6 +60,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 else()
 	# Will drastically reduce code size but also increases compile and link time significantly.
 	set(WASM_CXX_FLAGS "${WASM_CXX_FLAGS} -O3")
+	# Remove absolute paths of Emscripten SDK from binary.
+	set(WASM_CXX_FLAGS "${WASM_CXX_FLAGS} -ffile-prefix-map=$ENV{EMSDK}=EMSDK")
 	set(WASM_LINKER_FLAGS "${WASM_LINKER_FLAGS} -flto")
 endif()
 

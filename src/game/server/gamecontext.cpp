@@ -2648,7 +2648,9 @@ void CGameContext::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int Clien
 
 	CPlayer *pPlayer = m_apPlayers[ClientId];
 
-	if(pPlayer->GetTeam() == pMsg->m_Team || (g_Config.m_SvSpamprotection && pPlayer->m_LastSetTeam && pPlayer->m_LastSetTeam + Server()->TickSpeed() * g_Config.m_SvTeamChangeDelay > Server()->Tick()))
+	if(pPlayer->GetTeam() == pMsg->m_Team)
+		return;
+	if(g_Config.m_SvSpamprotection && pPlayer->m_LastSetTeam && pPlayer->m_LastSetTeam + Server()->TickSpeed() * g_Config.m_SvTeamChangeDelay > Server()->Tick())
 		return;
 
 	// Kill Protection
@@ -2788,6 +2790,7 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 
 		// reload scores
 		Score()->PlayerData(ClientId)->Reset();
+		Server()->SetClientScore(ClientId, std::nullopt);
 		Score()->LoadPlayerData(ClientId);
 
 		SixupNeedsUpdate = true;

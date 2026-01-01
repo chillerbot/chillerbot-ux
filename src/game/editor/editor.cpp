@@ -7928,6 +7928,7 @@ bool CEditor::Save(const char *pFilename)
 
 bool CEditor::HandleMapDrop(const char *pFilename, int StorageType)
 {
+	OnDialogClose();
 	if(HasUnsavedData())
 	{
 		str_copy(m_aFilenamePendingLoad, pFilename);
