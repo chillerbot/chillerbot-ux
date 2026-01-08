@@ -204,6 +204,16 @@ int CClient::SendMsg(int Conn, CMsgPacker *pMsg, int Flags)
 
 void CClient::ChillerBotLoadMap(const char *pMap)
 {
+	if(!str_endswith(pMap, ".map"))
+	{
+		log_error("client", "missing .map file extension");
+		return;
+	}
+	if(!str_startswith(pMap, "maps/") && !str_startswith(pMap, "downloadedmaps/"))
+	{
+		log_warn("client", "path is not starting with maps/ or downloadedmaps/ are you sure it is correct?");
+	}
+
 	m_State = IClient::STATE_OFFLINE;
 	// CServerInfo Info;
 	// GetServerInfo(&Info);
@@ -212,13 +222,10 @@ void CClient::ChillerBotLoadMap(const char *pMap)
 	Disconnect();
 	if(!m_pMap->Load(pMap, IStorage::TYPE_ALL))
 	{
-		char aErrorMsg[128];
-		str_format(aErrorMsg, sizeof(aErrorMsg), "map '%s' not found", pMap);
-		m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "client", aErrorMsg);
+		log_error("client", "map '%s' not found", pMap);
 		if(!m_pMap->Load(aCurrentMap, IStorage::TYPE_ALL))
 		{
-			str_format(aErrorMsg, sizeof(aErrorMsg), "map '%s' not found", aCurrentMap);
-			m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "client", aErrorMsg);
+			log_error("client", "map '%s' not found", aCurrentMap);
 		}
 	}
 	m_pGameClient->OnConnected();
