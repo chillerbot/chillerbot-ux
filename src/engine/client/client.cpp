@@ -210,12 +210,12 @@ void CClient::ChillerBotLoadMap(const char *pMap)
 	char aCurrentMap[IO_MAX_PATH_LENGTH];
 	str_copy(aCurrentMap, GetCurrentMapPath(), sizeof(aCurrentMap));
 	Disconnect();
-	if(!m_pMap->Load(pMap))
+	if(!m_pMap->Load(pMap, IStorage::TYPE_ALL))
 	{
 		char aErrorMsg[128];
 		str_format(aErrorMsg, sizeof(aErrorMsg), "map '%s' not found", pMap);
 		m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "client", aErrorMsg);
-		if(!m_pMap->Load(aCurrentMap))
+		if(!m_pMap->Load(aCurrentMap, IStorage::TYPE_ALL))
 		{
 			str_format(aErrorMsg, sizeof(aErrorMsg), "map '%s' not found", aCurrentMap);
 			m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "client", aErrorMsg);
