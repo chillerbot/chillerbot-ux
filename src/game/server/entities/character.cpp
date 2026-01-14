@@ -351,7 +351,7 @@ void CCharacter::HandleNinja()
 
 				// Don't hit players in solo parts
 				if(Teams()->m_Core.GetSolo(ClientId))
-					return;
+					continue;
 
 				// make sure we haven't Hit this object before
 				bool AlreadyHit = false;
@@ -384,7 +384,9 @@ void CCharacter::HandleNinja()
 void CCharacter::DoWeaponSwitch()
 {
 	// make sure we can switch
-	if(m_ReloadTimer != 0 || m_QueuedWeapon == -1 || m_Core.m_aWeapons[WEAPON_NINJA].m_Got || !m_Core.m_aWeapons[m_QueuedWeapon].m_Got)
+	if(m_ReloadTimer != 0 || m_QueuedWeapon == -1)
+		return;
+	if(m_Core.m_aWeapons[WEAPON_NINJA].m_Got || !m_Core.m_aWeapons[m_QueuedWeapon].m_Got)
 		return;
 
 	// switch Weapon
@@ -700,7 +702,7 @@ int CCharacter::DetermineEyeEmote()
 	const bool HasNinjajetpack = m_pPlayer->m_NinjaJetpack && m_Core.m_Jetpack && m_Core.m_ActiveWeapon == WEAPON_GUN;
 
 	if(GetPlayer()->IsAfk() || GetPlayer()->IsPaused())
-		return IsFrozen ? EMOTE_NORMAL : EMOTE_BLINK;
+		return (m_Core.m_DeepFrozen || m_FreezeTime > 0) ? EMOTE_NORMAL : EMOTE_BLINK;
 	if(m_EmoteType != EMOTE_NORMAL) // user manually set an eye emote using /emote
 		return m_EmoteType;
 	if(IsFrozen)

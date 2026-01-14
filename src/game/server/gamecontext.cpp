@@ -4276,22 +4276,15 @@ void CGameContext::OnInit(const void *pPersistentData)
 
 void CGameContext::CreateAllEntities(bool Initial)
 {
-	const CMapItemLayerTilemap *pTileMap = m_Layers.GameLayer();
-	const CTile *pTiles = static_cast<CTile *>(Kernel()->RequestInterface<IMap>()->GetData(pTileMap->m_Data));
+	const CTile *pTiles = m_Collision.GameLayer();
+	const CTile *pFront = m_Collision.FrontLayer();
+	const CSwitchTile *pSwitch = m_Collision.SwitchLayer();
 
-	const CTile *pFront = nullptr;
-	if(m_Layers.FrontLayer())
-		pFront = static_cast<CTile *>(Kernel()->RequestInterface<IMap>()->GetData(m_Layers.FrontLayer()->m_Front));
-
-	const CSwitchTile *pSwitch = nullptr;
-	if(m_Layers.SwitchLayer())
-		pSwitch = static_cast<CSwitchTile *>(Kernel()->RequestInterface<IMap>()->GetData(m_Layers.SwitchLayer()->m_Switch));
-
-	for(int y = 0; y < pTileMap->m_Height; y++)
+	for(int y = 0; y < m_Collision.GetHeight(); y++)
 	{
-		for(int x = 0; x < pTileMap->m_Width; x++)
+		for(int x = 0; x < m_Collision.GetWidth(); x++)
 		{
-			const int Index = y * pTileMap->m_Width + x;
+			const int Index = y * m_Collision.GetWidth() + x;
 
 			// Game layer
 			{
@@ -4763,12 +4756,15 @@ bool CGameContext::IsRunningKickOrSpecVote(int ClientId) const
 
 void CGameContext::SendRecord(int ClientId)
 {
+	if(Server()->IsSixup(ClientId) || GetClientVersion(ClientId) >= VERSION_DDNET_MAP_BESTTIME)
+		return;
+
 	CNetMsg_Sv_Record Msg;
 	CNetMsg_Sv_RecordLegacy MsgLegacy;
 	MsgLegacy.m_PlayerTimeBest = Msg.m_PlayerTimeBest = round_to_int(Score()->PlayerData(ClientId)->m_BestTime.value_or(0.0f) * 100.0f);
-	MsgLegacy.m_ServerTimeBest = Msg.m_ServerTimeBest = m_pController->m_CurrentRecord.has_value() && !g_Config.m_SvHideScore ? round_to_int(m_pController->m_CurrentRecord.value() * 100.0f) : 0; //TODO: finish this
+	MsgLegacy.m_ServerTimeBest = Msg.m_ServerTimeBest = m_pController->m_CurrentRecord.has_value() && !g_Config.m_SvHideScore ? round_to_int(m_pController->m_CurrentRecord.value() * 100.0f) : 0;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientId);
-	if(!Server()->IsSixup(ClientId) && GetClientVersion(ClientId) < VERSION_DDNET_MSG_LEGACY)
+	if(GetClientVersion(ClientId) < VERSION_DDNET_MSG_LEGACY)
 	{
 		Server()->SendPackMsg(&MsgLegacy, MSGFLAG_VITAL, ClientId);
 	}

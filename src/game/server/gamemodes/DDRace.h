@@ -4,6 +4,8 @@
 
 #include <game/server/gamecontroller.h>
 
+class CScore;
+
 class CGameControllerDDRace : public IGameController
 {
 public:
@@ -16,6 +18,7 @@ public:
 	void SetArmorProgress(CCharacter *pCharacter, int Progress) override;
 	int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer) override;
 	CFinishTime SnapPlayerTime(int SnappingClient, CPlayer *pPlayer) override;
+	CFinishTime SnapMapBestTime(int SnappingClient) override;
 
 	void OnPlayerConnect(class CPlayer *pPlayer) override;
 	void OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason) override;
