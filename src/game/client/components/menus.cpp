@@ -790,6 +790,7 @@ void CMenus::RenderLoading(const char *pCaption, const char *pContent, int Incre
 		"MAPLE MAPLE MAPLE",
 		"you zooz you loose",
 		"I am LIBAN",
+		"𝕚 𝕒𝕞 𝕓𝕣𝕒𝕜",
 		"das große ßßßßßß",
 		"ddnet++ > ddnet"};
 	static int s_len = sizeof(apMsg) / sizeof(*apMsg);
