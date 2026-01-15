@@ -405,6 +405,9 @@ jobs:
         emcmake cmake -H. -G "Unix Makefiles" -B build-emscripten-headless -DCMAKE_BUILD_TYPE=Debug -DVIDEORECORDER=OFF -DVULKAN=OFF -DSERVER=OFF -DTOOLS=OFF -DHEADLESS_CLIENT=ON -DPREFER_BUNDLED_LIBS=ON
         cmake --build build-emscripten-headless --target game-client -j$(nproc)
 
+        # chillerbot-ux
+        mv build-emscripten-headless/chillerbot-ux.html build-emscripten-headless/DDNet.html
+
     - name: Test headless Emscripten client
       run: |
         export MOZ_HEADLESS=1
@@ -419,10 +422,10 @@ jobs:
         emcmake cmake -H. -G "Unix Makefiles" -B build-emscripten-release -DCMAKE_BUILD_TYPE=Release -DVIDEORECORDER=OFF -DVULKAN=OFF -DSERVER=OFF -DTOOLS=OFF -DPREFER_BUNDLED_LIBS=ON
         cmake --build build-emscripten-release --target game-client -j$(nproc)
         mkdir artifacts
-        mv build-emscripten-release/DDNet.data artifacts
-        mv build-emscripten-release/DDNet.js artifacts
-        mv build-emscripten-release/DDNet.wasm artifacts
-        cp other/emscripten/minimal.html artifacts/DDNet.html
+        mv build-emscripten-release/chillerbot-ux.data artifacts
+        mv build-emscripten-release/chillerbot-ux.js artifacts
+        mv build-emscripten-release/chillerbot-ux.wasm artifacts
+        cp other/emscripten/minimal.html artifacts/chillerbot-ux.html
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
