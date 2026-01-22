@@ -1058,6 +1058,9 @@ bool CEditorMap::Load(const char *pFilename, int StorageType, const FErrorHandle
 	CheckIntegrity();
 	PerformSanityChecks(ErrorHandler);
 
+	SortImages();
+	SelectGameLayer();
+
 	ResetModifiedState();
 	return true;
 }

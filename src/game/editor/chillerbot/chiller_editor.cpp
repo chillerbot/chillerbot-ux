@@ -9,11 +9,11 @@ void CEditor::BrushDrawChiller(const std::shared_ptr<CLayerTiles> &pLayer, const
 
 	// assume that the brushed layer was the selected layer
 	// if not we dont know which index the layer has
-	if(!(int)m_vSelectedLayers.size())
+	if(!(int)m_Map.m_vSelectedLayers.size())
 		return;
 
-	int Group = m_SelectedGroup;
-	int Layer = m_vSelectedLayers[0];
+	int Group = m_Map.m_SelectedGroup;
+	int Layer = m_Map.m_vSelectedLayers[0];
 
 	int sx = pLayer->ConvertX(WorldPos.x);
 	int sy = pLayer->ConvertY(WorldPos.y);

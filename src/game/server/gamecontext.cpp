@@ -3,7 +3,7 @@
 #include "gamecontext.h"
 
 #include "entities/character.h"
-#include "gamemodes/DDRace.h"
+#include "gamemodes/ddnet.h"
 #include "gamemodes/mod.h"
 #include "player.h"
 #include "score.h"
@@ -4193,7 +4193,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 	if(!str_comp(Config()->m_SvGametype, "mod"))
 		m_pController = new CGameControllerMod(this);
 	else
-		m_pController = new CGameControllerDDRace(this);
+		m_pController = new CGameControllerDDNet(this);
 
 	ReadCensorList();
 
@@ -4712,7 +4712,12 @@ bool CGameContext::IsClientHighBandwidth(int ClientId) const
 }
 
 CUuid CGameContext::GameUuid() const { return m_GameUuid; }
-const char *CGameContext::GameType() const { return m_pController && m_pController->m_pGameType ? m_pController->m_pGameType : ""; }
+const char *CGameContext::GameType() const
+{
+	dbg_assert(m_pController, "no controller");
+	dbg_assert(m_pController->m_pGameType, "no gametype");
+	return m_pController->m_pGameType;
+}
 const char *CGameContext::Version() const { return GAME_VERSION; }
 const char *CGameContext::NetVersion() const { return GAME_NETVERSION; }
 
