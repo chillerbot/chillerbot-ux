@@ -387,6 +387,13 @@ bool CReplyToPing::Reply()
 		return true;
 	}
 
+	// love
+	if(str_find_nocase(m_pMessage, "<3"))
+	{
+		str_format(m_pResponse, m_SizeOfResponse, "%s <3", m_pMessageAuthor);
+		return true;
+	}
+
 	// weeb
 	if(str_find_nocase(m_pMessage, "uwu"))
 	{
