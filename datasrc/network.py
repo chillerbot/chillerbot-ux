@@ -659,6 +659,10 @@ Messages = [
 	NetMessageEx("Cl_EnableSpectatorCount", "enable-spectator-count@netmsg.ddnet.org", [
 		NetBool("m_Enable"),
 	]),
+	
+	NetMessageEx("Sv_MapInfo", "map-info@netmsg.ddnet.org", [
+		NetString("m_pDescription"),
+	]),
 ]
 
 # ddnet++ / chillerbot-ux messages
