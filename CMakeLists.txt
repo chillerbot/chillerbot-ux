@@ -2056,6 +2056,8 @@ set_src(BASE GLOB_RECURSE src/base
   mem.cpp
   mem.h
   rust.h
+  secure.cpp
+  secure.h
   str.cpp
   str.h
   system.cpp

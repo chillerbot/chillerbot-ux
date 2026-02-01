@@ -1200,7 +1200,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dumm
 			m_GameWorld.ReleaseHooked(pMsg->m_Victim);
 		}
 
-		// if we are spectating a static id set (team 0) and somebody killed, and its not a guy in solo, we remove him from the list
+		// if we are spectating a static id set (team 0) and somebody killed, and its not a guy in solo, we remove them from the list
 		// never remove players from the list if it is a pvp server
 		if(IsMultiViewIdSet() && m_MultiViewTeam == 0 && m_aMultiViewId[pMsg->m_Victim] && !m_aClients[pMsg->m_Victim].m_Spec && !m_MultiView.m_Solo && !m_GameInfo.m_Pvp)
 		{
@@ -1739,7 +1739,6 @@ void CGameClient::OnNewSnapshot()
 
 	ProcessEvents();
 
-#ifdef CONF_DEBUG
 	if(g_Config.m_DbgStress)
 	{
 		if((Client()->GameTick(g_Config.m_ClDummy) % 100) == 0)
@@ -1753,7 +1752,6 @@ void CGameClient::OnNewSnapshot()
 			m_Chat.SendChat(rand() & 1, aMessage);
 		}
 	}
-#endif
 
 	CServerInfo ServerInfo;
 	Client()->GetServerInfo(&ServerInfo);
@@ -2686,8 +2684,6 @@ void CGameClient::OnPredict()
 
 		m_PredictedWorld.Tick();
 
-		HandlePredictedEvents(Tick);
-
 		// fetch the current characters
 		if(Tick == PredictionTick)
 		{
@@ -2749,6 +2745,8 @@ void CGameClient::OnPredict()
 				if(Events & COREEVENT_AIR_JUMP)
 					m_Effects.AirJump(Pos, 1.0f, 1.0f);
 		}
+
+		HandlePredictedEvents(Tick);
 	}
 
 	// detect mispredictions of other players and make corrections smoother when possible
@@ -4962,7 +4960,7 @@ void CGameClient::HandleMultiView()
 		// player is far away and frozen
 		if(distance(m_MultiView.m_OldPos, PlayerPos) > 1100 && m_aClients[ClientId].m_FreezeEnd != 0)
 		{
-			// check if the player is frozen for more than 3 seconds, if so vanish him
+			// check if the player is frozen for more than 3 seconds, if so vanish them
 			if(m_MultiView.m_aLastFreeze[ClientId] == 0.0f)
 			{
 				m_MultiView.m_aLastFreeze[ClientId] = Client()->LocalTime();
