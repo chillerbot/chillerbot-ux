@@ -182,22 +182,22 @@ int CChillerBotUX::GetPlayTimeHours() const
 // function originally from Kaizo Client by +KZ, credit if used
 int CChillerBotUX::InsertCustomClientIdIntoSkinColor(int Color)
 {
-    if(!g_Config.m_ClSendClientType)
-    {
-        return Color;
-    }
+	if(!g_Config.m_ClSendClientType)
+	{
+		return Color;
+	}
 
-    union
-    {
-        int c = 0;
-        unsigned char b[4];
-    } a;
+	union
+	{
+		int m_C = 0;
+		unsigned char m_B[4];
+	} Temp;
 
-    a.c = Color;
+	Temp.m_C = Color;
 
-    //alpha is unused
-    a.b[3] = (unsigned char)CCID_COLOR_BODY_CHILLERBOTUX;
-    Color = a.c;
+	//alpha is unused
+	Temp.m_B[3] = (unsigned char)CCID_COLOR_BODY_CHILLERBOTUX;
+	Color = Temp.m_C;
 
 	return Color;
 }
@@ -225,37 +225,37 @@ int CChillerBotUX::HandleClientCountry(int Country, int ClientId)
 void CChillerBotUX::HandleNewSnapshot(const IClient::CSnapItem *pItem)
 {
 	if(pItem->m_Type == NETOBJTYPE_CLIENTINFO)
-    {
-        const CNetObj_ClientInfo *pInfo = (const CNetObj_ClientInfo *)pItem->m_pData;
+	{
+		const CNetObj_ClientInfo *pInfo = (const CNetObj_ClientInfo *)pItem->m_pData;
 		int ClientId = pItem->m_Id;
 		if(ClientId < MAX_CLIENTS && ClientId >= 0)
 		{
-			CChillerClientData * pClient = &m_aClientData[ClientId];
+			CChillerClientData *pClient = &m_aClientData[ClientId];
 
-            // identify clients
+			// identify clients
 			// code originally from Kaizo Client by +KZ, credit if used
-            union
-            {
-                int c = 0;
-                unsigned char b[4];
-            } a;
+			union
+			{
+				int m_C = 0;
+				unsigned char m_B[4];
+			} Temp;
 
-            a.c = pInfo->m_ColorBody;
+			Temp.m_C = pInfo->m_ColorBody;
 
-            if(a.b[3] == CCID_COLOR_BODY_KAIZO_CLIENT)
-            {
-                pClient->m_CustomClient = CUSTOM_CLIENT_ID_KAIZO_NETWORK;
-            }
-            else if(a.b[3] == CCID_COLOR_BODY_CHILLERBOTUX)
-            {
-                pClient->m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX;
-            }
-            else if(a.b[3] == CCID_COLOR_BODY_PDUCKCLIENT)
-            {
-                pClient->m_CustomClient = CUSTOM_CLIENT_ID_PDUCKCLIENT;
-            }
-        }
-    }
+			if(Temp.m_B[3] == CCID_COLOR_BODY_KAIZO_CLIENT)
+			{
+				pClient->m_CustomClient = CUSTOM_CLIENT_ID_KAIZO_NETWORK;
+			}
+			else if(Temp.m_B[3] == CCID_COLOR_BODY_CHILLERBOTUX)
+			{
+				pClient->m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX;
+			}
+			else if(Temp.m_B[3] == CCID_COLOR_BODY_PDUCKCLIENT)
+			{
+				pClient->m_CustomClient = CUSTOM_CLIENT_ID_PDUCKCLIENT;
+			}
+		}
+	}
 }
 
 void CChillerBotUX::PrintPlaytime()
