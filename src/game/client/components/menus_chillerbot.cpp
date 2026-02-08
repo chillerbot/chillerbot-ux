@@ -32,7 +32,6 @@
 #include <game/client/ui_scrollregion.h>
 #include <game/localization.h>
 
-using namespace FontIcons;
 using namespace std::chrono_literals;
 
 void CMenus::RenderSettingsChillerbot(CUIRect MainView)
