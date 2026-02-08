@@ -164,63 +164,12 @@ void CChillerBotUX::OnStateChange(int NewState, int OldState)
 	}
 }
 
-void CChillerBotUX::OnUpdate()
-{
-	bool MustSendCustomClient = false;
-
-	for(auto &Client : GameClient()->m_aClients)
-	{
-		if(Client.m_Active)
-		{
-			if(IsOurClientId(Client.ClientId()))
-			{
-				m_aClientData[Client.ClientId()].m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX; //force chillerbot client for us
-			}
-
-			if(!m_aClientData[Client.ClientId()].m_SentCustomClient)
-			{
-				MustSendCustomClient = true;
-				m_aClientData[Client.ClientId()].m_SentCustomClient = true;
-			}
-		}
-		else
-		{
-			m_aClientData[Client.ClientId()].m_SentCustomClient = false;
-		}
-	}
-
-	if(MustSendCustomClient)
-	{
-		m_SendingCustomClientTicks = 25;
-	}
-
-	switch(m_SendingCustomClientTicks)
-	{
-	case 25:
-		GameClient()->SendInfo(false);
-		GameClient()->SendDummyInfo(false);
-		m_SendingCustomClientTicks = 24;
-		break;
-	case 0:
-		GameClient()->SendInfo(false);
-		GameClient()->SendDummyInfo(false);
-		m_SendingCustomClientTicks = -1;
-		break;
-	default:
-		if(m_SendingCustomClientTicks > 0)
-			m_SendingCustomClientTicks--;
-		break;
-	}
-}
-
 void CChillerBotUX::OnReset()
 {
 	for(auto &ClientData : m_aClientData)
 	{
 		ClientData.Reset();
 	}
-
-	m_SendingCustomClientTicks = 25;
 }
 
 int CChillerBotUX::GetPlayTimeHours() const
@@ -230,22 +179,27 @@ int CChillerBotUX::GetPlayTimeHours() const
 	return m_PlaytimeMinutes / 60;
 }
 
-// function originally from Kaizo Network by +KZ, credit if used
-int CChillerBotUX::ReplaceCountryFlagWithCustomClientId(int Country)
+// function originally from Kaizo Client by +KZ, credit if used
+int CChillerBotUX::InsertCustomClientIdIntoSkinColor(int Color)
 {
 	if(!g_Config.m_ClSendClientType)
-		return Country;
-
-	if(m_SendingCustomClientTicks <= 1) //dont send custom flag
-		return Country;
-
-	//if some random day amount of flags conflicts with invalid flag, just send normal country
-	if(GameClient()->m_CountryFlags.Num() >= CUSTOM_CLIENT_ID_KAIZO_NETWORK)
 	{
-		return Country;
+		return Color;
 	}
 
-	return CUSTOM_CLIENT_ID_CHILLERBOTUX;
+	union
+	{
+		int m_C = 0;
+		unsigned char m_B[4];
+	} Temp;
+
+	Temp.m_C = Color;
+
+	//alpha is unused
+	Temp.m_B[3] = (unsigned char)CCID_COLOR_BODY_CHILLERBOTUX;
+	Color = Temp.m_C;
+
+	return Color;
 }
 
 // function originally from Kaizo Network by +KZ, credit if used
@@ -265,6 +219,42 @@ int CChillerBotUX::HandleClientCountry(int Country, int ClientId)
 	else //otherwise, set country
 	{
 		return Country;
+	}
+}
+
+void CChillerBotUX::HandleNewSnapshot(const IClient::CSnapItem *pItem)
+{
+	if(pItem->m_Type == NETOBJTYPE_CLIENTINFO)
+	{
+		const CNetObj_ClientInfo *pInfo = (const CNetObj_ClientInfo *)pItem->m_pData;
+		int ClientId = pItem->m_Id;
+		if(ClientId < MAX_CLIENTS && ClientId >= 0)
+		{
+			CChillerClientData *pClient = &m_aClientData[ClientId];
+
+			// identify clients
+			// code originally from Kaizo Client by +KZ, credit if used
+			union
+			{
+				int m_C = 0;
+				unsigned char m_B[4];
+			} Temp;
+
+			Temp.m_C = pInfo->m_ColorBody;
+
+			if(Temp.m_B[3] == CCID_COLOR_BODY_KAIZO_CLIENT)
+			{
+				pClient->m_CustomClient = CUSTOM_CLIENT_ID_KAIZO_NETWORK;
+			}
+			else if(Temp.m_B[3] == CCID_COLOR_BODY_CHILLERBOTUX)
+			{
+				pClient->m_CustomClient = CUSTOM_CLIENT_ID_CHILLERBOTUX;
+			}
+			else if(Temp.m_B[3] == CCID_COLOR_BODY_PDUCKCLIENT)
+			{
+				pClient->m_CustomClient = CUSTOM_CLIENT_ID_PDUCKCLIENT;
+			}
+		}
 	}
 }
 
@@ -1508,7 +1498,6 @@ int CChillerBotUX::GetUnusedJumps()
 void CChillerBotUX::CChillerClientData::Reset()
 {
 	m_CustomClient = 0;
-	m_SentCustomClient = false;
 }
 
 bool CChillerBotUX::IsOurClientId(int ClientId)

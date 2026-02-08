@@ -115,7 +115,6 @@ class CChillerBotUX : public CComponent
 	bool OnCursorMove(float x, float y, IInput::ECursorType CursorType) override;
 	bool OnInput(const IInput::CEvent &Event) override;
 	void OnStateChange(int NewState, int OldState) override;
-	void OnUpdate() override;
 	void OnReset() override;
 
 	static void ConPlaytime(IConsole::IResult *pResult, void *pUserData);
@@ -141,7 +140,6 @@ public:
 	{
 	public:
 		int m_CustomClient = 0; //chillerbot
-		bool m_SentCustomClient = false; //chillerbot
 
 		void Reset();
 
@@ -188,10 +186,10 @@ public:
 	int GetUnusedJumps();
 	int GetPlayTimeHours() const;
 
-	int ReplaceCountryFlagWithCustomClientId(int Country);
+	int InsertCustomClientIdIntoSkinColor(int Color);
 	bool IsCustomClientId(int Country);
-	int m_SendingCustomClientTicks = -1;
 	int HandleClientCountry(int Country, int ClientId);
+	void HandleNewSnapshot(const IClient::CSnapItem *pItem);
 
 	// returns true if `ClientId`
 	// matches our current or our dummies current client id

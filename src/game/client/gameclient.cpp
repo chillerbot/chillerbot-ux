@@ -1789,7 +1789,7 @@ void CGameClient::OnNewSnapshot()
 						str_copy(pClient->m_aName, "nameless tee");
 					}
 					IntsToStr(pInfo->m_aClan, std::size(pInfo->m_aClan), pClient->m_aClan, std::size(pClient->m_aClan));
-					pClient->m_Country = m_ChillerBotUX.HandleClientCountry(pInfo->m_Country, ClientId);
+					pClient->m_Country = m_ChillerBotUX.HandleClientCountry(pInfo->m_Country, ClientId); //keep this to identify previous clients
 
 					IntsToStr(pInfo->m_aSkin, std::size(pInfo->m_aSkin), pClient->m_aSkinName, std::size(pClient->m_aSkinName));
 					if(!CSkin::IsValidName(pClient->m_aSkinName) ||
@@ -2100,6 +2100,7 @@ void CGameClient::OnNewSnapshot()
 				m_MapBestTimeSeconds = pMapBestTimeData->m_MapBestTimeSeconds;
 				m_MapBestTimeMillis = pMapBestTimeData->m_MapBestTimeMillis;
 			}
+			m_ChillerBotUX.HandleNewSnapshot(&Item);
 		}
 	}
 
@@ -3127,7 +3128,7 @@ void CGameClient::SendStartInfo7(bool Dummy)
 	protocol7::CNetMsg_Cl_StartInfo Msg;
 	Msg.m_pName = Dummy ? Client()->DummyName() : Client()->PlayerName();
 	Msg.m_pClan = Dummy ? Config()->m_ClDummyClan : Config()->m_PlayerClan;
-	Msg.m_Country = m_ChillerBotUX.ReplaceCountryFlagWithCustomClientId(Dummy ? Config()->m_ClDummyCountry : Config()->m_PlayerCountry); // chillerbot modified
+	Msg.m_Country = Dummy ? Config()->m_ClDummyCountry : Config()->m_PlayerCountry;
 	for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
 	{
 		Msg.m_apSkinPartNames[p] = CSkins7::ms_apSkinVariables[(int)Dummy][p];
@@ -3212,10 +3213,10 @@ void CGameClient::SendInfo(bool Start)
 		CNetMsg_Cl_StartInfo Msg;
 		Msg.m_pName = Client()->PlayerName();
 		Msg.m_pClan = g_Config.m_PlayerClan;
-		Msg.m_Country = m_ChillerBotUX.ReplaceCountryFlagWithCustomClientId(g_Config.m_PlayerCountry); // chillerbot modified
+		Msg.m_Country = g_Config.m_PlayerCountry;
 		Msg.m_pSkin = g_Config.m_ClPlayerSkin;
 		Msg.m_UseCustomColor = g_Config.m_ClPlayerUseCustomColor;
-		Msg.m_ColorBody = g_Config.m_ClPlayerColorBody;
+		Msg.m_ColorBody = m_ChillerBotUX.InsertCustomClientIdIntoSkinColor(g_Config.m_ClPlayerColorBody); // chillerbot modified
 		Msg.m_ColorFeet = g_Config.m_ClPlayerColorFeet;
 		CMsgPacker Packer(&Msg);
 		Msg.Pack(&Packer);
@@ -3227,10 +3228,10 @@ void CGameClient::SendInfo(bool Start)
 		CNetMsg_Cl_ChangeInfo Msg;
 		Msg.m_pName = Client()->PlayerName();
 		Msg.m_pClan = g_Config.m_PlayerClan;
-		Msg.m_Country = m_ChillerBotUX.ReplaceCountryFlagWithCustomClientId(g_Config.m_PlayerCountry); // chillerbot modified
+		Msg.m_Country = g_Config.m_PlayerCountry;
 		Msg.m_pSkin = g_Config.m_ClPlayerSkin;
 		Msg.m_UseCustomColor = g_Config.m_ClPlayerUseCustomColor;
-		Msg.m_ColorBody = g_Config.m_ClPlayerColorBody;
+		Msg.m_ColorBody = m_ChillerBotUX.InsertCustomClientIdIntoSkinColor(g_Config.m_ClPlayerColorBody); // chillerbot modified
 		Msg.m_ColorFeet = g_Config.m_ClPlayerColorFeet;
 		CMsgPacker Packer(&Msg);
 		Msg.Pack(&Packer);
@@ -3254,10 +3255,10 @@ void CGameClient::SendDummyInfo(bool Start)
 		CNetMsg_Cl_StartInfo Msg;
 		Msg.m_pName = Client()->DummyName();
 		Msg.m_pClan = g_Config.m_ClDummyClan;
-		Msg.m_Country = m_ChillerBotUX.ReplaceCountryFlagWithCustomClientId(g_Config.m_ClDummyCountry); // chillerbot modified
+		Msg.m_Country = g_Config.m_ClDummyCountry;
 		Msg.m_pSkin = g_Config.m_ClDummySkin;
 		Msg.m_UseCustomColor = g_Config.m_ClDummyUseCustomColor;
-		Msg.m_ColorBody = g_Config.m_ClDummyColorBody;
+		Msg.m_ColorBody = m_ChillerBotUX.InsertCustomClientIdIntoSkinColor(g_Config.m_ClDummyColorBody); // chillerbot modified
 		Msg.m_ColorFeet = g_Config.m_ClDummyColorFeet;
 		CMsgPacker Packer(&Msg);
 		Msg.Pack(&Packer);
@@ -3269,10 +3270,10 @@ void CGameClient::SendDummyInfo(bool Start)
 		CNetMsg_Cl_ChangeInfo Msg;
 		Msg.m_pName = Client()->DummyName();
 		Msg.m_pClan = g_Config.m_ClDummyClan;
-		Msg.m_Country = m_ChillerBotUX.ReplaceCountryFlagWithCustomClientId(g_Config.m_ClDummyCountry); // chillerbot modified
+		Msg.m_Country = g_Config.m_ClDummyCountry;
 		Msg.m_pSkin = g_Config.m_ClDummySkin;
 		Msg.m_UseCustomColor = g_Config.m_ClDummyUseCustomColor;
-		Msg.m_ColorBody = g_Config.m_ClDummyColorBody;
+		Msg.m_ColorBody = m_ChillerBotUX.InsertCustomClientIdIntoSkinColor(g_Config.m_ClDummyColorBody); // chillerbot modified
 		Msg.m_ColorFeet = g_Config.m_ClDummyColorFeet;
 		CMsgPacker Packer(&Msg);
 		Msg.Pack(&Packer);
