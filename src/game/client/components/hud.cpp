@@ -9,6 +9,7 @@
 
 #include <base/color.h>
 
+#include <engine/font_icons.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 #include <engine/textrender.h>
@@ -351,8 +352,7 @@ void CHud::RenderScoreHud()
 							int64_t TimeSeconds = static_cast<int64_t>(absolute(ClientData.m_FinishTimeSeconds));
 							int64_t TimeMillis = TimeSeconds * 1000 + (absolute(ClientData.m_FinishTimeMillis) % 1000);
 
-							// show centiseconds if we are under an hour
-							str_time(TimeMillis / 10, TimeSeconds < 60 * 60 ? TIME_MINS_CENTISECS : TIME_HOURS, aScore[t], sizeof(aScore[t]));
+							str_time(TimeMillis / 10, TIME_HOURS, aScore[t], sizeof(aScore[t]));
 						}
 						else if(apPlayerInfo[t]->m_Score != FinishTime::NOT_FINISHED_TIMESCORE)
 						{
@@ -1323,7 +1323,7 @@ void CHud::RenderSpectatorCount()
 	float x = StartX + 2;
 
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-	TextRender()->Text(x, y, Fontsize, FontIcons::FONT_ICON_EYE, -1.0f);
+	TextRender()->Text(x, y, Fontsize, FontIcon::EYE, -1.0f);
 	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
 	TextRender()->Text(x + Fontsize + 3.f, y, Fontsize, aBuf, -1.0f);
 }
@@ -1601,7 +1601,7 @@ void CHud::RenderSpectatorHud()
 		Graphics()->DrawRect(TagX, m_Height - 12.0f, TagWidth, 10.0f, ColorRGBA(1.0f, 1.0f, 1.0f, AutoSpecCameraEnabled ? 0.50f : 0.10f), IGraphics::CORNER_ALL, 2.5f);
 		TextRender()->TextColor(1, 1, 1, AutoSpecCameraEnabled ? 1.0f : 0.65f);
 		TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-		TextRender()->Text(TagX + Padding, m_Height - 10.0f, 6.0f, FontIcons::FONT_ICON_CAMERA, -1.0f);
+		TextRender()->Text(TagX + Padding, m_Height - 10.0f, 6.0f, FontIcon::CAMERA, -1.0f);
 		TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
 		TextRender()->Text(TagX + Padding + IconWidth + Padding, m_Height - 10.0f, 6.0f, pLabelText, -1.0f);
 		TextRender()->TextColor(1, 1, 1, 1);
