@@ -1345,7 +1345,7 @@ void CEditor::DoQuad(int LayerIndex, const std::shared_ptr<CLayerQuads> &pLayer,
 	};
 
 	// some basic values
-	void *pId = &pQuad->m_aPoints[4]; // use pivot addr as id
+	const void *pId = &pQuad->m_aPoints[4]; // use pivot addr as id
 	static std::vector<std::vector<CPoint>> s_vvRotatePoints;
 	static int s_Operation = OP_NONE;
 	static vec2 s_MouseStart = vec2(0.0f, 0.0f);
@@ -6267,14 +6267,9 @@ void CEditor::RenderMenubar(CUIRect MenuBar)
 	Ui()->DoLabel(&Info, aBuf, 10.0f, TEXTALIGN_MR);
 
 	static int s_HelpButton = 0;
-	if(DoButton_Editor(&s_HelpButton, "?", 0, &Help, BUTTONFLAG_LEFT, "[F1] Open the DDNet Wiki page for the map editor in a web browser.") ||
-		(Input()->KeyPress(KEY_F1) && m_Dialog == DIALOG_NONE && CLineInput::GetActiveInput() == nullptr))
+	if(DoButton_Editor(&s_HelpButton, "?", 0, &Help, BUTTONFLAG_LEFT, "[F1] Open the DDNet Wiki page for the map editor in a web browser."))
 	{
-		const char *pLink = Localize("https://wiki.ddnet.org/wiki/Mapping");
-		if(!Client()->ViewLink(pLink))
-		{
-			ShowFileDialogError("Failed to open the link '%s' in the default web browser.", pLink);
-		}
+		m_QuickActionShowHelp.Call();
 	}
 
 	static int s_CloseButton = 0;
@@ -6282,6 +6277,15 @@ void CEditor::RenderMenubar(CUIRect MenuBar)
 	{
 		OnClose();
 		g_Config.m_ClEditor = 0;
+	}
+}
+
+void CEditor::ShowHelp()
+{
+	const char *pLink = Localize("https://wiki.ddnet.org/wiki/Mapping");
+	if(!Client()->ViewLink(pLink))
+	{
+		ShowFileDialogError("Failed to open the link '%s' in the default web browser.", pLink);
 	}
 }
 
@@ -7345,6 +7349,18 @@ void CEditor::OnUpdate()
 
 	// handle key presses
 	Input()->ConsumeEvents([&](const IInput::CEvent &Event) {
+		if(m_Dialog == DIALOG_NONE &&
+			CLineInput::GetActiveInput() == nullptr &&
+			Event.m_Key == KEY_F1)
+		{
+			if((Event.m_Flags & IInput::FLAG_PRESS) != 0 &&
+				(Event.m_Flags & IInput::FLAG_REPEAT) == 0)
+			{
+				m_QuickActionShowHelp.Call();
+			}
+			return;
+		}
+
 		for(CEditorComponent &Component : m_vComponents)
 		{
 			// Events with flag `FLAG_RELEASE` must always be forwarded to all components so keys being
@@ -7437,19 +7453,19 @@ void CEditor::OnDialogClose()
 
 void CEditor::LoadCurrentMap()
 {
-	if(Load(m_pClient->GetCurrentMapPath(), IStorage::TYPE_SAVE))
+	CGameClient *pGameClient = (CGameClient *)Kernel()->RequestInterface<IGameClient>();
+
+	if(Load(pGameClient->Map()->Path(), IStorage::TYPE_SAVE))
 	{
-		Map()->m_ValidSaveFilename = !str_startswith(m_pClient->GetCurrentMapPath(), "downloadedmaps/");
+		Map()->m_ValidSaveFilename = !str_startswith(pGameClient->Map()->Path(), "downloadedmaps/");
 	}
 	else
 	{
-		Load(m_pClient->GetCurrentMapPath(), IStorage::TYPE_ALL);
+		Load(pGameClient->Map()->Path(), IStorage::TYPE_ALL);
 		Map()->m_ValidSaveFilename = false;
 	}
 
-	CGameClient *pGameClient = (CGameClient *)Kernel()->RequestInterface<IGameClient>();
 	vec2 Center = pGameClient->m_Camera.m_Center;
-
 	MapView()->SetWorldOffset(Center);
 }
 
