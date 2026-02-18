@@ -110,7 +110,7 @@ void CEditMap::GetSourceMapPath(char *pPath, int Size)
 		}
 	}
 	dbg_msg("edit_map", "'%s' not found in maps/ use current map", pPath + 9);
-	str_copy(pPath, GameClient()->Client()->GetCurrentMapPath(), Size);
+	str_copy(pPath, GameClient()->Map()->Path(), Size);
 }
 
 void CEditMap::ConSetGametile(IConsole::IResult *pResult, void *pUserData)
