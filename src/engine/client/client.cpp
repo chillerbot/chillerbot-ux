@@ -216,12 +216,12 @@ void CClient::ChillerBotLoadMap(const char *pMap)
 	// CServerInfo Info;
 	// GetServerInfo(&Info);
 	char aCurrentMap[IO_MAX_PATH_LENGTH];
-	str_copy(aCurrentMap, GetCurrentMapPath(), sizeof(aCurrentMap));
+	str_copy(aCurrentMap, GameClient()->Map()->Path(), sizeof(aCurrentMap));
 	Disconnect();
-	if(!m_pMap->Load(pMap, IStorage::TYPE_ALL))
+	if(!GameClient()->Map()->Load(Storage(), pMap, IStorage::TYPE_ALL))
 	{
 		log_error("client", "map '%s' not found", pMap);
-		if(!m_pMap->Load(aCurrentMap, IStorage::TYPE_ALL))
+		if(!GameClient()->Map()->Load(Storage(), aCurrentMap, IStorage::TYPE_ALL))
 		{
 			log_error("client", "map '%s' not found", aCurrentMap);
 		}
