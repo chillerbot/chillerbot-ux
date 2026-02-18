@@ -356,13 +356,13 @@ void CTerminalUI::OnMapLoad()
 {
 	str_copy(m_aTileSolidTexture, "█", sizeof(m_aTileSolidTexture));
 	str_copy(m_aTileUnhookTexture, "▓", sizeof(m_aTileUnhookTexture));
-	if(!str_comp(Client()->GetCurrentMap(), "Multimap") ||
-		!str_comp(Client()->GetCurrentMap(), "Multeasymap"))
+	if(!str_comp(GameClient()->Map()->BaseName(), "Multimap") ||
+		!str_comp(GameClient()->Map()->BaseName(), "Multeasymap"))
 	{
 		str_copy(m_aTileSolidTexture, "🟩", sizeof(m_aTileSolidTexture));
 	}
-	else if(!str_comp(Client()->GetCurrentMap(), "Copy Love Box") ||
-		!str_comp(Client()->GetCurrentMap(), "Copy Love Box 2s"))
+	else if(!str_comp(GameClient()->Map()->BaseName(), "Copy Love Box") ||
+		!str_comp(GameClient()->Map()->BaseName(), "Copy Love Box 2s"))
 	{
 		str_copy(m_aTileUnhookTexture, "🟦", sizeof(m_aTileUnhookTexture));
 	}
