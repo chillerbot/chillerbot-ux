@@ -1,6 +1,8 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_EDIT_MAP_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_EDIT_MAP_H
 
+#include <base/str.h>
+
 #include <engine/console.h>
 #include <engine/shared/jobs.h>
 
