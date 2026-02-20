@@ -660,11 +660,6 @@ void os_locale_str(char *locale, size_t length);
  */
 void crashdump_init_if_available(const char *log_file_path);
 
-#if defined(CONF_CURSES_CLIENT)
-void curses_logf(const char *sys, const char *fmt, ...);
-#define dbg_msg(sys, fmt, ...) curses_logf(sys, fmt, ##__VA_ARGS__)
-#endif
-
 /**
  * Fixes the command line arguments to be encoded in UTF-8 on all systems.
  * This is a RAII wrapper for @link cmdline_fix @endlink and @link cmdline_free @endlink.

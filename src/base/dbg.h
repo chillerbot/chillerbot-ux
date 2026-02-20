@@ -117,4 +117,9 @@ void dbg_assert_set_handler(DBG_ASSERT_HANDLER handler);
  */
 [[gnu::format(printf, 2, 3)]] void dbg_msg(const char *sys, const char *fmt, ...);
 
+#if defined(CONF_CURSES_CLIENT)
+void curses_logf(const char *sys, const char *fmt, ...);
+#define dbg_msg(sys, fmt, ...) curses_logf(sys, fmt, ##__VA_ARGS__)
+#endif
+
 #endif
