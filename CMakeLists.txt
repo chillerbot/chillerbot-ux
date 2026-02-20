@@ -2027,6 +2027,8 @@ add_custom_target(generate_protocol
 
 # Sources
 set_src(BASE GLOB_RECURSE src/base
+  aio.cpp
+  aio.h
   bezier.cpp
   bezier.h
   ccurses.cpp
@@ -2051,6 +2053,8 @@ set_src(BASE GLOB_RECURSE src/base
   hash_ctxt.h
   hash_libtomcrypt.cpp
   hash_openssl.cpp
+  io.cpp
+  io.h
   lock.h
   log.cpp
   log.h
@@ -2672,8 +2676,8 @@ if(CLIENT)
     prompt.h
     proof_mode.cpp
     proof_mode.h
-    quadart.cpp
-    quadart.h
+    quad_art.cpp
+    quad_art.h
     quick_action.h
     quick_actions.cpp
     quick_actions.h
@@ -2681,7 +2685,7 @@ if(CLIENT)
     references.h
     smooth_value.cpp
     smooth_value.h
-    tileart.cpp
+    tile_art.cpp
   )
   set_src(GAME_MAP GLOB_RECURSE src/game/map
     envelope_extrema.cpp
