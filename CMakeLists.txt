@@ -1531,6 +1531,7 @@ set(EXPECTED_DATA
   mapres/desert_mountains_new_background.png
   mapres/desert_mountains_new_foreground.png
   mapres/desert_sun.png
+  mapres/easter_0.7.png
   mapres/entities.png
   mapres/fadeout.png
   mapres/font_teeworlds.json
@@ -2040,6 +2041,7 @@ set_src(BASE GLOB_RECURSE src/base
   color.cpp
   color.h
   crashdump.cpp
+  crashdump.h
   curses.h
   dbg.cpp
   dbg.h
@@ -2062,6 +2064,8 @@ set_src(BASE GLOB_RECURSE src/base
   math.h
   mem.cpp
   mem.h
+  process.cpp
+  process.h
   rust.h
   secure.cpp
   secure.h
@@ -3200,7 +3204,6 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     server_test.cpp
     serverbrowser_test.cpp
     serverinfo_test.cpp
-    shell_execute_test.cpp
     snapshot_test.cpp
     str_test.cpp
     strip_path_and_extension_test.cpp
@@ -3214,6 +3217,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     unix_test.cpp
     uuid_test.cpp
     vmath_test.cpp
+    windows_test.cpp
   )
   set(TESTS_EXTRA
     src/engine/client/blocklist_driver.cpp
