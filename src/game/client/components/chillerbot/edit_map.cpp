@@ -2,6 +2,8 @@
 
 #include "edit_map.h"
 
+#include <base/process.h>
+
 #include <engine/client/notifications.h>
 #include <engine/config.h>
 #include <engine/console.h>
@@ -89,7 +91,7 @@ void CEditMap::OnRender()
 
 void CEditMap::GetEditedMapPath(char *pPath, int Size)
 {
-	str_format(pPath, Size, "maps/tmp/chillerbot-ux-%d.map.tmp", pid());
+	str_format(pPath, Size, "maps/tmp/chillerbot-ux-%d.map.tmp", process_id());
 }
 
 void CEditMap::GetSourceMapPath(char *pPath, int Size)
