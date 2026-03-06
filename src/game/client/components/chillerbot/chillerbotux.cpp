@@ -4,6 +4,7 @@
 
 #include <base/color.h>
 #include <base/log.h>
+#include <base/time.h>
 
 #include <engine/client/notifications.h>
 #include <engine/config.h>
@@ -1113,7 +1114,7 @@ void CChillerBotUX::DumpPlayers(const char *pSearch)
 				str_format(aBuf, sizeof(aBuf), "|%10s|", " ");
 			else
 			{
-				str_time((int64_t)abs(pInfo->m_Score) * 100, TIME_HOURS, aTime, sizeof(aTime));
+				str_time((int64_t)abs(pInfo->m_Score) * 100, ETimeFormat::HOURS, aTime, sizeof(aTime));
 				str_format(aBuf, sizeof(aBuf), "|%10s|", aTime);
 			}
 		}

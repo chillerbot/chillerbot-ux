@@ -1,4 +1,5 @@
 #include "unix.h"
+#include <base/time.h>
 
 #include <game/client/gameclient.h>
 
@@ -21,7 +22,7 @@ int CUnix::ListDirCallback(const CFsFileInfo *pInfo, int IsDir, int StorageType,
 	CUnix *pSelf = (CUnix *)pUser;
 	char aBuf[IO_MAX_PATH_LENGTH + 128];
 	char aTimestamp[256];
-	str_timestamp_ex(pInfo->m_TimeModified, aTimestamp, sizeof(aTimestamp), FORMAT_SPACE);
+	str_timestamp_ex(pInfo->m_TimeModified, aTimestamp, sizeof(aTimestamp), TimestampFormat::SPACE);
 	str_format(aBuf, sizeof(aBuf), "%s %s", aTimestamp, pInfo->m_pName);
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "unix", aBuf);
 	return 0;
