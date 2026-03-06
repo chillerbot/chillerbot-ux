@@ -2032,6 +2032,8 @@ set_src(BASE GLOB_RECURSE src/base
   aio.h
   bezier.cpp
   bezier.h
+  bytes.cpp
+  bytes.h
   ccurses.cpp
   ccurses.h
   chillerbot/curses_colors.cpp
@@ -2064,6 +2066,10 @@ set_src(BASE GLOB_RECURSE src/base
   math.h
   mem.cpp
   mem.h
+  net.cpp
+  net.h
+  os.cpp
+  os.h
   process.cpp
   process.h
   rust.h
@@ -2073,7 +2079,6 @@ set_src(BASE GLOB_RECURSE src/base
   sphore.h
   str.cpp
   str.h
-  system.cpp
   system.h
   terminalui.cpp
   terminalui.h

@@ -548,17 +548,16 @@ void CScoreboard::RenderScoreboard(CUIRect Scoreboard, int Team, int CountStart,
 			const CNetObj_PlayerInfo *pInfo = GameClient()->m_Snap.m_apInfoByDDTeamScore[i];
 			if(!pInfo || pInfo->m_Team != Team)
 				continue;
-
-			if(CountRendered++ < CountStart)
-				continue;
-
-			int DDTeam = GameClient()->m_Teams.Team(pInfo->m_ClientId);
-			int NextDDTeam = 0;
 			bool IsDead = Client()->m_TranslationContext.m_aClients[pInfo->m_ClientId].m_PlayerFlags7 & protocol7::PLAYERFLAG_DEAD;
 			if(!RenderDead && IsDead)
 				continue;
 			if(RenderDead && !IsDead)
 				continue;
+			if(CountRendered++ < CountStart)
+				continue;
+
+			int DDTeam = GameClient()->m_Teams.Team(pInfo->m_ClientId);
+			int NextDDTeam = 0;
 
 			ColorRGBA TextColor = TextRender()->DefaultTextColor();
 			TextColor.a = RenderDead ? 0.5f : 1.0f;
@@ -798,6 +797,8 @@ void CScoreboard::RenderScoreboard(CUIRect Scoreboard, int Team, int CountStart,
 			if(CountRendered == CountEnd)
 				break;
 		}
+		if(CountRendered == CountEnd)
+			break;
 	}
 }
 
@@ -809,7 +810,7 @@ void CScoreboard::RenderRecordingNotification(float x)
 		if(GameClient()->DemoRecorder(Recorder)->IsRecording())
 		{
 			char aTime[32];
-			str_time((int64_t)GameClient()->DemoRecorder(Recorder)->Length() * 100, TIME_HOURS, aTime, sizeof(aTime));
+			str_time((int64_t)GameClient()->DemoRecorder(Recorder)->Length() * 100, ETimeFormat::HOURS, aTime, sizeof(aTime));
 			str_append(aBuf, pName);
 			str_append(aBuf, " ");
 			str_append(aBuf, aTime);
