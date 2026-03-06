@@ -70,7 +70,7 @@ void CTerminalUI::RenderScoreboard(int Team, CTermWindow *pWin)
 			if(pInfo->m_Score == -9999)
 				aScore[0] = 0;
 			else
-				str_time((int64_t)abs(pInfo->m_Score) * 100, TIME_HOURS, aScore, sizeof(aScore));
+				str_time((int64_t)abs(pInfo->m_Score) * 100, ETimeFormat::HOURS, aScore, sizeof(aScore));
 		}
 		else
 			str_format(aScore, sizeof(aScore), "%d", std::clamp(pInfo->m_Score, -999, 99999));

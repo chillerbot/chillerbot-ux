@@ -361,7 +361,7 @@ void curses_logf(const char *sys, const char *fmt, ...)
 	int len;
 
 	char timestr[80];
-	str_timestamp_format(timestr, sizeof(timestr), FORMAT_SPACE);
+	str_timestamp_format(timestr, sizeof(timestr), TimestampFormat::SPACE);
 
 	str_format(str, sizeof(str), "[%s][%s]: ", timestr, sys);
 
