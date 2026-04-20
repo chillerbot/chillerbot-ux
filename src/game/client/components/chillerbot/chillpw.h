@@ -1,6 +1,8 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_CHILLPW_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_CHILLPW_H
 
+#include <base/str.h>
+
 #include <engine/client.h>
 #include <engine/console.h>
 #include <engine/shared/config.h>

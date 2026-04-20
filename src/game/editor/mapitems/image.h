@@ -1,6 +1,8 @@
 #ifndef GAME_EDITOR_MAPITEMS_IMAGE_H
 #define GAME_EDITOR_MAPITEMS_IMAGE_H
 
+#include <base/types.h>
+
 #include <engine/graphics.h>
 
 #include <game/editor/auto_map.h>
@@ -15,6 +17,8 @@ public:
 
 	void AnalyseTileFlags();
 	void Free();
+
+	CEditorImage &operator=(CImageInfo &&Other);
 
 	IGraphics::CTextureHandle m_Texture;
 	int m_External = 0;

@@ -4,7 +4,7 @@
 
 #include <base/log.h>
 #include <base/math.h>
-#include <base/system.h>
+#include <base/str.h>
 
 #include <engine/console.h>
 #include <engine/graphics.h>

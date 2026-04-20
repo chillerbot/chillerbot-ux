@@ -6,7 +6,8 @@
 #include "mapitems.h"
 #include "teamscore.h"
 
-#include <base/system.h>
+#include <base/dbg.h>
+#include <base/str.h>
 
 #include <engine/shared/config.h>
 
@@ -56,7 +57,7 @@ float CTuningParams::GetWeaponFireDelay(int Weapon) const
 {
 	switch(Weapon)
 	{
-	case WEAPON_HAMMER: return (float)m_HammerHitFireDelay / 1000.0f;
+	case WEAPON_HAMMER: return (float)m_HammerFireDelay / 1000.0f;
 	case WEAPON_GUN: return (float)m_GunFireDelay / 1000.0f;
 	case WEAPON_SHOTGUN: return (float)m_ShotgunFireDelay / 1000.0f;
 	case WEAPON_GRENADE: return (float)m_GrenadeFireDelay / 1000.0f;
@@ -192,7 +193,7 @@ void CCharacterCore::Tick(bool UseInput, bool DoDeferredTick)
 	m_TriggeredEvents = 0;
 
 	// get ground state
-	const bool Grounded = m_pCollision->CheckPoint(m_Pos.x + PhysicalSize() / 2, m_Pos.y + PhysicalSize() / 2 + 5) || m_pCollision->CheckPoint(m_Pos.x - PhysicalSize() / 2, m_Pos.y + PhysicalSize() / 2 + 5);
+	const bool Grounded = m_pCollision->IsOnGround(m_Pos, PhysicalSize());
 	vec2 TargetDirection = normalize(vec2(m_Input.m_TargetX, m_Input.m_TargetY));
 
 	m_Vel.y += m_Tuning.m_Gravity;

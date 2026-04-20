@@ -4,7 +4,7 @@
 #define ENGINE_CLIENT_SERVERBROWSER_H
 
 #include <base/hash.h>
-#include <base/system.h>
+#include <base/str.h>
 
 #include <engine/console.h>
 #include <engine/serverbrowser.h>
@@ -382,6 +382,7 @@ private:
 	bool SortCompareNumClients(int Index1, int Index2) const;
 	bool SortCompareNumFriends(int Index1, int Index2) const;
 	bool SortCompareNumPlayersAndPing(int Index1, int Index2) const;
+	bool SortCompareFavoritesNumPlayersAndPing(int Index1, int Index2) const;
 
 	//
 	void Filter();

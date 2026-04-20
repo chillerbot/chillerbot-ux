@@ -4,6 +4,7 @@
 
 #include <base/color.h>
 #include <base/log.h>
+#include <base/secure.h>
 #include <base/time.h>
 
 #include <engine/client/notifications.h>

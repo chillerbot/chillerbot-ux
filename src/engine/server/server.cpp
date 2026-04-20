@@ -8,8 +8,11 @@
 #include "register.h"
 
 #include <base/bytes.h>
+#include <base/fs.h>
+#include <base/io.h>
 #include <base/logger.h>
 #include <base/math.h>
+#include <base/secure.h>
 
 #include <engine/config.h>
 #include <engine/console.h>
@@ -227,13 +230,16 @@ void CServer::CClient::Reset()
 	m_RedirectDropTime = 0;
 }
 
-CServer::CServer()
+CServer::CServer() :
+	m_pSnapshotDelta(CSnapshotDelta_New()),
+	m_pSnapshotDeltaSixup(CSnapshotDelta_New()),
+	m_pSnapshotBuilder(CSnapshotBuilder_New())
 {
 	m_pConfig = &g_Config;
 	for(int i = 0; i < MAX_CLIENTS; i++)
-		m_aDemoRecorder[i] = CDemoRecorder(&m_SnapshotDelta, true);
-	m_aDemoRecorder[RECORDER_MANUAL] = CDemoRecorder(&m_SnapshotDelta, false);
-	m_aDemoRecorder[RECORDER_AUTO] = CDemoRecorder(&m_SnapshotDelta, false);
+		m_aDemoRecorder[i] = CDemoRecorder(&*m_pSnapshotDelta, true);
+	m_aDemoRecorder[RECORDER_MANUAL] = CDemoRecorder(&*m_pSnapshotDelta, false);
+	m_aDemoRecorder[RECORDER_AUTO] = CDemoRecorder(&*m_pSnapshotDelta, false);
 
 	m_pGameServer = nullptr;
 
@@ -1002,18 +1008,18 @@ void CServer::DoSnapshot()
 	if(m_aDemoRecorder[RECORDER_MANUAL].IsRecording() || m_aDemoRecorder[RECORDER_AUTO].IsRecording())
 	{
 		// create snapshot for demo recording
-		char aData[CSnapshot::MAX_SIZE];
+		CSnapshotBuffer Data;
 
 		// build snap and possibly add some messages
-		m_SnapshotBuilder.Init();
+		m_pSnapshotBuilder->Init(false);
 		GameServer()->OnSnap(-1, IsGlobalSnap, true);
-		int SnapshotSize = m_SnapshotBuilder.Finish(aData);
+		int SnapshotSize = m_pSnapshotBuilder->Finish(Data);
 
 		// write snapshot
 		if(m_aDemoRecorder[RECORDER_MANUAL].IsRecording())
-			m_aDemoRecorder[RECORDER_MANUAL].RecordSnapshot(Tick(), aData, SnapshotSize);
+			m_aDemoRecorder[RECORDER_MANUAL].RecordSnapshot(Tick(), Data.AsSnapshot(), SnapshotSize);
 		if(m_aDemoRecorder[RECORDER_AUTO].IsRecording())
-			m_aDemoRecorder[RECORDER_AUTO].RecordSnapshot(Tick(), aData, SnapshotSize);
+			m_aDemoRecorder[RECORDER_AUTO].RecordSnapshot(Tick(), Data.AsSnapshot(), SnapshotSize);
 	}
 
 	// create snapshots for all clients
@@ -1036,30 +1042,29 @@ void CServer::DoSnapshot()
 			continue;
 
 		{
-			m_SnapshotBuilder.Init(m_aClients[i].m_Sixup);
+			m_pSnapshotBuilder->Init(m_aClients[i].m_Sixup);
 
 			// only snap events on global ticks
 			GameServer()->OnSnap(i, IsGlobalSnap, m_aDemoRecorder[i].IsRecording());
 
 			// finish snapshot
-			char aData[CSnapshot::MAX_SIZE];
-			CSnapshot *pData = (CSnapshot *)aData; // Fix compiler warning for strict-aliasing
-			int SnapshotSize = m_SnapshotBuilder.Finish(pData);
+			CSnapshotBuffer Data;
+			int SnapshotSize = m_pSnapshotBuilder->Finish(Data);
 
 			if(m_aDemoRecorder[i].IsRecording())
 			{
 				// write snapshot
-				m_aDemoRecorder[i].RecordSnapshot(Tick(), aData, SnapshotSize);
+				m_aDemoRecorder[i].RecordSnapshot(Tick(), Data.AsSnapshot(), SnapshotSize);
 			}
 
-			int Crc = pData->Crc();
+			int Crc = Data.AsSnapshot()->Crc();
 
 			// remove old snapshots
 			// keep 3 seconds worth of snapshots
 			m_aClients[i].m_Snapshots.PurgeUntil(m_CurrentGameTick - TickSpeed() * 3);
 
 			// save the snapshot
-			m_aClients[i].m_Snapshots.Add(m_CurrentGameTick, time_get(), SnapshotSize, pData, 0, nullptr);
+			m_aClients[i].m_Snapshots.Add(m_CurrentGameTick, time_get(), SnapshotSize, Data.AsSnapshot(), 0, nullptr);
 
 			// find snapshot that we can perform delta against
 			int DeltaTick = -1;
@@ -1077,10 +1082,9 @@ void CServer::DoSnapshot()
 			}
 
 			// create delta
-			m_SnapshotDelta.SetStaticsize(protocol7::NETEVENTTYPE_SOUNDWORLD, m_aClients[i].m_Sixup);
-			m_SnapshotDelta.SetStaticsize(protocol7::NETEVENTTYPE_DAMAGE, m_aClients[i].m_Sixup);
-			char aDeltaData[CSnapshot::MAX_SIZE];
-			int DeltaSize = m_SnapshotDelta.CreateDelta(pDeltashot, pData, aDeltaData);
+			CSnapshotDelta *const pSnapshotDelta = IsSixup(i) ? &*m_pSnapshotDeltaSixup : &*m_pSnapshotDelta;
+			int32_t aDeltaData[CSnapshot::MAX_SIZE / sizeof(int32_t)];
+			int DeltaSize = pSnapshotDelta->CreateDelta(*pDeltashot, *Data.AsSnapshot(), rust::Slice(aDeltaData, std::size(aDeltaData)));
 
 			if(DeltaSize)
 			{
@@ -1713,55 +1717,14 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 		}
 		else if(Msg == NETMSG_INFO)
 		{
-			if((m_aClients[ClientId].m_State == CClient::STATE_PREAUTH || m_aClients[ClientId].m_State == CClient::STATE_AUTH))
-			{
-				const char *pVersion = Unpacker.GetString(CUnpacker::SANITIZE_CC);
-				if(Unpacker.Error())
-				{
-					return;
-				}
-				if(str_comp(pVersion, GameServer()->NetVersion()) != 0 && str_comp(pVersion, "0.7 802f1be60a05665f") != 0)
-				{
-					// wrong version
-					char aReason[256];
-					str_format(aReason, sizeof(aReason), "Wrong version. Server is running '%s' and client '%s'", GameServer()->NetVersion(), pVersion);
-					m_NetServer.Drop(ClientId, aReason);
-					return;
-				}
+			const char *pVersion = Unpacker.GetString(CUnpacker::SANITIZE_CC);
+			if(Unpacker.Error())
+				return;
+			const char *pPassword = Unpacker.GetString(CUnpacker::SANITIZE_CC);
+			if(Unpacker.Error())
+				pPassword = nullptr;
 
-				const char *pPassword = Unpacker.GetString(CUnpacker::SANITIZE_CC);
-				if(Unpacker.Error())
-				{
-					return;
-				}
-				if(Config()->m_Password[0] != 0 && str_comp(Config()->m_Password, pPassword) != 0)
-				{
-					// wrong password
-					m_NetServer.Drop(ClientId, "Wrong password");
-					return;
-				}
-
-				int NumConnectedClients = 0;
-				for(int i = 0; i < MaxClients(); ++i)
-				{
-					if(m_aClients[i].m_State != CClient::STATE_EMPTY)
-					{
-						NumConnectedClients++;
-					}
-				}
-
-				// reserved slot
-				if(NumConnectedClients > MaxClients() - Config()->m_SvReservedSlots && !CheckReservedSlotAuth(ClientId, pPassword))
-				{
-					m_NetServer.Drop(ClientId, "This server is full");
-					return;
-				}
-
-				m_aClients[ClientId].m_State = CClient::STATE_CONNECTING;
-				SendRconType(ClientId, m_AuthManager.NumNonDefaultKeys() > 0);
-				SendCapabilities(ClientId);
-				SendMap(ClientId);
-			}
+			OnNetMsgInfo(ClientId, pVersion, pPassword);
 		}
 		else if(Msg == NETMSG_REQUEST_MAP_DATA)
 		{
@@ -1978,6 +1941,53 @@ void CServer::OnNetMsgClientVer(int ClientId, CUuid *pConnectionId, int DDNetVer
 	m_aClients[ClientId].m_DDNetVersionSettled = true;
 	m_aClients[ClientId].m_GotDDNetVersionPacket = true;
 	m_aClients[ClientId].m_State = CClient::STATE_AUTH;
+}
+
+void CServer::OnNetMsgInfo(int ClientId, const char *pVersion, const char *pPasswordOrNullptr)
+{
+	if((m_aClients[ClientId].m_State != CClient::STATE_PREAUTH && m_aClients[ClientId].m_State != CClient::STATE_AUTH))
+		return;
+
+	if(str_comp(pVersion, GameServer()->NetVersion()) != 0 && str_comp(pVersion, "0.7 802f1be60a05665f") != 0)
+	{
+		// wrong version
+		char aReason[256];
+		str_format(aReason, sizeof(aReason), "Wrong version. Server is running '%s' and client '%s'", GameServer()->NetVersion(), pVersion);
+		m_NetServer.Drop(ClientId, aReason);
+		return;
+	}
+
+	const char *pPassword = pPasswordOrNullptr;
+	if(!pPassword)
+		return;
+
+	if(Config()->m_Password[0] != 0 && str_comp(Config()->m_Password, pPassword) != 0)
+	{
+		// wrong password
+		m_NetServer.Drop(ClientId, "Wrong password");
+		return;
+	}
+
+	int NumConnectedClients = 0;
+	for(int i = 0; i < MaxClients(); ++i)
+	{
+		if(m_aClients[i].m_State != CClient::STATE_EMPTY)
+		{
+			NumConnectedClients++;
+		}
+	}
+
+	// reserved slot
+	if(NumConnectedClients > MaxClients() - Config()->m_SvReservedSlots && !CheckReservedSlotAuth(ClientId, pPassword))
+	{
+		m_NetServer.Drop(ClientId, "This server is full");
+		return;
+	}
+
+	m_aClients[ClientId].m_State = CClient::STATE_CONNECTING;
+	SendRconType(ClientId, m_AuthManager.NumNonDefaultKeys() > 0);
+	SendCapabilities(ClientId);
+	SendMap(ClientId);
 }
 
 void CServer::OnNetMsgReady(int ClientId)
@@ -4459,14 +4469,19 @@ void CServer::SnapFreeId(int Id)
 	m_IdPool.FreeId(Id);
 }
 
-void *CServer::SnapNewItem(int Type, int Id, int Size)
+bool CServer::SnapNewItem(int Type, int Id, rust::Slice<const int32_t> Data)
 {
-	return m_SnapshotBuilder.NewItem(Type, Id, Size);
+	return m_pSnapshotBuilder->NewItem(Type, Id, Data);
 }
 
 void CServer::SnapSetStaticsize(int ItemType, int Size)
 {
-	m_SnapshotDelta.SetStaticsize(ItemType, Size);
+	m_pSnapshotDelta->SetStaticsize(ItemType, Size);
+}
+
+void CServer::SnapSetStaticsize7(int ItemType, int Size)
+{
+	m_pSnapshotDeltaSixup->SetStaticsize(ItemType, Size);
 }
 
 CServer *CreateServer() { return new CServer(); }

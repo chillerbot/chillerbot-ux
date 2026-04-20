@@ -2,6 +2,8 @@
 
 #include "remotecontrol.h"
 
+#include <base/io.h>
+
 #include <engine/console.h>
 #include <engine/serverbrowser.h>
 #include <engine/shared/linereader.h>

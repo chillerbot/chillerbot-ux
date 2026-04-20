@@ -3,6 +3,9 @@
 
 #include "chathelper/replytoping.h"
 
+#include <base/str.h>
+#include <base/time.h>
+
 #include <engine/console.h>
 #include <engine/shared/chillerbot/langparser.h>
 

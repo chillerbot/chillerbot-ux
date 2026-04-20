@@ -4,7 +4,7 @@
 
 #include "chillerbotux.h"
 
-#include <base/system.h>
+#include <base/str.h>
 #include <base/vmath.h>
 
 #include <engine/config.h>

@@ -14,6 +14,7 @@
 #include "smooth_value.h"
 
 #include <base/bezier.h>
+#include <base/fs.h>
 
 #include <engine/editor.h>
 #include <engine/graphics.h>
@@ -141,8 +142,6 @@ private:
 	IGraphics::CTextureHandle m_SpeedupTexture;
 	IGraphics::CTextureHandle m_SwitchTexture;
 	IGraphics::CTextureHandle m_TuneTexture;
-
-	int GetTextureUsageFlag() const;
 
 	enum EPreviewState
 	{
@@ -349,8 +348,7 @@ public:
 	void FreeDynamicPopupMenus();
 	void UpdateColorPipette();
 	void RenderMousePointer();
-	void RenderGameEntities(const std::shared_ptr<CLayerTiles> &pTiles);
-	void RenderSwitchEntities(const std::shared_ptr<CLayerTiles> &pTiles);
+	void RenderIngameEntities(const CLayerGroup &Group, const CLayerTiles &TilesLayer);
 
 	template<typename E>
 	SEditResult<E> DoPropertiesWithState(CUIRect *pToolbox, CProperty *pProps, int *pIds, int *pNewVal, const std::vector<ColorRGBA> &vColors = {});
@@ -518,15 +516,6 @@ public:
 	CMapSettingsBackend m_MapSettingsBackend;
 	CMapSettingsBackend::CContext m_MapSettingsCommandContext;
 
-	CImageInfo m_TileArtImageInfo;
-	void AddTileArt(bool IgnoreHistory = false);
-	char m_aTileArtFilename[IO_MAX_PATH_LENGTH];
-	void TileArtCheckColors();
-
-	CImageInfo m_QuadArtImageInfo;
-	CQuadArtParameters m_QuadArtParameters;
-	void AddQuadArt(bool IgnoreHistory = false);
-
 	// editor_ui.cpp
 	void UpdateTooltip(const void *pId, const CUIRect *pRect, const char *pToolTip);
 	ColorRGBA GetButtonColor(const void *pId, int Checked);
@@ -548,6 +537,15 @@ public:
 	int DoEditBoxDropdown(SEditBoxDropdownContext *pDropdown, CLineInput *pLineInput, const CUIRect *pEditBoxRect, int x, float MaxHeight, bool AutoWidth, const std::vector<T> &vData, const FDropdownRenderCallback<T> &pfnMatchCallback);
 	template<typename T>
 	int RenderEditBoxDropdown(SEditBoxDropdownContext *pDropdown, CUIRect View, CLineInput *pLineInput, int x, float MaxHeight, bool AutoWidth, const std::vector<T> &vData, const FDropdownRenderCallback<T> &pfnMatchCallback);
+
+	// For tile art popups
+	CImageInfo m_TileArtImageInfo;
+	char m_aTileArtFilename[IO_MAX_PATH_LENGTH];
+	void TileArtCheckColors();
+
+	// For quad art popups
+	CImageInfo m_QuadArtImageInfo;
+	CQuadArtParameters m_QuadArtParameters;
 
 	static CUi::EPopupMenuFunctionResult PopupMenuFile(void *pContext, CUIRect View, bool Active);
 	static CUi::EPopupMenuFunctionResult PopupMenuTools(void *pContext, CUIRect View, bool Active);
@@ -706,7 +704,35 @@ public:
 
 	static bool IsVanillaImage(const char *pImage);
 
+	enum class ELayerOperation
+	{
+		NONE,
+		CLICK,
+		LAYER_DRAG,
+		GROUP_DRAG,
+	};
+	class CRenderLayersState
+	{
+	public:
+		CScrollRegion m_ScrollRegion;
+		ELayerOperation m_Operation;
+		ELayerOperation m_PreviousOperation;
+		const void *m_pDraggedButton;
+		float m_InitialMouseY;
+		float m_InitialCutHeight;
+		bool m_ScrollToSelectionNext;
+		int m_InitialGroupIndex;
+		std::vector<int> m_vInitialLayerIndices;
+		const char m_AddGroupButtonId = 0;
+		const char m_CollapseAllButtonId = 0;
+		const SPopupMenuId m_PopupGroupId = {};
+		SLayerPopupContext m_LayerPopupContext;
+
+		void Reset();
+	};
+	CRenderLayersState m_RenderLayersState;
 	void RenderLayers(CUIRect LayersBox);
+
 	void RenderImagesList(CUIRect Toolbox);
 	void RenderSelectedImage(CUIRect View) const;
 	void RenderSounds(CUIRect Toolbox);
@@ -778,6 +804,7 @@ public:
 	unsigned char m_SwitchDelay;
 	unsigned char m_ViewSwitch;
 
+	// Adjust must be -1, 0 or 1
 	void AdjustBrushSpecialTiles(bool UseNextFree, int Adjust = 0);
 
 private:

@@ -1,8 +1,9 @@
 #include "menus_ingame_touch_controls.h"
 
 #include <base/color.h>
+#include <base/dbg.h>
 #include <base/math.h>
-#include <base/system.h>
+#include <base/str.h>
 
 #include <engine/external/json-parser/json.h>
 #include <engine/font_icons.h>
@@ -421,9 +422,7 @@ bool CMenusIngameTouchControls::RenderBehaviorSettingBlock(CUIRect Block)
 		static CScrollRegion s_BindToggleScrollRegion;
 		CScrollRegionParams ScrollParam;
 		ScrollParam.m_ScrollUnit = 90.0f;
-		vec2 ScrollOffset(0.0f, 0.0f);
-		s_BindToggleScrollRegion.Begin(&Block, &ScrollOffset, &ScrollParam);
-		Block.y += ScrollOffset.y;
+		s_BindToggleScrollRegion.Begin(&Block, &ScrollParam);
 		for(unsigned CommandIndex = 0; CommandIndex < m_vBehaviorElements.size(); CommandIndex++)
 		{
 			Block.HSplitTop(ROWSIZE, &EditBox, &Block);
@@ -566,9 +565,7 @@ bool CMenusIngameTouchControls::RenderVisibilitySettingBlock(CUIRect Block)
 	static CScrollRegion s_VisibilityScrollRegion;
 	CScrollRegionParams ScrollParam;
 	ScrollParam.m_ScrollUnit = 90.0f;
-	vec2 ScrollOffset(0.0f, 0.0f);
-	s_VisibilityScrollRegion.Begin(&Block, &ScrollOffset, &ScrollParam);
-	Block.y += ScrollOffset.y;
+	s_VisibilityScrollRegion.Begin(&Block, &ScrollParam);
 
 	static CButtonContainer s_aHelpButtons[(int)CTouchControls::EButtonVisibility::NUM_VISIBILITIES];
 	static std::vector<CButtonContainer> s_avVisibilitySelector[(int)CTouchControls::EButtonVisibility::NUM_VISIBILITIES];
@@ -1008,9 +1005,7 @@ void CMenusIngameTouchControls::RenderPreviewSettings(CUIRect MainView)
 	static CScrollRegion s_VirtualVisibilityScrollRegion;
 	CScrollRegionParams ScrollParam;
 	ScrollParam.m_ScrollUnit = 90.0f;
-	vec2 ScrollOffset(0.0f, 0.0f);
-	s_VirtualVisibilityScrollRegion.Begin(&MainView, &ScrollOffset, &ScrollParam);
-	MainView.y += ScrollOffset.y;
+	s_VirtualVisibilityScrollRegion.Begin(&MainView, &ScrollParam);
 	std::array<bool, (size_t)CTouchControls::EButtonVisibility::NUM_VISIBILITIES> aVirtualVisibilities = GameClient()->m_TouchControls.VirtualVisibilities();
 	const char **ppVisibilities = VisibilityNames();
 	for(unsigned Current = 0; Current < (unsigned)CTouchControls::EButtonVisibility::NUM_VISIBILITIES; ++Current)

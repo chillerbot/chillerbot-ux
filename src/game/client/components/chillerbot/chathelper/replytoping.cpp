@@ -2,7 +2,7 @@
 
 #include "replytoping.h"
 
-#include <base/system.h>
+#include <base/str.h>
 
 #include <engine/client/notifications.h>
 #include <engine/config.h>

@@ -4,7 +4,8 @@
 
 #include "stresser.h"
 
-#include <base/system.h>
+#include <base/io.h>
+#include <base/str.h>
 
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>

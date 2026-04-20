@@ -5,8 +5,10 @@
 #include "chillerbot/curses_colors.h"
 
 #include <base/curses.h>
+#include <base/io.h>
 #include <base/math.h>
-#include <base/system.h>
+#include <base/str.h>
+#include <base/time.h>
 
 static CCursesLogMsg gs_aChillerLogger[CHILLER_LOGGER_HEIGHT];
 

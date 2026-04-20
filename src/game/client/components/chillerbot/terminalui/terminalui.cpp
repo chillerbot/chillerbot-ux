@@ -6,7 +6,7 @@
 
 #include <base/ccurses.h>
 #include <base/chillerbot/curses_colors.h>
-#include <base/system.h>
+#include <base/str.h>
 #include <base/terminalui.h>
 
 #include <engine/client/serverbrowser.h>

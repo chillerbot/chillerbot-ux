@@ -2,7 +2,7 @@
 
 #include "pad_utf8.h"
 
-#include <base/system.h>
+#include <base/str.h>
 
 #include <rust-bridge-chillerbot/unicode.h>
 

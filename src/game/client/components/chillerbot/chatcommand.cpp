@@ -2,7 +2,7 @@
 
 #include "chatcommand.h"
 
-#include <base/system.h>
+#include <base/str.h>
 
 #include <engine/shared/protocol.h>
 

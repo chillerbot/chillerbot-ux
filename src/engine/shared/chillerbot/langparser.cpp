@@ -2,7 +2,7 @@
 
 #include "langparser.h"
 
-#include <base/system.h>
+#include <base/str.h>
 
 #include <cstdarg>
 #include <cstdio>

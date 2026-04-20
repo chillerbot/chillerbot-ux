@@ -1,12 +1,11 @@
 #ifndef BASE_TERMINALUI_H
 #define BASE_TERMINALUI_H
 
-#include "system.h"
-
 #if defined(CONF_CURSES_CLIENT)
 
 #include <base/curses.h>
 #include <base/math.h>
+#include <base/types.h>
 
 #define CHILLER_LOGGER_WIDTH 1024 * 4
 #define CHILLER_LOGGER_HEIGHT 2048

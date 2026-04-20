@@ -2,7 +2,7 @@
 
 #include "warlist.h"
 
-#include <base/system.h>
+#include <base/io.h>
 
 #include <engine/config.h>
 #include <engine/shared/linereader.h>

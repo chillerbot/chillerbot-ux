@@ -1,6 +1,6 @@
 #include "test.h"
 
-#include <base/system.h>
+#include <base/str.h>
 
 #include <engine/shared/chillerbot/langparser.h>
 
