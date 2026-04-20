@@ -57,7 +57,6 @@ int CPlayerPics::LoadImageByName(const char *pImgName, int IsDir, int DirType, v
 	CPlayerPic CountryFlag;
 	str_copy(CountryFlag.m_aPlayerName, aName, sizeof(CountryFlag.m_aPlayerName));
 	CountryFlag.m_Texture = pSelf->Graphics()->LoadTextureRaw(Info, 0);
-	free(Info.m_pData);
 	if(g_Config.m_Debug)
 	{
 		str_format(aBuf, sizeof(aBuf), "loaded player pic '%s'", pImgName);
