@@ -62,7 +62,6 @@ void CServerBan::InitServerBan(IConsole *pConsole, IStorage *pStorage, CServer *
 
 	m_pServer = pServer;
 
-	// overwrites base command, todo: improve this
 	Console()->Register("ban", "s[ip|id] ?i[minutes] r[reason]", CFGFLAG_SERVER | CFGFLAG_STORE, ConBanExt, this, "Ban player with ip/client id for x minutes for any reason");
 	Console()->Register("ban_region", "s[region] s[ip|id] ?i[minutes] r[reason]", CFGFLAG_SERVER | CFGFLAG_STORE, ConBanRegion, this, "Ban player in a region");
 	Console()->Register("ban_region_range", "s[region] s[first ip] s[last ip] ?i[minutes] r[reason]", CFGFLAG_SERVER | CFGFLAG_STORE, ConBanRegionRange, this, "Ban range in a region");
@@ -162,7 +161,13 @@ void CServerBan::ConBanExt(IConsole::IResult *pResult, void *pUser)
 			pThis->BanAddr(pThis->Server()->ClientAddr(ClientId), Minutes * 60, pReason, false);
 	}
 	else
-		ConBan(pResult, pUser);
+	{
+		NETADDR Addr;
+		if(net_addr_from_str(&Addr, pStr) == 0)
+			pThis->BanAddr(&Addr, Minutes * 60, pReason, false);
+		else
+			pThis->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "net_ban", "ban error (invalid network address)");
+	}
 }
 
 void CServerBan::ConBanRegion(IConsole::IResult *pResult, void *pUser)
@@ -3142,14 +3147,14 @@ int CServer::Run()
 	m_UPnP.Open(BindAddr);
 #endif
 
-	if(!m_Http.Init(std::chrono::seconds{2}))
+	if(!m_pHttp->Init(std::chrono::seconds{2}))
 	{
 		log_error("server", "Failed to initialize the HTTP client.");
 		return -1;
 	}
 
 	m_pEngine = Kernel()->RequestInterface<IEngine>();
-	m_pRegister = CreateRegister(&g_Config, m_pConsole, m_pEngine, &m_Http, g_Config.m_SvRegisterPort > 0 ? g_Config.m_SvRegisterPort : this->Port(), m_NetServer.GetGlobalToken());
+	m_pRegister = CreateRegister(&g_Config, m_pConsole, m_pEngine, m_pHttp, g_Config.m_SvRegisterPort > 0 ? g_Config.m_SvRegisterPort : this->Port(), m_NetServer.GetGlobalToken());
 
 	m_NetServer.SetCallbacks(NewClientCallback, NewClientNoAuthCallback, ClientRejoinCallback, DelClientCallback, this);
 
@@ -3491,6 +3496,7 @@ int CServer::Run()
 	m_pRegister->OnShutdown();
 	m_Econ.Shutdown();
 	m_Fifo.Shutdown();
+	m_pHttp->Shutdown();
 	Engine()->ShutdownJobs();
 
 	GameServer()->OnShutdown(nullptr);
@@ -4392,10 +4398,9 @@ void CServer::RegisterCommands()
 {
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_pGameServer = Kernel()->RequestInterface<IGameServer>();
+	m_pHttp = Kernel()->RequestInterface<IEngineHttp>();
 	m_pStorage = Kernel()->RequestInterface<IStorage>();
 	m_pAntibot = Kernel()->RequestInterface<IEngineAntibot>();
-
-	Kernel()->RegisterInterface(static_cast<IHttp *>(&m_Http), false);
 
 	// register console commands
 	Console()->Register("kick", "i[id] ?r[reason]", CFGFLAG_SERVER, ConKick, this, "Kick player with specified id for any reason");
@@ -4459,7 +4464,7 @@ void CServer::RegisterCommands()
 	Console()->SetCanUseCommandCallback(CanClientUseCommandCallback, this);
 }
 
-int CServer::SnapNewId()
+std::optional<int> CServer::SnapNewId()
 {
 	return m_IdPool.NewId();
 }

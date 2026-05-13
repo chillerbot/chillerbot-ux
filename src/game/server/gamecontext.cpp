@@ -2203,18 +2203,20 @@ void CGameContext::CensorMessage(char *pCensoredMessage, const char *pMessage, i
 	for(auto &Item : m_vCensorlist)
 	{
 		char *pCurLoc = pCensoredMessage;
-		do
+		while(true)
 		{
-			pCurLoc = (char *)str_utf8_find_nocase(pCurLoc, Item.c_str());
-			if(pCurLoc)
+			const char *pEndMatch;
+			pCurLoc = (char *)str_utf8_find_nocase(pCurLoc, Item.c_str(), &pEndMatch);
+			if(!pCurLoc)
 			{
-				for(int i = 0; i < (int)Item.length(); i++)
-				{
-					pCurLoc[i] = '*';
-				}
+				break;
+			}
+			while(pCurLoc < pEndMatch)
+			{
+				*pCurLoc = '*';
 				pCurLoc++;
 			}
-		} while(pCurLoc);
+		}
 	}
 }
 
@@ -3682,12 +3684,12 @@ void CGameContext::ConForceVote(IConsole::IResult *pResult, void *pUserData)
 		if(!g_Config.m_SvVoteKickBantime)
 		{
 			str_format(aBuf, sizeof(aBuf), "kick %d %s", KickId, pReason);
-			pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
+			pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED, false);
 		}
 		else
 		{
 			str_format(aBuf, sizeof(aBuf), "ban %s %d %s", pSelf->Server()->ClientAddrString(KickId, false), g_Config.m_SvVoteKickBantime, pReason);
-			pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
+			pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED, false);
 		}
 	}
 	else if(str_comp_nocase(pType, "spectate") == 0)
@@ -3702,7 +3704,7 @@ void CGameContext::ConForceVote(IConsole::IResult *pResult, void *pUserData)
 		str_format(aBuf, sizeof(aBuf), "'%s' was moved to spectator (%s)", pSelf->Server()->ClientName(SpectateId), pReason);
 		pSelf->SendChatTarget(-1, aBuf);
 		str_format(aBuf, sizeof(aBuf), "set_team %d -1 %d", SpectateId, g_Config.m_SvVoteSpectateRejoindelay);
-		pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
+		pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED, false);
 	}
 }
 
