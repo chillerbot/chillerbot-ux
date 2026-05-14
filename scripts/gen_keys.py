@@ -26,10 +26,10 @@ with open("src/engine/keys.h", "w", encoding="utf-8") as f:
 
 	# chillerbot-ux
 	print("", file=f)
-	print('#if defined(CONF_CURSES_CLIENT)', file=f)
-	print('// undefines conflicting ncurses key codes', file=f)
-	print('#include <game/client/components/chillerbot/terminalui/terminalui_keys.h>', file=f)
-	print('#endif', file=f)
+	print("#if defined(CONF_CURSES_CLIENT)", file=f)
+	print("// undefines conflicting ncurses key codes", file=f)
+	print("#include <game/client/components/chillerbot/terminalui/terminalui_keys.h>", file=f)
+	print("#endif", file=f)
 
 	print("", file=f)
 	print("// NOLINTBEGIN(misc-confusable-identifiers)", file=f)
