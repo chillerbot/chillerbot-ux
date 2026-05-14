@@ -3,12 +3,11 @@
 
 #if defined(CONF_CURSES_CLIENT)
 
-#include "../color.h"
-#include "../logger.h"
-#include "../system.h"
-#include "../terminalui.h"
+#include <base/aio.h>
+#include <base/color.h>
+#include <base/logger.h>
+#include <base/terminalui.h>
 
-#include <atomic>
 #include <cstdio>
 
 #if defined(CONF_FAMILY_WINDOWS)

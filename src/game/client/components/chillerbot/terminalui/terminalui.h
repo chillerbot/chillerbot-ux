@@ -1,6 +1,8 @@
 #ifndef GAME_CLIENT_COMPONENTS_CHILLERBOT_TERMINALUI_TERMINALUI_H
 #define GAME_CLIENT_COMPONENTS_CHILLERBOT_TERMINALUI_TERMINALUI_H
 
+#include <base/str.h>
+
 #include <engine/client.h>
 #include <engine/console.h>
 
