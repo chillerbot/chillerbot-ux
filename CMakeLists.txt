@@ -2901,8 +2901,8 @@ if(CLIENT)
       $<TARGET_OBJECTS:engine-gfx>
       $<TARGET_OBJECTS:engine-shared>
       $<TARGET_OBJECTS:game-shared>
-      $<TARGET_OBJECTS:rust-bridge-shared>
       $<TARGET_OBJECTS:rust-bridge-chillerbot>
+      $<TARGET_OBJECTS:rust-bridge-shared>
       # tidy-alphabetical-end
     )
   else()
@@ -2916,8 +2916,8 @@ if(CLIENT)
       $<TARGET_OBJECTS:engine-gfx>
       $<TARGET_OBJECTS:engine-shared>
       $<TARGET_OBJECTS:game-shared>
-      $<TARGET_OBJECTS:rust-bridge-shared>
       $<TARGET_OBJECTS:rust-bridge-chillerbot>
+      $<TARGET_OBJECTS:rust-bridge-shared>
       # tidy-alphabetical-end
     )
   endif()
@@ -3423,8 +3423,8 @@ add_library(rust_test STATIC EXCLUDE_FROM_ALL
   $<TARGET_OBJECTS:engine-gfx>
   $<TARGET_OBJECTS:engine-shared>
   $<TARGET_OBJECTS:game-shared>
-  $<TARGET_OBJECTS:rust-bridge-shared>
   $<TARGET_OBJECTS:rust-bridge-chillerbot>
+  $<TARGET_OBJECTS:rust-bridge-shared>
   # tidy-alphabetical-end
   ${DEPS}
 )
