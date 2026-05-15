@@ -1873,7 +1873,6 @@ std::vector<const CCommunity *> CServerBrowser::CurrentCommunities() const
 
 unsigned CServerBrowser::CurrentCommunitiesHash() const
 {
-	std::vector<const CCommunity *> vpCommunities = CurrentCommunities();
 	unsigned Hash = 5381;
 	for(const CCommunity *pCommunity : CurrentCommunities())
 	{
