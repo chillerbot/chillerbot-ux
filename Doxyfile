@@ -12,6 +12,7 @@ WARN_LOGFILE           = docs/warn.log
 INPUT                  = src
 RECURSIVE              = YES
 EXCLUDE                = src/engine/external \
+                         src/external \
                          src/masterping/target \
                          src/mastersrv/target \
                          src/rust-bridge
