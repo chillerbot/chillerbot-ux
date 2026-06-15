@@ -14,7 +14,7 @@ ddnet-base = { path = "../base" }
 ddnet-engine = { path = "../engine" }
 
 cxx = "1.0"
-unicode-width = "0.1.10"
+unicode-width = "0.2.2"
 
 [dev-dependencies]
 ddnet-test = { path = "../rust-bridge/test", features = ["link-test-libraries"] }
