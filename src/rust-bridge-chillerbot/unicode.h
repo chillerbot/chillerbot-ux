@@ -1,8 +1,19 @@
 // This file can be included several times.
 // ^
-// this is a hack because the ./scripts/check_header_guards.py
-// script does not really support the rust files
+// hack for include guard CI check script
+
 #pragma once
 #include <base/rust.h>
 
-int str_width_unicode(const char *text) noexcept;
+#include <cstdint>
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
+#endif // __clang__
+
+::std::int32_t str_width_unicode(char const *text) noexcept;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__

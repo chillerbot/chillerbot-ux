@@ -1,10 +1,16 @@
 #include <base/rust.h>
 
+#include <cstdint>
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
+#endif // __clang__
+
 extern "C" {
-int cxxbridge1$str_width_unicode(const char *text) noexcept;
+::std::int32_t cxxbridge1$194$str_width_unicode(char const *text) noexcept;
 } // extern "C"
 
-int str_width_unicode(const char *text) noexcept
+::std::int32_t str_width_unicode(char const *text) noexcept
 {
-	return cxxbridge1$str_width_unicode(text);
+	return cxxbridge1$194$str_width_unicode(text);
 }

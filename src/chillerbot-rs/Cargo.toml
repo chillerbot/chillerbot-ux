@@ -13,7 +13,7 @@ path = "lib.rs"
 ddnet-base = { path = "../base" }
 ddnet-engine = { path = "../engine" }
 
-cxx = "1.0"
+cxx = "1.0.194"
 unicode-width = "0.2.2"
 
 [dev-dependencies]
