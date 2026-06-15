@@ -569,7 +569,7 @@ bool CChatHelper::OnAutocomplete(CLineInput *pInput, const char *pCompletionBuff
 	if(pCompletionBuffer[0] != '.')
 		return false;
 
-	CCommand *pCompletionCommand = 0;
+	CCommand *pCompletionCommand = nullptr;
 
 	const size_t NumCommands = m_vCommands.size();
 

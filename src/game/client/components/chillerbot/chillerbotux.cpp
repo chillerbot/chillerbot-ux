@@ -122,7 +122,7 @@ bool CChillerBotUX::OnSendChat(int Team, const char *pLine)
 		{
 			pEnd = nullptr;
 		}
-		else if(pEnd == 0)
+		else if(pEnd == nullptr)
 			pEnd = pStrOld;
 
 		if(++Length >= 256)
@@ -1273,7 +1273,7 @@ void CChillerBotUX::TraceSpikes()
 			{
 				Graphics()->TextureClear();
 				bool IsIntersect = false;
-				if(Collision()->IntersectLine(vec2(x * 32, y * 32), vec2(CurrentX * 32, CurrentY * 32), 0, 0))
+				if(Collision()->IntersectLine(vec2(x * 32, y * 32), vec2(CurrentX * 32, CurrentY * 32), nullptr, nullptr))
 				{
 					IsIntersect = true;
 					if(!g_Config.m_ClSpikeTracerWalls)
@@ -1357,7 +1357,7 @@ void CChillerBotUX::OnMessage(int MsgType, void *pRawMsg)
 		CNetMsg_Sv_Broadcast *pMsg = (CNetMsg_Sv_Broadcast *)pRawMsg;
 		str_copy(m_aBroadcastText, pMsg->m_pMessage, sizeof(m_aBroadcastText));
 		m_BroadcastTick = Client()->GameTick(g_Config.m_ClDummy) + Client()->GameTickSpeed() * 10;
-		m_IsLeftSidedBroadcast = str_find(m_aBroadcastText, "                                ") != NULL;
+		m_IsLeftSidedBroadcast = str_find(m_aBroadcastText, "                                ") != nullptr;
 	}
 	else if(MsgType == NETMSGTYPE_SV_VOTESET)
 	{

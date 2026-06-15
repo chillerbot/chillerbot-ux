@@ -31,8 +31,8 @@ public:
 	// returns beginning of match or NULL
 	const char *FindWord(const char *pText, const char *pWord);
 
-	bool IsAskToAsk(const char *pMessage, const char *pMessageAuthor = 0, char *pResponse = 0, int SizeOfResponse = 0);
-	bool IsAskToAskGerman(const char *pMessage, const char *pMessageAuthor = 0, char *pResponse = 0, int SizeOfResponse = 0);
+	bool IsAskToAsk(const char *pMessage, const char *pMessageAuthor = nullptr, char *pResponse = nullptr, int SizeOfResponse = 0);
+	bool IsAskToAskGerman(const char *pMessage, const char *pMessageAuthor = nullptr, char *pResponse = nullptr, int SizeOfResponse = 0);
 
 	bool IsGreeting(const char *pMsg);
 	bool IsGreetingQq(const char *pMsg);

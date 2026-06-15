@@ -42,7 +42,7 @@ public:
 	std::vector<std::pair<std::string, int>> m_vWalletMain;
 	std::vector<std::pair<std::string, int>> m_vWalletDummy;
 
-	void PrintWalletToChat(int ClientId = -1, const char *pWhisper = NULL);
+	void PrintWalletToChat(int ClientId = -1, const char *pWhisper = nullptr);
 	void DropAllMoney(int ClientId);
 	int WalletMoney(int ClientId = -1);
 };

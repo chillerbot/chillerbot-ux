@@ -25,7 +25,7 @@ const char *CLangParser::StrFindOrder(const char *pHaystack, int NumNeedles, ...
 		}
 	}
 	va_end(Args);
-	return Found ? pSearch : NULL;
+	return Found ? pSearch : nullptr;
 }
 
 int CLangParser::StrFindIndex(const char *pHaystack, const char *pNeedle)

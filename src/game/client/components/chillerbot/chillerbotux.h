@@ -88,7 +88,7 @@ class CChillerBotUX : public CComponent
 	bool IsPlayerInfoAvailable(int ClientId) const;
 
 	void OnChatMessage(int ClientId, int Team, const char *pMsg);
-	void GoAfk(int Minutes, const char *pMsg = 0);
+	void GoAfk(int Minutes, const char *pMsg = nullptr);
 	void SkinStealTick();
 	void ChangeTileNotifyTick();
 	void FinishRenameTick();
@@ -100,7 +100,7 @@ class CChillerBotUX : public CComponent
 	void RenderWeaponHud();
 	void RenderEnabledComponents();
 	void TraceSpikes();
-	void DumpPlayers(const char *pSearch = 0);
+	void DumpPlayers(const char *pSearch = nullptr);
 	void RenderDbgIntersect();
 	void PrintPlaytime();
 
@@ -170,16 +170,16 @@ public:
 	// ```
 	bool OnSnapInput(bool WouldSend, CNetObj_PlayerInput *pInput);
 
-	void ReturnFromAfk(const char *pChatMessage = 0);
+	void ReturnFromAfk(const char *pChatMessage = nullptr);
 	int64_t GetAfkTime() const { return m_AfkTill; }
 	const char *GetAfkMessage() { return m_aAfkMessage; }
 	int GetAfkActivity() const { return m_AfkActivity; }
 	bool IsAfk() const { return GetAfkTime() && GetAfkActivity() < 25; }
 
-	void EnableComponent(const char *pComponent, const char *pNoteShort = 0, const char *pNoteLong = 0);
+	void EnableComponent(const char *pComponent, const char *pNoteShort = nullptr, const char *pNoteLong = nullptr);
 	void DisableComponent(const char *pComponent);
-	bool SetComponentNoteShort(const char *pComponent, const char *pNoteShort = 0);
-	bool SetComponentNoteLong(const char *pComponent, const char *pNoteLong = 0);
+	bool SetComponentNoteShort(const char *pComponent, const char *pNoteShort = nullptr);
+	bool SetComponentNoteLong(const char *pComponent, const char *pNoteLong = nullptr);
 	void UpdateComponents();
 
 	int GetTotalJumps();

@@ -60,7 +60,7 @@ bool CReplyToPing::ListWars()
 			pWho = pWho + str_length("u got");
 	if(pWho)
 	{
-		const char *pEnemy = NULL;
+		const char *pEnemy = nullptr;
 		pEnemy = str_find_nocase(pWho, "enemi");
 		if(pEnemy)
 			pEnemy = pEnemy + str_length("enemi");
@@ -116,7 +116,7 @@ bool CReplyToPing::ListWars()
 				str_format(m_pResponse, m_SizeOfResponse, "%s currently 0 of my %d enemies are connected", m_pMessageAuthor, GameClient()->m_WarList.NumEnemies());
 			return true;
 		}
-		const char *pFriend = NULL;
+		const char *pFriend = nullptr;
 		pFriend = str_find_nocase(pWho, "team");
 		if(pFriend)
 			pFriend = pFriend + str_length("team");

@@ -77,7 +77,7 @@ bool CReplyToPing::WhyWar(const char *pVictim, bool IsCheck)
 		}
 
 		// do not kill my friend foo
-		const char *pFriend = NULL;
+		const char *pFriend = nullptr;
 		if((pFriend = str_find_nocase(aVictim, " friend ")))
 			pFriend += str_length(" friend ");
 		else if((pFriend = str_find_nocase(aVictim, " frint ")))

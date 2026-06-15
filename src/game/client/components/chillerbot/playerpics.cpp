@@ -86,7 +86,7 @@ const CPlayerPics::CPlayerPic *CPlayerPics::GetByName(const char *pName) const
 			return GetByIndex(i);
 		i++;
 	}
-	return NULL;
+	return nullptr;
 }
 
 const CPlayerPics::CPlayerPic *CPlayerPics::GetByIndex(int Index) const

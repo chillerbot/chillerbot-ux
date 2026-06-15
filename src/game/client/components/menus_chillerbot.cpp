@@ -37,7 +37,7 @@ using namespace std::chrono_literals;
 void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 {
 	CUIRect Button, Label;
-	MainView.HSplitTop(10.0f, 0, &MainView);
+	MainView.HSplitTop(10.0f, nullptr, &MainView);
 
 	char aBuf[128];
 
@@ -47,7 +47,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		MainView.HSplitTop(20.0f, &Button, &MainView);
 		Button.VSplitLeft(120.0f, &Label, &Button);
 		Button.VSplitLeft(200.0f, &Button, &Checkbox);
-		Button.VSplitLeft(150.0f, &Button, 0);
+		Button.VSplitLeft(150.0f, &Button, nullptr);
 		str_format(aBuf, sizeof(aBuf), "%s:", "Finish name");
 		Ui()->DoLabel(&Label, aBuf, 14.0f, -1);
 		static CLineInput s_NameInput;
@@ -61,7 +61,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		}
 	}
 
-	MainView.HSplitTop(5.0f, 0, &MainView);
+	MainView.HSplitTop(5.0f, nullptr, &MainView);
 
 	// auto reply
 	{
@@ -69,7 +69,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		MainView.HSplitTop(20.0f, &Button, &MainView);
 		Button.VSplitLeft(120.0f, &Label, &Button);
 		Button.VSplitLeft(200.0f, &Button, &Checkbox);
-		Button.VSplitLeft(150.0f, &Button, 0);
+		Button.VSplitLeft(150.0f, &Button, nullptr);
 		str_format(aBuf, sizeof(aBuf), "%s:", "auto reply msg");
 		Ui()->DoLabel(&Label, aBuf, 14.0f, -1);
 		static CLineInput s_ReplyMsg;
@@ -83,7 +83,7 @@ void CMenus::RenderSettingsChillerbot(CUIRect MainView)
 		}
 	}
 
-	MainView.HSplitTop(5.0f, 0, &MainView);
+	MainView.HSplitTop(5.0f, nullptr, &MainView);
 
 	// chillerbot hud
 	{

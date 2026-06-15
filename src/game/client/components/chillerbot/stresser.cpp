@@ -137,7 +137,7 @@ void CStresser::OnRender()
 const char *CStresser::GetRandomChatCommand()
 {
 	if(m_vChatCmds.empty())
-		return 0;
+		return "";
 	return m_vChatCmds[rand() % m_vChatCmds.size()];
 }
 
