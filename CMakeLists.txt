@@ -3360,6 +3360,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     os_test.cpp
     packer_test.cpp
     prng_test.cpp
+    replace_words_test.cpp
     score_test.cpp
     secure_random_test.cpp
     server_test.cpp
@@ -3391,6 +3392,8 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     src/engine/client/serverbrowser_ping_cache.cpp
     src/engine/client/serverbrowser_ping_cache.h
     src/engine/client/sqlite.cpp
+    src/game/client/components/censor.cpp
+    src/game/client/components/censor.h
     # tidy-alphabetical-end
   )
 
