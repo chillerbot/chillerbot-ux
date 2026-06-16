@@ -418,9 +418,9 @@ jobs:
 
         # chillerbot-ux
         cd build-emscripten-headless
-        mv chillerbot-ux.js DDNet.js
-        mv chillerbot-ux.data DDNet.data
-        mv chillerbot-ux.wasm DDNet.wasm
+        cp chillerbot-ux.js DDNet.js
+        cp chillerbot-ux.data DDNet.data
+        cp chillerbot-ux.wasm DDNet.wasm
         cd ..
 
         emrun --browser firefox build-emscripten-headless/index.html -- "quit"
