@@ -9,6 +9,8 @@
 #include <base/str.h>
 #include <base/types.h>
 
+#include <algorithm>
+
 #define CHILLER_LOGGER_WIDTH 1024 * 4
 #define CHILLER_LOGGER_HEIGHT 2048
 
