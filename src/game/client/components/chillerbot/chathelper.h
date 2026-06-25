@@ -203,7 +203,6 @@ public:
 	const char *GetGreetName() { return m_aGreetName; }
 	const char *LastAfkPingMessage() { return m_aLastAfkPing; }
 	void ClearLastAfkPingMessage() { m_aLastAfkPing[0] = '\0'; }
-	bool HowToJoinClan(const char *pClan, char *pResponse, int SizeOfResponse);
 	CLangParser &LangParser() { return m_LangParser; }
 
 	/*

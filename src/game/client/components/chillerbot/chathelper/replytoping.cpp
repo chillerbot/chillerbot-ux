@@ -31,6 +31,7 @@
 #include <game/version.h>
 
 #include <external/chillerbot_reply/include/chillerbot_reply/chillerbot_reply.h>
+#include <external/chillerbot_reply/include/chillerbot_reply/clan.h>
 
 CLangParser &CReplyToPing::LangParser() { return ChatHelper()->LangParser(); }
 CGameClient *CReplyToPing::GameClient() { return m_pChatHelper->GameClientUnprotected(); }
@@ -102,7 +103,7 @@ bool CReplyToPing::Reply()
 			str_find_nocase(m_pMessage, "into")))
 	{
 		char aResponse[1024];
-		if(ChatHelper()->HowToJoinClan(pClan, aResponse, sizeof(aResponse)) || (GameClient()->Client()->DummyConnected() && ChatHelper()->HowToJoinClan(pDummyClan, aResponse, m_SizeOfResponse)))
+		if(ChillerBotReply::HowToJoinClan(pClan, aResponse, sizeof(aResponse)) || (GameClient()->Client()->DummyConnected() && ChillerBotReply::HowToJoinClan(pDummyClan, aResponse, m_SizeOfResponse)))
 		{
 			str_format(m_pResponse, m_SizeOfResponse, "%s %s", m_pMessageAuthor, aResponse);
 			return true;
