@@ -499,7 +499,7 @@ static void StrCopyUntilSpace(char *pDest, size_t DestSize, const char *pSrc)
 		str_copy(pDest, pSrc, DestSize);
 		return;
 	}
-	str_copy(pDest, pSrc, minimum<size_t>(pSpace ? pSpace - pSrc + 1 : 1, DestSize));
+	str_copy(pDest, pSrc, std::min<size_t>(pSpace ? pSpace - pSrc + 1 : 1, DestSize));
 }
 
 int CTerminalUI::GetInput()
