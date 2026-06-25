@@ -199,7 +199,7 @@ void CChatHelper::SayFormat(const char *pMsg)
 	long unsigned int BufI = 0;
 	for(i = 0; pMsg[i] && i < sizeof(aBuf); i++)
 	{
-		if(pMsg[i] == '%' && pMsg[maximum((int)i - 1, 0)] != '\\')
+		if(pMsg[i] == '%' && pMsg[std::max((int)i - 1, 0)] != '\\')
 		{
 			if(pMsg[i + 1] == 'n')
 			{

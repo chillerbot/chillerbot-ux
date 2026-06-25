@@ -102,7 +102,7 @@ void CTerminalUI::RenderHelpPage()
 	int my = getmaxy(g_LogWindow.m_pCursesWin);
 	int offY = 5;
 	int offX = 40;
-	int width = minimum(128, mx - 3);
+	int width = std::min(128, mx - 3);
 	if(mx < width + 2 + offX)
 		offX = 2;
 	if(my < 60)
@@ -166,13 +166,13 @@ void CTerminalUI::RenderServerList()
 	int offX = 40;
 	if(my < HEIGHT_NEEDED_FOR_SERVER_BROWSER_OFFSET_TOP)
 		offY = 2;
-	int width = minimum(128, mx - 3);
+	int width = std::min(128, mx - 3);
 	if(mx < width + 2 + offX)
 		offX = 2;
 	if(width < 2)
 		return;
 	m_NumServers = ServerBrowser()->NumSortedServers();
-	int height = minimum(m_NumServers, my - (offY + 2));
+	int height = std::min(m_NumServers, my - (offY + 2));
 	g_LogWindow.DrawBorders(offX, offY - 1, width, height + 2);
 	mvwprintw(g_LogWindow.m_pCursesWin, offY - 1, offX + 3, "[ %s ]", aTab);
 	int From = 0;
@@ -270,8 +270,8 @@ void CTerminalUI::RenderPopup()
 	int offX = 2;
 	if(my < 20)
 		offY = 2;
-	int width = minimum(128, mx - 3);
-	int height = minimum(3 + (int)m_PopupBodyHeight, my - 2);
+	int width = std::min(128, mx - 3);
+	int height = std::min(3 + (int)m_PopupBodyHeight, my - 2);
 	if(height < 2)
 		return;
 	g_LogWindow.DrawBorders(offX, offY - 1, width, height + 2);
@@ -331,7 +331,7 @@ void CTerminalUI::RenderConnecting()
 	int offX = 2;
 	if(my < 20)
 		offY = 2;
-	int width = minimum(128, mx - 3);
+	int width = std::min(128, mx - 3);
 	g_LogWindow.DrawBorders(offX, offY - 1, width, 3);
 
 	char aBuf[128];
@@ -356,7 +356,7 @@ bool CTerminalUI::RenderDownload()
 	int offX = 2;
 	if(my < 20)
 		offY = 2;
-	int width = minimum(128, mx - 3);
+	int width = std::min(128, mx - 3);
 
 	int Download = (Client()->MapDownloadAmount() * width) / Client()->MapDownloadTotalsize();
 	// str_format(g_aInfoStr, sizeof(g_aInfoStr),

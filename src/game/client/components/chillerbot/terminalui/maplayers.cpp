@@ -99,8 +99,8 @@ void CTerminalUI::RenderGame()
 	int offX = 2;
 	if(my < 20)
 		offY = 2;
-	int width = minimum(128, mx - 3);
-	int height = minimum(32, my - 2);
+	int width = std::min(128, mx - 3);
+	int height = std::min(32, my - 2);
 	if(height < 2)
 		return;
 	g_GameWindow.DrawBorders(offX, offY - 1, width, height + 2);
@@ -358,7 +358,7 @@ void CTerminalUI::RenderTilemap(CTile *pTiles, int offX, int offY, int WinWidth,
 	if(rendered_tiles == 0)
 		return;
 	// render frame
-	int RenderToHeight = minimum(32, WinHeight);
+	int RenderToHeight = std::min(32, WinHeight);
 	for(int y = 0; y < RenderToHeight; y++)
 	{
 		// printf("%s\n", aFrame[y]);

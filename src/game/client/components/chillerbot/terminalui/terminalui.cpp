@@ -1256,20 +1256,20 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	else if(Key == KEY_LEFT)
 	{
 		g_InputWin.PrevMenuItem();
-		m_Input.m_TargetX = maximum(m_Input.m_TargetX - 10, -20);
+		m_Input.m_TargetX = std::max(m_Input.m_TargetX - 10, -20);
 		if(m_RenderServerList)
 			SetServerBrowserPage(g_Config.m_UiPage - 1);
 	}
 	else if(Key == KEY_RIGHT)
 	{
 		g_InputWin.NextMenuItem();
-		m_Input.m_TargetX = maximum(m_Input.m_TargetX + 10, 20);
+		m_Input.m_TargetX = std::max(m_Input.m_TargetX + 10, 20);
 		if(m_RenderServerList)
 			SetServerBrowserPage(g_Config.m_UiPage + 1);
 	}
 	else if(Key == KEY_UP)
 	{
-		m_Input.m_TargetY = maximum(m_Input.m_TargetY - 10, -20);
+		m_Input.m_TargetY = std::max(m_Input.m_TargetY - 10, -20);
 		if(m_RenderServerList && m_NumServers)
 			m_SelectedServer = std::clamp(m_SelectedServer - 1, 0, m_NumServers - 1);
 		else
@@ -1279,7 +1279,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	}
 	else if(Key == KEY_DOWN)
 	{
-		m_Input.m_TargetY = maximum(m_Input.m_TargetY + 10, 20);
+		m_Input.m_TargetY = std::max(m_Input.m_TargetY + 10, 20);
 		if(m_RenderServerList && m_NumServers)
 			m_SelectedServer = std::clamp(m_SelectedServer + 1, 0, m_NumServers - 1);
 		else

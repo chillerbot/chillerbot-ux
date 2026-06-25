@@ -26,7 +26,7 @@ void CTerminalUI::RenderScoreboard(int Team, CTermWindow *pWin)
 	int my = getmaxy(pWin->m_pCursesWin);
 	int offY = 5;
 	int offX = 40;
-	int width = minimum(128, mx - 3);
+	int width = std::min(128, mx - 3);
 	if(mx < offX + 2 + width)
 		offX = 2;
 	if(my < 60)
@@ -43,7 +43,7 @@ void CTerminalUI::RenderScoreboard(int Team, CTermWindow *pWin)
 		if(offY + i > my - 8)
 			break;
 	}
-	int height = minimum(NumRenderScoreIds, my - 5);
+	int height = std::min(NumRenderScoreIds, my - 5);
 	if(height < 1)
 		return;
 

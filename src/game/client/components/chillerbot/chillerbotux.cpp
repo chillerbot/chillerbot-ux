@@ -58,7 +58,7 @@ static const char *HttpStateToStr(EHttpState State)
 // TODO: use MapScreenToWorld instead lol
 void CChillerBotUX::MapScreenToGroup(float CenterX, float CenterY, CMapItemGroup *pGroup, float Zoom)
 {
-	float ParallaxZoom = std::clamp((double)(maximum(pGroup->m_ParallaxX, pGroup->m_ParallaxY)), 0., 100.);
+	float ParallaxZoom = std::clamp((double)(std::max(pGroup->m_ParallaxX, pGroup->m_ParallaxY)), 0., 100.);
 	float aPoints[4];
 	Graphics()->MapScreenToWorld(CenterX, CenterY, pGroup->m_ParallaxX, pGroup->m_ParallaxY, ParallaxZoom,
 		pGroup->m_OffsetX, pGroup->m_OffsetY, Graphics()->ScreenAspect(), Zoom, aPoints);
@@ -1254,10 +1254,10 @@ void CChillerBotUX::TraceSpikes()
 	// int CurrentY = (int)(GameClient()->m_Snap.m_aCharacters[GameClient()->m_aLocalIds[0]].m_Cur.m_Y / 32);
 	int CurrentX = (int)(GameClient()->m_Snap.m_pLocalCharacter->m_X / 32);
 	int CurrentY = (int)(GameClient()->m_Snap.m_pLocalCharacter->m_Y / 32);
-	int FromX = maximum(0, CurrentX - g_Config.m_ClSpikeTracer);
-	int ToX = minimum(Collision()->GetWidth(), CurrentX + g_Config.m_ClSpikeTracer);
-	int FromY = maximum(0, CurrentY - g_Config.m_ClSpikeTracer);
-	int ToY = minimum(Collision()->GetHeight(), CurrentY + g_Config.m_ClSpikeTracer);
+	int FromX = std::max(0, CurrentX - g_Config.m_ClSpikeTracer);
+	int ToX = std::min(Collision()->GetWidth(), CurrentX + g_Config.m_ClSpikeTracer);
+	int FromY = std::max(0, CurrentY - g_Config.m_ClSpikeTracer);
+	int ToY = std::min(Collision()->GetHeight(), CurrentY + g_Config.m_ClSpikeTracer);
 	float ScreenX0;
 	float ScreenX1;
 	float ScreenY0;
@@ -1436,7 +1436,7 @@ int CChillerBotUX::GetTotalJumps()
 	int ClientId = GameClient()->m_aLocalIds[g_Config.m_ClDummy];
 	CCharacterCore *pCharacter = &GameClient()->m_aClients[ClientId].m_Predicted;
 	if(GameClient()->m_Snap.m_aCharacters[ClientId].m_HasExtendedDisplayInfo)
-		return maximum(minimum(abs(pCharacter->m_Jumps), 10), 0);
+		return std::max(std::min(abs(pCharacter->m_Jumps), 10), 0);
 	else
 		return abs(GameClient()->m_Snap.m_aCharacters[ClientId].m_ExtendedData.m_Jumps);
 }
@@ -1487,8 +1487,8 @@ int CChillerBotUX::GetUnusedJumps()
 			// In some edge cases when the player just got another number of jumps, UnusedJumps is not correct
 			UnusedJumps = 1;
 		}
-		TotalJumpsToDisplay = maximum(minimum(abs(pCharacter->m_Jumps), 10), 0);
-		AvailableJumpsToDisplay = maximum(minimum(UnusedJumps, TotalJumpsToDisplay), 0);
+		TotalJumpsToDisplay = std::max(std::min(abs(pCharacter->m_Jumps), 10), 0);
+		AvailableJumpsToDisplay = std::max(std::min(UnusedJumps, TotalJumpsToDisplay), 0);
 	}
 	else
 	{
