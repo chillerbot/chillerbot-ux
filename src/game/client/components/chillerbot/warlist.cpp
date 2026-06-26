@@ -303,6 +303,12 @@ void CWarList::GetWarClansStr(char *pBuf, int Size)
 	str_copy(pBuf, aBuf, Size);
 }
 
+void CWarList::GetWarClansStrCallback(char *pBuf, size_t BufLen, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	pSelf->GetWarClansStr(pBuf, BufLen);
+}
+
 bool CWarList::IsWar(const char *pName, const char *pClan)
 {
 	return IsWarlist(pName) || IsTraitorlist(pName) || IsWarClanlist(pClan);

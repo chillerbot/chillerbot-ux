@@ -162,6 +162,7 @@ public:
 
 	void GetWarReason(const char *pName, char *pReason, int ReasonSize);
 	void GetWarClansStr(char *pBuf, int Size);
+	static void GetWarClansStrCallback(char *pBuf, size_t BufLen, void *pUser);
 
 	// non cached used when its about the name and there is no up to date id
 	bool IsWar(const char *pName, const char *pClan);

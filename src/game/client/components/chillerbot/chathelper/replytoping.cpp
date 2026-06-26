@@ -21,6 +21,7 @@
 #include <game/client/components/chat.h>
 #include <game/client/components/chillerbot/chathelper.h>
 #include <game/client/components/chillerbot/version.h>
+#include <game/client/components/chillerbot/warlist.h>
 #include <game/client/components/controls.h>
 #include <game/client/components/menus.h>
 #include <game/client/components/voting.h>
@@ -80,6 +81,8 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_aOwnTees[0].m_pClan = pClan;
 	ReplyBot.m_Context.m_aOwnTees[1].m_pName = pDummyName;
 	ReplyBot.m_Context.m_aOwnTees[1].m_pClan = pDummyClan;
+	ReplyBot.m_Context.m_pUser = GameClient();
+	ReplyBot.m_Context.m_pfnGetWarClansStr = CWarList::GetWarClansStrCallback;
 	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
 		return true;
 
