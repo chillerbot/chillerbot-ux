@@ -77,9 +77,9 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_IsDummyConnected = GameClient()->Client()->DummyConnected();
 	ReplyBot.m_Context.m_ActiveTee = g_Config.m_ClDummy;
 	ReplyBot.m_Context.m_aOwnTees[0].m_pName = pName;
-	ReplyBot.m_Context.m_aOwnTees[0].m_pName = pClan;
+	ReplyBot.m_Context.m_aOwnTees[0].m_pClan = pClan;
 	ReplyBot.m_Context.m_aOwnTees[1].m_pName = pDummyName;
-	ReplyBot.m_Context.m_aOwnTees[1].m_pName = pDummyClan;
+	ReplyBot.m_Context.m_aOwnTees[1].m_pClan = pDummyClan;
 	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
 		return true;
 
@@ -88,26 +88,6 @@ bool CReplyToPing::Reply()
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
 		return true;
-	}
-	// can i join your clan?
-	if(str_find_nocase(m_pMessage, "clan") &&
-		(str_find_nocase(m_pMessage, "enter") ||
-			str_find_nocase(m_pMessage, "join") ||
-			str_find_nocase(m_pMessage, "let me") ||
-			str_find_nocase(m_pMessage, "beitreten") ||
-			str_find_nocase(m_pMessage, " in ") ||
-			str_find_nocase(m_pMessage, "can i") ||
-			str_find_nocase(m_pMessage, "can me") ||
-			str_find_nocase(m_pMessage, "me you") ||
-			str_find_nocase(m_pMessage, "me is") ||
-			str_find_nocase(m_pMessage, "into")))
-	{
-		char aResponse[1024];
-		if(ChillerBotReply::HowToJoinClan(pClan, aResponse, sizeof(aResponse)) || (GameClient()->Client()->DummyConnected() && ChillerBotReply::HowToJoinClan(pDummyClan, aResponse, m_SizeOfResponse)))
-		{
-			str_format(m_pResponse, m_SizeOfResponse, "%s %s", m_pMessageAuthor, aResponse);
-			return true;
-		}
 	}
 	if(ListClanWars())
 		return true;
