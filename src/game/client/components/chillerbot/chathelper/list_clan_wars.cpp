@@ -30,7 +30,7 @@
 bool CReplyToPing::ListClanWars()
 {
 	if((str_find_nocase(m_pMessage, "clan") || str_find_nocase(m_pMessage, "klan")) &&
-		(LangParser().IsQuestionWhoWhichWhat(m_pMessage) || str_find(m_pMessage, "?")))
+		(LangParser::IsQuestionWhoWhichWhat(m_pMessage) || str_find(m_pMessage, "?")))
 	{
 		if(str_find_nocase(m_pMessage, "war") || str_find_nocase(m_pMessage, "enemy") || str_find_nocase(m_pMessage, "kill") || str_find_nocase(m_pMessage, "against") || str_find_nocase(m_pMessage, "bad"))
 		{

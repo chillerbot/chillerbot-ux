@@ -34,7 +34,6 @@
 #include <external/chillerbot_reply/include/chillerbot_reply/chillerbot_reply.h>
 #include <external/chillerbot_reply/include/chillerbot_reply/clan.h>
 
-CLangParser &CReplyToPing::LangParser() { return ChatHelper()->LangParser(); }
 CGameClient *CReplyToPing::GameClient() { return m_pChatHelper->GameClientUnprotected(); }
 
 CReplyToPing::CReplyToPing(CChatHelper *pChatHelper, const char *pMessageAuthor, const char *pMessageAuthorClan, const char *pMessage, char *pResponse, long unsigned int SizeOfResponse)
@@ -179,29 +178,29 @@ bool CReplyToPing::Reply()
 	if(SmallTalk(NameLen, MsgLen))
 		return true;
 	// greetings
-	if(LangParser().IsGreeting(m_pMessage))
+	if(LangParser::IsGreeting(m_pMessage))
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "hi %s", m_pMessageAuthor);
 		return true;
 	}
-	if(LangParser().IsGreetingQq(m_pMessage) && MsgLen < NameLen + 10)
+	if(LangParser::IsGreetingQq(m_pMessage) && MsgLen < NameLen + 10)
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "%s qq", m_pMessageAuthor);
 		return true;
 	}
 	// "Здравствуйте" => 25 bytes
-	if(LangParser().IsGreetingRus(m_pMessage) && MsgLen < NameLen + 26)
+	if(LangParser::IsGreetingRus(m_pMessage) && MsgLen < NameLen + 26)
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "%s привет", m_pMessageAuthor);
 		return true;
 	}
-	if(LangParser().IsBye(m_pMessage))
+	if(LangParser::IsBye(m_pMessage))
 	{
 		str_format(m_pResponse, m_SizeOfResponse, "bye %s", m_pMessageAuthor);
 		return true;
 	}
 	// chillerbot-ux features
-	if(LangParser().IsQuestionHow(m_pMessage))
+	if(LangParser::IsQuestionHow(m_pMessage))
 	{
 		// feature: auto_drop_money
 		if(str_find_nocase(m_pMessage, "drop") && (str_find_nocase(m_pMessage, "money") || str_find_nocase(m_pMessage, "moni") || str_find_nocase(m_pMessage, "coin") || str_find_nocase(m_pMessage, "cash") || str_find_nocase(m_pMessage, "geld")))
@@ -273,7 +272,7 @@ bool CReplyToPing::Reply()
 		return true;
 	}
 	// ask to ask
-	if(LangParser().IsAskToAsk(m_pMessage, m_pMessageAuthor, m_pResponse, m_SizeOfResponse))
+	if(LangParser::IsAskToAsk(m_pMessage, m_pMessageAuthor, m_pResponse, m_SizeOfResponse))
 		return true;
 	// got weapon?
 	if(str_find_nocase(m_pMessage, "got") || str_find_nocase(m_pMessage, "have") || str_find_nocase(m_pMessage, "hast"))

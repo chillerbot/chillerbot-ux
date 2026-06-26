@@ -29,7 +29,7 @@
 
 bool CReplyToPing::WhatOs()
 {
-	if((str_find_nocase(m_pMessage, "?") || LangParser().IsQuestionWhoWhichWhat(m_pMessage) || str_find_nocase(m_pMessage, "do you") || str_find_nocase(m_pMessage, "u use") || str_find_nocase(m_pMessage, "u on")) &&
+	if((str_find_nocase(m_pMessage, "?") || LangParser::IsQuestionWhoWhichWhat(m_pMessage) || str_find_nocase(m_pMessage, "do you") || str_find_nocase(m_pMessage, "u use") || str_find_nocase(m_pMessage, "u on")) &&
 		(str_find_nocase(m_pMessage, "linux") || str_find_nocase(m_pMessage, "linus") || str_find_nocase(m_pMessage, "unix") || str_find_nocase(m_pMessage, "solaris") ||
 			str_find_nocase(m_pMessage, "freebsd") || str_find_nocase(m_pMessage, "openbsd") || str_find_nocase(m_pMessage, "netbsd") || str_find_nocase(m_pMessage, "templeos") ||
 			str_find_nocase(m_pMessage, "serenity") || str_find_nocase(m_pMessage, "haiku") ||

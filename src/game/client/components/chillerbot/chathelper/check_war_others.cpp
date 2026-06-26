@@ -207,7 +207,7 @@ bool CReplyToPing::IsWarName()
 	// "hast du eigentlich war mit"
 	// "hast du überhaupt war mit"
 	// "hast du einen war mit"
-	if(!pDoYou && (pDoYou = LangParser().StrFindOrder(m_pMessage, 2, "hast du ", "war mit ")))
+	if(!pDoYou && (pDoYou = LangParser::StrFindOrder(m_pMessage, 2, "hast du ", "war mit ")))
 		pDoYou = pDoYou + str_length("war mit ");
 	if(pDoYou)
 		if(WhyWar(pDoYou, true))
@@ -296,9 +296,9 @@ bool CReplyToPing::IsWarName()
 		str_copy(aWhy, pWhy, sizeof(aWhy));
 
 		int CutOffWar = -1;
-		if((CutOffWar = LangParser().StrFindIndex(aWhy, " war")) != -1)
+		if((CutOffWar = LangParser::StrFindIndex(aWhy, " war")) != -1)
 			aWhy[CutOffWar] = '\0';
-		else if((CutOffWar = LangParser().StrFindIndex(aWhy, " kill")) != -1)
+		else if((CutOffWar = LangParser::StrFindIndex(aWhy, " kill")) != -1)
 			aWhy[CutOffWar] = '\0';
 
 		// trim

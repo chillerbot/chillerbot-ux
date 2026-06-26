@@ -23,7 +23,6 @@ public:
 private:
 	class CChillerBotUX *m_pChillerBot;
 
-	CLangParser m_LangParser;
 	class CCommand
 	{
 	public:
@@ -203,7 +202,6 @@ public:
 	const char *GetGreetName() { return m_aGreetName; }
 	const char *LastAfkPingMessage() { return m_aLastAfkPing; }
 	void ClearLastAfkPingMessage() { m_aLastAfkPing[0] = '\0'; }
-	CLangParser &LangParser() { return m_LangParser; }
 
 	/*
 		Function: ChatCommandGetROffset

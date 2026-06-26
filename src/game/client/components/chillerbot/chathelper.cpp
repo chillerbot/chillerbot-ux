@@ -299,7 +299,7 @@ void CChatHelper::OnChatMessage(int ClientId, int Team, const char *pMsg)
 		return;
 	if(Client()->DummyConnected() && !str_comp(aName, GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName))
 		return;
-	if(m_LangParser.IsGreeting(pMsg))
+	if(LangParser::IsGreeting(pMsg))
 	{
 		str_copy(m_aGreetName, aName, sizeof(m_aGreetName));
 		m_NextGreetClear = time_get() + time_freq() * 10;
@@ -432,7 +432,7 @@ int CChatHelper::IsSpam(int ClientId, int Team, const char *pMsg)
 	}
 	if(Team == 3) // whisper recv
 		Highlighted = true;
-	if(g_Config.m_ClChatSpamFilterInsults && m_LangParser.IsInsult(pMsg))
+	if(g_Config.m_ClChatSpamFilterInsults && LangParser::IsInsult(pMsg))
 		return SPAM_INSULT;
 	if(!Highlighted)
 		return SPAM_NONE;
@@ -453,7 +453,7 @@ int CChatHelper::IsSpam(int ClientId, int Team, const char *pMsg)
 	// ping without further context
 	if(IsNoContextPing(pMsg))
 		return SPAM_OTHER;
-	else if(m_LangParser.IsAskToAsk(pMsg))
+	else if(LangParser::IsAskToAsk(pMsg))
 		return SPAM_OTHER;
 	else if(!str_comp(aSenderName, "nameless tee") || !str_comp(aSenderName, "brainless tee") || str_find(aSenderName, ")nameless tee") || str_find(aSenderName, ")brainless te"))
 		return SPAM_OTHER;
@@ -468,7 +468,7 @@ int CChatHelper::IsSpam(int ClientId, int Team, const char *pMsg)
 		// "Do you want me to give you the flag"
 		// "I give money back chillerdragon"
 		// "ChillerDragon: Can you please post a tutorial on how to download the DDNet++ mod"
-		if((str_find_nocase(pMsg, " i ") && str_find_nocase(pMsg, "you")) || str_find_nocase(pMsg, "give you") || m_LangParser.StrFindOrder(pMsg, 2, "give", "back") ||
+		if((str_find_nocase(pMsg, " i ") && str_find_nocase(pMsg, "you")) || str_find_nocase(pMsg, "give you") || LangParser::StrFindOrder(pMsg, 2, "give", "back") ||
 			(str_find_nocase(pMsg, "mod") && (str_find_nocase(pMsg, "tutorial") || str_find_nocase(pMsg, "code") || str_find_nocase(pMsg, "download"))))
 			return SPAM_NONE;
 		else

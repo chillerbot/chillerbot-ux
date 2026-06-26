@@ -1,9 +1,8 @@
 #ifndef ENGINE_SHARED_CHILLERBOT_LANGPARSER_H
 #define ENGINE_SHARED_CHILLERBOT_LANGPARSER_H
 
-class CLangParser
+namespace LangParser
 {
-public:
 	/*
 		StrFindOrder
 
@@ -43,6 +42,6 @@ public:
 	bool IsQuestionHow(const char *pMsg);
 	bool IsQuestionWhichWhat(const char *pMsg);
 	bool IsQuestionWhoWhichWhat(const char *pMsg);
-};
+}
 
 #endif

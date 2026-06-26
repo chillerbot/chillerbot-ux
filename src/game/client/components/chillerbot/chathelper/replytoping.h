@@ -23,8 +23,6 @@ class CReplyToPing
 	class CChatHelper *ChatHelper() { return m_pChatHelper; }
 	class CGameClient *GameClient();
 
-	class CLangParser &LangParser();
-
 	const char *m_pMessageAuthor;
 	const char *m_pMessageAuthorClan;
 	const char *m_pMessage;
