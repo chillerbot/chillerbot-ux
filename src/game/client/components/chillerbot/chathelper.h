@@ -7,7 +7,6 @@
 #include <base/time.h>
 
 #include <engine/console.h>
-#include <engine/shared/chillerbot/langparser.h>
 
 #include <game/client/component.h>
 #include <game/client/lineinput.h>

@@ -2230,8 +2230,6 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   assertion_logger.cpp
   assertion_logger.h
   chillerbot/ddnet-custom-clients/custom_clients_ids.h
-  chillerbot/langparser.cpp
-  chillerbot/langparser.h
   chillerbot/variables.h
   compression.cpp
   compression.h

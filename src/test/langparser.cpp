@@ -1,5 +1,6 @@
-#include <engine/shared/chillerbot/langparser.h>
+// FIXME: fix or move these tests
 
+#include <external/chillerbot_reply/include/chillerbot_reply/langparser.h>
 #include <gtest/gtest.h>
 
 TEST(Lang, Greetings)

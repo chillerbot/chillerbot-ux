@@ -27,6 +27,8 @@
 #include <game/client/render.h>
 #include <game/version.h>
 
+#include <external/chillerbot_reply/include/chillerbot_reply/langparser.h>
+
 bool CReplyToPing::ListClanWars()
 {
 	if((str_find_nocase(m_pMessage, "clan") || str_find_nocase(m_pMessage, "klan")) &&

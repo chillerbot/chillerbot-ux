@@ -27,6 +27,8 @@
 #include <game/client/render.h>
 #include <game/version.h>
 
+#include <external/chillerbot_reply/include/chillerbot_reply/langparser.h>
+
 bool CReplyToPing::WhyWar(const char *pVictim, bool IsCheck)
 {
 	if(!pVictim)

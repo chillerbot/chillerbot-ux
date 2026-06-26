@@ -14,6 +14,8 @@
 #include <game/client/components/chillerbot/chillerbotux.h>
 #include <game/client/gameclient.h>
 
+#include <external/chillerbot_reply/include/chillerbot_reply/langparser.h>
+
 #include <cinttypes>
 
 CGameClient *CChatHelper::GameClientUnprotected()

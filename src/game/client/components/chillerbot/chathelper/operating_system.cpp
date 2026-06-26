@@ -27,6 +27,8 @@
 #include <game/client/render.h>
 #include <game/version.h>
 
+#include <external/chillerbot_reply/include/chillerbot_reply/langparser.h>
+
 bool CReplyToPing::WhatOs()
 {
 	if((str_find_nocase(m_pMessage, "?") || LangParser::IsQuestionWhoWhichWhat(m_pMessage) || str_find_nocase(m_pMessage, "do you") || str_find_nocase(m_pMessage, "u use") || str_find_nocase(m_pMessage, "u on")) &&

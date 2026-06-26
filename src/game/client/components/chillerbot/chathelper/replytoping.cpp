@@ -33,6 +33,7 @@
 
 #include <external/chillerbot_reply/include/chillerbot_reply/chillerbot_reply.h>
 #include <external/chillerbot_reply/include/chillerbot_reply/clan.h>
+#include <external/chillerbot_reply/include/chillerbot_reply/langparser.h>
 
 CGameClient *CReplyToPing::GameClient() { return m_pChatHelper->GameClientUnprotected(); }
 
