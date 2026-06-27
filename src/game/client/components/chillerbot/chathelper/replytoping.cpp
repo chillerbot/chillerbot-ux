@@ -156,53 +156,6 @@ bool CReplyToPing::Reply()
 		return true;
 	}
 
-	// whats your setting (mousesense, distance, dyn)
-	if((str_find_nocase(m_pMessage, "?") ||
-		   str_find_nocase(m_pMessage, "what") ||
-		   str_find_nocase(m_pMessage, "which") ||
-		   str_find_nocase(m_pMessage, "wat") ||
-		   str_find_nocase(m_pMessage, "much") ||
-		   str_find_nocase(m_pMessage, "many") ||
-		   str_find_nocase(m_pMessage, "viel") ||
-		   str_find_nocase(m_pMessage, "hoch")) &&
-		(str_find_nocase(m_pMessage, "sens") || str_find_nocase(m_pMessage, "sesn") || str_find_nocase(m_pMessage, "snse") || str_find_nocase(m_pMessage, "senes") || str_find_nocase(m_pMessage, "inp") || str_find_nocase(m_pMessage, "speed")))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s my current inp_mousesens is %d", m_pMessageAuthor, g_Config.m_InpMousesens);
-		return true;
-	}
-	if((str_find_nocase(m_pMessage, "?") || str_find_nocase(m_pMessage, "what") || str_find_nocase(m_pMessage, "which") || str_find_nocase(m_pMessage, "wat") || str_find_nocase(m_pMessage, "much") || str_find_nocase(m_pMessage, "many")) &&
-		str_find_nocase(m_pMessage, "dist"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s my current cl_mouse_max_distance is %d", m_pMessageAuthor, g_Config.m_ClMouseMaxDistance);
-		return true;
-	}
-	if((str_find_nocase(m_pMessage, "?") || str_find_nocase(m_pMessage, "do you") || str_find_nocase(m_pMessage, "do u")) &&
-		str_find_nocase(m_pMessage, "dyn"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s my dyncam is currently %s", m_pMessageAuthor, g_Config.m_ClDyncam ? "on" : "off");
-		return true;
-	}
-	// compliments
-	if(str_find_nocase(m_pMessage, "good") ||
-		str_find_nocase(m_pMessage, "happy") ||
-		str_find_nocase(m_pMessage, "congrats") ||
-		str_find_nocase(m_pMessage, "nice") ||
-		str_find_nocase(m_pMessage, "pro ") ||
-		str_find_nocase(m_pMessage, "pro!") ||
-		str_endswith_nocase(m_pMessage, "pro"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s thanks", m_pMessageAuthor);
-		return true;
-	}
-	// impatient
-	if(str_find_nocase(m_pMessage, "answer") || str_find_nocase(m_pMessage, "ignore") || str_find_nocase(m_pMessage, "antwort") || str_find_nocase(m_pMessage, "ignorier"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s i am currently busy (automated reply)", m_pMessageAuthor);
-		return true;
-	}
-	// ask to ask
-	if(LangParser::IsAskToAsk(m_pMessage, m_pMessageAuthor, m_pResponse, m_SizeOfResponse))
-		return true;
 	// got weapon?
 	if(str_find_nocase(m_pMessage, "got") || str_find_nocase(m_pMessage, "have") || str_find_nocase(m_pMessage, "hast"))
 	{
