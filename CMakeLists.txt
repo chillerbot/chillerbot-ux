@@ -2544,7 +2544,6 @@ if(CLIENT)
     components/chillerbot/chathelper.cpp
     components/chillerbot/chathelper.h
     components/chillerbot/chathelper/check_team.cpp
-    components/chillerbot/chathelper/check_war_others.cpp
     components/chillerbot/chathelper/check_war_self.cpp
     components/chillerbot/chathelper/list_wars.cpp
     components/chillerbot/chathelper/operating_system.cpp

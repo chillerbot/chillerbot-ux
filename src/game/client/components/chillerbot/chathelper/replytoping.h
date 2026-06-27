@@ -35,7 +35,6 @@ class CReplyToPing
 	// check all wars "who is on your warlist?"
 	bool ListWars();
 	bool SmallTalk(int NameLen, int MsgLen);
-	bool WhyWar(const char *pVictim, bool IsCheck = false);
 	/*
 		WhyDoYouKillMe
 
@@ -50,17 +49,6 @@ class CReplyToPing
 		also expecting an no if not
 	*/
 	bool DoYouWarMe(int NameLen, int MsgLen);
-
-	/*
-		IsWarCheckSuffix
-
-		Check if the given string could be a message checking
-		if another player has war. By only looking at the suffix.
-		And only looking at the format "name is war?" not "is war name?"
-
-		Returns the suffix length that was found
-	*/
-	int IsWarCheckSuffix(const char *pStr);
 
 public:
 	CReplyToPing(class CChatHelper *pChatHelper, const char *pMessageAuthor, const char *pMessageAuthorClan, const char *pMessage, char *pResponse, long unsigned int SizeOfResponse);
