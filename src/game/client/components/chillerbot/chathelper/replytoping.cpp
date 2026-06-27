@@ -92,8 +92,6 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
 		return true;
 	}
-	if(ListClanWars())
-		return true;
 	// check war for others "is war name?"
 	if(IsWarName())
 		return true;

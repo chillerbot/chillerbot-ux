@@ -64,5 +64,3 @@
 // 	// str_pad_right_utf8(aBuf, sizeof(aBuf), 60);
 // 	// EXPECT_STREQ(aBuf, "|*KoG*| GER #3 - Main Gores [kog.tw]                        ");
 // }
-
-
