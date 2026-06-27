@@ -29,9 +29,6 @@ class CReplyToPing
 	char *m_pResponse;
 	long unsigned int m_SizeOfResponse;
 
-	bool WhatOs();
-	bool SmallTalk(int NameLen, int MsgLen);
-
 public:
 	CReplyToPing(class CChatHelper *pChatHelper, const char *pMessageAuthor, const char *pMessageAuthorClan, const char *pMessage, char *pResponse, long unsigned int SizeOfResponse);
 

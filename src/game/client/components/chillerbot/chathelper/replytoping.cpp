@@ -144,6 +144,7 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_pfnIsNearStart = CRaceHelper::IsNearStartCallback;
 	ReplyBot.m_Context.m_pfnIsClusterRangeFinish = CRaceHelper::IsClusterRangeFinishCallback;
 	ReplyBot.m_Context.m_pfnIsClusterRangeStart = CRaceHelper::IsClusterRangeStartCallback;
+	ReplyBot.m_Context.m_Config.m_ClDummy = g_Config.m_ClDummy;
 	ReplyBot.m_Context.m_Config.m_InpMousesens = g_Config.m_InpMousesens;
 	ReplyBot.m_Context.m_Config.m_ClMouseMaxDistance = g_Config.m_ClMouseMaxDistance;
 	ReplyBot.m_Context.m_Config.m_ClDyncam = g_Config.m_ClDyncam;
@@ -156,46 +157,6 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
 		return true;
 	}
-
-	// got weapon?
-	if(str_find_nocase(m_pMessage, "got") || str_find_nocase(m_pMessage, "have") || str_find_nocase(m_pMessage, "hast"))
-	{
-		int Weapon = -1;
-		if(str_find_nocase(m_pMessage, "hammer"))
-			Weapon = WEAPON_HAMMER;
-		else if(str_find_nocase(m_pMessage, "gun"))
-			Weapon = WEAPON_GUN;
-		else if(str_find_nocase(m_pMessage, "sg") || str_find_nocase(m_pMessage, "shotgun") || str_find_nocase(m_pMessage, "shotty"))
-			Weapon = WEAPON_SHOTGUN;
-		else if(str_find_nocase(m_pMessage, "nade") || str_find_nocase(m_pMessage, "rocket") || str_find_nocase(m_pMessage, "bazooka"))
-			Weapon = WEAPON_GRENADE;
-		else if(str_find_nocase(m_pMessage, "rifle") || str_find_nocase(m_pMessage, "laser") || str_find_nocase(m_pMessage, "sniper"))
-			Weapon = WEAPON_LASER;
-		CCharacter *pChar = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[g_Config.m_ClDummy]);
-		if(pChar && Weapon != -1)
-		{
-			char aWeapons[1024];
-			aWeapons[0] = '\0';
-			if(pChar->GetWeaponGot(WEAPON_HAMMER))
-				str_append(aWeapons, "hammer", sizeof(aWeapons));
-			if(pChar->GetWeaponGot(WEAPON_GUN))
-				str_append(aWeapons, aWeapons[0] ? ", gun" : "gun", sizeof(aWeapons));
-			if(pChar->GetWeaponGot(WEAPON_SHOTGUN))
-				str_append(aWeapons, aWeapons[0] ? ", shotgun" : "shotgun", sizeof(aWeapons));
-			if(pChar->GetWeaponGot(WEAPON_GRENADE))
-				str_append(aWeapons, aWeapons[0] ? ", grenade" : "grenade", sizeof(aWeapons));
-			if(pChar->GetWeaponGot(WEAPON_LASER))
-				str_append(aWeapons, aWeapons[0] ? ", rifle" : "rifle", sizeof(aWeapons));
-
-			if(pChar->GetWeaponGot(Weapon))
-				str_format(m_pResponse, m_SizeOfResponse, "%s Yes I got those weapons: %s", m_pMessageAuthor, aWeapons);
-			else
-				str_format(m_pResponse, m_SizeOfResponse, "%s No I got those weapons: %s", m_pMessageAuthor, aWeapons);
-			return true;
-		}
-	}
-	if(WhatOs())
-		return true;
 
 	// fake?
 	if(str_find_nocase(m_pMessage, "fake?") ||
