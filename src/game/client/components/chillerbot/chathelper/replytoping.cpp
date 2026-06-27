@@ -86,7 +86,7 @@ bool CReplyToPing::Reply()
 		if(g_Config.m_ClDummy == 0 && GameClient()->m_Snap.m_pLocalCharacter)
 		{
 			ReplyBot.m_Context.m_aOwnTees[0].m_PosX = GameClient()->m_PredictedChar.m_Pos.x;
-			ReplyBot.m_Context.m_aOwnTees[0].m_PosY = GameClient()->m_PredictedChar.m_Pos.x;
+			ReplyBot.m_Context.m_aOwnTees[0].m_PosY = GameClient()->m_PredictedChar.m_Pos.y;
 		}
 		else
 		{
