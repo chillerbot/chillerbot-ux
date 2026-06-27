@@ -1546,11 +1546,21 @@ CChillerBotReplyTee CChillerBotUX::GetClientCallback(int ClientId, void *pUser)
 
 	std::optional<float> PosX = std::nullopt;
 	std::optional<float> PosY = std::nullopt;
-	CCharacter *pChr = pSelf->m_GameWorld.GetCharacterById(ClientId);
-	if(pChr)
+	const CNetObj_PlayerInfo *pInfo = pSelf->m_Snap.m_apPlayerInfos[ClientId];
+	if(pInfo)
 	{
-		PosX = pChr->m_Pos.x;
-		PosY = pChr->m_Pos.y;
+		if(pSelf->m_Snap.m_aCharacters[ClientId].m_Active)
+		{
+			const vec2 RenderPos = pSelf->m_aClients[ClientId].m_RenderPos;
+			PosX = RenderPos.x;
+			PosY = RenderPos.y;
+		}
+		else if(pSelf->m_aClients[ClientId].m_SpecCharPresent)
+		{
+			const vec2 RenderPos = pSelf->m_aClients[ClientId].m_SpecChar;
+			PosX = RenderPos.x;
+			PosY = RenderPos.y;
+		}
 	}
 
 	return {
