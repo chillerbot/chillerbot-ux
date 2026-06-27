@@ -108,11 +108,6 @@ bool CReplyToPing::Reply()
 		return true;
 	}
 
-	// intentionally check for being on warlist
-	// also expecting an no if not
-	if(DoYouWarMe(NameLen, MsgLen))
-		return true;
-
 	// where are you
 	if(Where())
 		return true;

@@ -42,13 +42,6 @@ class CReplyToPing
 		But only triggering an response if its coming from an enemy.
 	*/
 	bool WhyDoYouKillMe(int NameLen, int MsgLen);
-	/*
-		DoYouWarMe
-
-		intentionally check for being on warlist
-		also expecting an no if not
-	*/
-	bool DoYouWarMe(int NameLen, int MsgLen);
 
 public:
 	CReplyToPing(class CChatHelper *pChatHelper, const char *pMessageAuthor, const char *pMessageAuthorClan, const char *pMessage, char *pResponse, long unsigned int SizeOfResponse);
