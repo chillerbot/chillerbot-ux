@@ -79,13 +79,33 @@ bool CReplyToPing::Reply()
 	CChillerBotReply ReplyBot;
 	ReplyBot.m_Context.m_IsDummyConnected = GameClient()->Client()->DummyConnected();
 	ReplyBot.m_Context.m_ActiveTee = g_Config.m_ClDummy;
+	ReplyBot.m_Context.m_aOwnTees[0].m_ClientId = GameClient()->m_aLocalIds[0];
 	ReplyBot.m_Context.m_aOwnTees[0].m_pName = pName;
 	ReplyBot.m_Context.m_aOwnTees[0].m_pClan = pClan;
+	{
+		CCharacter *pChr = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[0]);
+		if(pChr)
+		{
+			ReplyBot.m_Context.m_aOwnTees[0].m_PosX = pChr->m_Pos.x;
+			ReplyBot.m_Context.m_aOwnTees[0].m_PosY = pChr->m_Pos.y;
+		}
+	}
+	ReplyBot.m_Context.m_aOwnTees[1].m_ClientId = GameClient()->m_aLocalIds[1];
 	ReplyBot.m_Context.m_aOwnTees[1].m_pName = pDummyName;
 	ReplyBot.m_Context.m_aOwnTees[1].m_pClan = pDummyClan;
+	if(GameClient()->Client()->DummyConnected())
+	{
+		CCharacter *pChr = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[1]);
+		if(pChr)
+		{
+			ReplyBot.m_Context.m_aOwnTees[1].m_PosX = pChr->m_Pos.x;
+			ReplyBot.m_Context.m_aOwnTees[1].m_PosY = pChr->m_Pos.y;
+		}
+	}
 	ReplyBot.m_Context.m_pUser = GameClient();
 	ReplyBot.m_Context.m_pfnGetClientName = CChillerBotUX::GetClientNameCallback;
 	ReplyBot.m_Context.m_pfnGetClientClan = CChillerBotUX::GetClientClanCallback;
+	ReplyBot.m_Context.m_pfnGetClient = CChillerBotUX::GetClientCallback;
 	ReplyBot.m_Context.m_pfnGetWarReason = CWarList::GetWarReasonCallback;
 	ReplyBot.m_Context.m_pfnGetWarClansStr = CWarList::GetWarClansStrCallback;
 	ReplyBot.m_Context.m_pfnIsWar = CWarList::IsWarCallback;

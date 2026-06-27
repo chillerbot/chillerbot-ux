@@ -9,6 +9,8 @@
 #include <game/client/render.h>
 #include <game/mapitems.h>
 
+#include <external/chillerbot_reply/include/chillerbot_reply/chillerbot_reply.h>
+
 #define MAX_COMPONENT_LEN 16
 #define MAX_COMPONENTS_ENABLED 8
 
@@ -197,6 +199,7 @@ public:
 
 	static const char *GetClientNameCallback(int ClientId, void *pUser);
 	static const char *GetClientClanCallback(int ClientId, void *pUser);
+	static CChillerBotReplyTee GetClientCallback(int ClientId, void *pUser);
 };
 
 #endif

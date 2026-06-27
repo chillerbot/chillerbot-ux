@@ -42,7 +42,8 @@ bool CReplyToPing::Where()
 			if(str_comp(Client.m_aName, m_pMessageAuthor))
 				continue;
 
-			// TODO: dont get current dummy but the pinged dummy
+			// TODO: dont get current dummy but the pinged dummy, but if it differs the reply chat message will be confusing??
+			//       if that is done it has to say "my dummy xx is at pos yy"
 			CCharacter *pChar = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[g_Config.m_ClDummy]);
 			if(!pChar)
 				continue;

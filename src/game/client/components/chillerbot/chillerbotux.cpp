@@ -39,6 +39,8 @@
 #include <game/mapitems.h>
 #include <game/version.h>
 
+#include <optional>
+
 static const char *HttpStateToStr(EHttpState State)
 {
 	switch(State)
@@ -1531,4 +1533,31 @@ const char *CChillerBotUX::GetClientClanCallback(int ClientId, void *pUser)
 	if(!Client.m_Active)
 		return "";
 	return Client.m_aClan;
+}
+
+CChillerBotReplyTee CChillerBotUX::GetClientCallback(int ClientId, void *pUser)
+{
+	CGameClient *pSelf = static_cast<CGameClient *>(pUser);
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+		return {.m_Active = false};
+	auto &Client = pSelf->m_aClients[ClientId];
+	if(!Client.m_Active)
+		return {.m_Active = false};
+
+	std::optional<float> PosX = std::nullopt;
+	std::optional<float> PosY = std::nullopt;
+	CCharacter *pChr = pSelf->m_GameWorld.GetCharacterById(ClientId);
+	if(pChr)
+	{
+		PosX = pChr->m_Pos.x;
+		PosY = pChr->m_Pos.y;
+	}
+
+	return {
+		.m_Active = true,
+		.m_ClientId = ClientId,
+		.m_pName = Client.m_aName,
+		.m_pClan = Client.m_aClan,
+		.m_PosX = PosX,
+		.m_PosY = PosY};
 }
