@@ -33,15 +33,7 @@ class CReplyToPing
 	// where are you
 	bool Where();
 	// check all wars "who is on your warlist?"
-	bool ListWars();
 	bool SmallTalk(int NameLen, int MsgLen);
-	/*
-		WhyDoYouKillMe
-
-		Covering all kinds of questions like only "?"
-		But only triggering an response if its coming from an enemy.
-	*/
-	bool WhyDoYouKillMe(int NameLen, int MsgLen);
 
 public:
 	CReplyToPing(class CChatHelper *pChatHelper, const char *pMessageAuthor, const char *pMessageAuthorClan, const char *pMessage, char *pResponse, long unsigned int SizeOfResponse);
