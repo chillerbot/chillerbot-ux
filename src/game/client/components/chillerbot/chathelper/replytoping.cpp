@@ -59,17 +59,10 @@ bool CReplyToPing::Reply()
 	if(m_pMessage[0] == '\0')
 		return false;
 
-	int MsgLen = str_length(m_pMessage);
-	int NameLen = 0;
 	const char *pName = GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aName;
 	const char *pDummyName = GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aName;
 	const char *pClan = GameClient()->m_aClients[GameClient()->m_aLocalIds[0]].m_aClan;
 	const char *pDummyClan = GameClient()->m_aClients[GameClient()->m_aLocalIds[1]].m_aClan;
-
-	if(ChatHelper()->LineShouldHighlight(m_pMessage, pName))
-		NameLen = str_length(pName);
-	else if(GameClient()->Client()->DummyConnected() && ChatHelper()->LineShouldHighlight(m_pMessage, pDummyName))
-		NameLen = str_length(pDummyName);
 
 	CChillerBotReplyChatMessage Message;
 	Message.m_pMessage = m_pMessage;
@@ -150,99 +143,5 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_Config.m_ClDyncam = g_Config.m_ClDyncam;
 	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
 		return true;
-
-	// ping without further context
-	if(MsgLen < NameLen + 2)
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
-		return true;
-	}
-
-	// fake?
-	if(str_find_nocase(m_pMessage, "fake?") ||
-		str_find_nocase(m_pMessage, "you fake") ||
-		str_find_nocase(m_pMessage, "u fake") ||
-		str_find_nocase(m_pMessage, "feker"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s yes i am fake", m_pMessageAuthor);
-		return true;
-	}
-
-	// real?
-	if(str_find_nocase(m_pMessage, "real?") ||
-		str_find_nocase(m_pMessage, "you real") ||
-		str_find_nocase(m_pMessage, "u real") ||
-		str_find_nocase(m_pMessage, "you reel") ||
-		str_find_nocase(m_pMessage, "u reel") ||
-		str_find_nocase(m_pMessage, "reel?"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s: no u", m_pMessageAuthor);
-		return true;
-	}
-
-	// when new map?
-	if(MsgLen < NameLen + 16 && (str_find_nocase(m_pMessage, "when new map?") ||
-					    str_find_nocase(m_pMessage, "when make new map") ||
-					    str_find_nocase(m_pMessage, "when new gores map") ||
-					    str_find_nocase(m_pMessage, "when new ddrace map")))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s new map this summer (maybe)", m_pMessageAuthor);
-		return true;
-	}
-
-	// when new youtube?
-	if(MsgLen < NameLen + 20 && (str_find_nocase(m_pMessage, "when new yt") ||
-					    str_find_nocase(m_pMessage, "when youtub") ||
-					    str_find_nocase(m_pMessage, "when new youtub") ||
-					    str_find_nocase(m_pMessage, "new video") ||
-					    str_find_nocase(m_pMessage, "when video") ||
-					    str_find_nocase(m_pMessage, "new vidio") ||
-					    str_find_nocase(m_pMessage, "when vidio") ||
-					    str_find_nocase(m_pMessage, "new vido") ||
-					    str_find_nocase(m_pMessage, "when vido") ||
-					    str_find_nocase(m_pMessage, "new jutub") ||
-					    str_find_nocase(m_pMessage, "when jutub")))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s new yt next years summer (maybe)", m_pMessageAuthor);
-		return true;
-	}
-
-	// you legend
-	if(MsgLen < NameLen + 16 && str_find_nocase(m_pMessage, "legend"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "you are legend %s", m_pMessageAuthor);
-		return true;
-	}
-
-	// love
-	if(str_find_nocase(m_pMessage, "<3"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s <3", m_pMessageAuthor);
-		return true;
-	}
-
-	// weeb
-	if(str_find_nocase(m_pMessage, "uwu"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s OwO", m_pMessageAuthor);
-		return true;
-	}
-	if(str_find_nocase(m_pMessage, "owo"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s UwU", m_pMessageAuthor);
-		return true;
-	}
-	// no u
-	if(MsgLen < NameLen + 8 && (str_find_nocase(m_pMessage, "no u") ||
-					   str_find_nocase(m_pMessage, "no you") ||
-					   str_find_nocase(m_pMessage, "noob") ||
-					   str_find_nocase(m_pMessage, "nob") ||
-					   str_find_nocase(m_pMessage, "nuub") ||
-					   str_find_nocase(m_pMessage, "nub") ||
-					   str_find_nocase(m_pMessage, "bad")))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s no u", m_pMessageAuthor);
-		return true;
-	}
 	return false;
 }
