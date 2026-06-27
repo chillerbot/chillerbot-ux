@@ -75,6 +75,7 @@ bool CReplyToPing::Reply()
 	Message.m_pMessage = m_pMessage;
 	Message.m_Team = 0; // TODO: set this
 	Message.m_pAuthor = m_pMessageAuthor;
+	Message.m_pAuthorClan = m_pMessageAuthorClan;
 	CChillerBotReply ReplyBot;
 	ReplyBot.m_Context.m_IsDummyConnected = GameClient()->Client()->DummyConnected();
 	ReplyBot.m_Context.m_ActiveTee = g_Config.m_ClDummy;
@@ -104,9 +105,6 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
 		return true;
 	}
-	// why? (check war for self)
-	if(WhyDoYouKillMe(NameLen, MsgLen))
-		return true;
 	// still check war for others but now different order
 	// also cover "name is war?" in addition to "is war name?"
 	if(NameIsWar())
