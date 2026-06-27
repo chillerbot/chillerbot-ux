@@ -153,8 +153,6 @@ bool CReplyToPing::Reply()
 		return true;
 	}
 
-	if(SmallTalk(NameLen, MsgLen))
-		return true;
 	// greetings
 	if(LangParser::IsGreeting(m_pMessage))
 	{
