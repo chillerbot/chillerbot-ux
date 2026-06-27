@@ -153,56 +153,6 @@ bool CReplyToPing::Reply()
 		return true;
 	}
 
-	// greetings
-	if(LangParser::IsGreeting(m_pMessage))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "hi %s", m_pMessageAuthor);
-		return true;
-	}
-	if(LangParser::IsGreetingQq(m_pMessage) && MsgLen < NameLen + 10)
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s qq", m_pMessageAuthor);
-		return true;
-	}
-	// "Здравствуйте" => 25 bytes
-	if(LangParser::IsGreetingRus(m_pMessage) && MsgLen < NameLen + 26)
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s привет", m_pMessageAuthor);
-		return true;
-	}
-	if(LangParser::IsBye(m_pMessage))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "bye %s", m_pMessageAuthor);
-		return true;
-	}
-	// chillerbot-ux features
-	if(LangParser::IsQuestionHow(m_pMessage))
-	{
-		// feature: auto_drop_money
-		if(str_find_nocase(m_pMessage, "drop") && (str_find_nocase(m_pMessage, "money") || str_find_nocase(m_pMessage, "moni") || str_find_nocase(m_pMessage, "coin") || str_find_nocase(m_pMessage, "cash") || str_find_nocase(m_pMessage, "geld")))
-		{
-			str_format(m_pResponse, m_SizeOfResponse, "%s I auto drop money using \"auto_drop_money\" in chillerbot-ux", m_pMessageAuthor);
-			return true;
-		}
-		// feature: auto reply
-		if((str_find_nocase(m_pMessage, "reply") && str_find_nocase(m_pMessage, "chat")) || (str_find_nocase(m_pMessage, "auto chat") || str_find_nocase(m_pMessage, "autochat")) ||
-			str_find_nocase(m_pMessage, "message") ||
-			((str_find_nocase(m_pMessage, "fast") || str_find_nocase(m_pMessage, "quick")) && str_find_nocase(m_pMessage, "chat")))
-		{
-			str_format(m_pResponse, m_SizeOfResponse, "%s I bound the chillerbot-ux command \"reply_to_last_ping\" to automate chat", m_pMessageAuthor);
-			return true;
-		}
-	}
-	// advertise chillerbot
-	if(str_find_nocase(m_pMessage, "what client") || str_find_nocase(m_pMessage, "which client") || str_find_nocase(m_pMessage, "wat client") ||
-		str_find_nocase(m_pMessage, "good client") || str_find_nocase(m_pMessage, "download client") || str_find_nocase(m_pMessage, "link client") || str_find_nocase(m_pMessage, "get client") ||
-		str_find_nocase(m_pMessage, "where chillerbot") || str_find_nocase(m_pMessage, "download chillerbot") || str_find_nocase(m_pMessage, "link chillerbot") || str_find_nocase(m_pMessage, "get chillerbot") ||
-		str_find_nocase(m_pMessage, "chillerbot url") || str_find_nocase(m_pMessage, "chillerbot download") || str_find_nocase(m_pMessage, "chillerbot link") || str_find_nocase(m_pMessage, "chillerbot website") ||
-		((str_find_nocase(m_pMessage, "ddnet") || str_find_nocase(m_pMessage, "vanilla")) && str_find_nocase(m_pMessage, "?")))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s I use chillerbot-ux ( https://chillerbot.github.io )", m_pMessageAuthor);
-		return true;
-	}
 	// whats your setting (mousesense, distance, dyn)
 	if((str_find_nocase(m_pMessage, "?") ||
 		   str_find_nocase(m_pMessage, "what") ||
