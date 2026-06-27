@@ -1029,6 +1029,12 @@ bool CWarList::OnChatCmd(char Prefix, int ClientId, int Team, const char *pCmd, 
 	return OnChatCmdSimple(Prefix, ClientId, Team, pCmd, NumArgs, ppArgs, pRawArgLine);
 }
 
+void CWarList::GetWarReasonCallback(const char *pName, char *pReason, int ReasonSize, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	pSelf->GetWarReason(pName, pReason, ReasonSize);
+}
+
 void CWarList::GetWarClansStrCallback(char *pBuf, size_t BufLen, void *pUser)
 {
 	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;

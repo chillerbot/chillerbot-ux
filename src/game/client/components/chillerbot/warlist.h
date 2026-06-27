@@ -185,6 +185,7 @@ public:
 	int NumEnemies() const { return m_WarDirs + m_TraitorDirs; }
 	int NumTeam() const { return m_TeamDirs; }
 
+	static void GetWarReasonCallback(const char *pName, char *pReason, int ReasonSize, void *pUser);
 	static void GetWarClansStrCallback(char *pBuf, size_t BufLen, void *pUser);
 	static bool IsWarCallback(const char *pName, const char *pClan, void *pUser);
 	static bool IsWarlistCallback(const char *pName, void *pUser);

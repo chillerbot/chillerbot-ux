@@ -82,6 +82,7 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_aOwnTees[1].m_pName = pDummyName;
 	ReplyBot.m_Context.m_aOwnTees[1].m_pClan = pDummyClan;
 	ReplyBot.m_Context.m_pUser = GameClient();
+	ReplyBot.m_Context.m_pfnGetWarReason = CWarList::GetWarReasonCallback;
 	ReplyBot.m_Context.m_pfnGetWarClansStr = CWarList::GetWarClansStrCallback;
 	ReplyBot.m_Context.m_pfnIsWar = CWarList::IsWarCallback;
 	ReplyBot.m_Context.m_pfnIsWarlist = CWarList::IsWarlistCallback;
