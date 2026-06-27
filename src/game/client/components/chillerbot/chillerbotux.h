@@ -200,6 +200,8 @@ public:
 	static const char *GetClientNameCallback(int ClientId, void *pUser);
 	static const char *GetClientClanCallback(int ClientId, void *pUser);
 	static CChillerBotReplyTee GetClientCallback(int ClientId, void *pUser);
+	static int GetTotalJumpsCallback(void *pUser);
+	static int GetUnusedJumpsCallback(void *pUser);
 };
 
 #endif

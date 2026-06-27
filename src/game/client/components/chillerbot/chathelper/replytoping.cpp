@@ -122,6 +122,8 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_pfnGetClientName = CChillerBotUX::GetClientNameCallback;
 	ReplyBot.m_Context.m_pfnGetClientClan = CChillerBotUX::GetClientClanCallback;
 	ReplyBot.m_Context.m_pfnGetClient = CChillerBotUX::GetClientCallback;
+	ReplyBot.m_Context.m_pfnGetTotalJumpsCallback = CChillerBotUX::GetTotalJumpsCallback;
+	ReplyBot.m_Context.m_pfnGetUnusedJumpsCallback = CChillerBotUX::GetUnusedJumpsCallback;
 	ReplyBot.m_Context.m_pfnGetWarReason = CWarList::GetWarReasonCallback;
 	ReplyBot.m_Context.m_pfnGetWarClansStr = CWarList::GetWarClansStrCallback;
 	ReplyBot.m_Context.m_pfnIsWar = CWarList::IsWarCallback;

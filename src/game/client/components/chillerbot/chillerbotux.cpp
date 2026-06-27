@@ -1571,3 +1571,15 @@ CChillerBotReplyTee CChillerBotUX::GetClientCallback(int ClientId, void *pUser)
 		.m_PosX = PosX,
 		.m_PosY = PosY};
 }
+
+int CChillerBotUX::GetTotalJumpsCallback(void *pUser)
+{
+	CChillerBotUX *pSelf = &static_cast<CGameClient *>(pUser)->m_ChillerBotUX;
+	return pSelf->GetTotalJumps();
+}
+
+int CChillerBotUX::GetUnusedJumpsCallback(void *pUser)
+{
+	CChillerBotUX *pSelf = &static_cast<CGameClient *>(pUser)->m_ChillerBotUX;
+	return pSelf->GetUnusedJumps();
+}
