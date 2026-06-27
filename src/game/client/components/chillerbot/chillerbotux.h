@@ -202,6 +202,7 @@ public:
 	static CChillerBotReplyTee GetClientCallback(int ClientId, void *pUser);
 	static int GetTotalJumpsCallback(void *pUser);
 	static int GetUnusedJumpsCallback(void *pUser);
+	static void SendChatCallback(int Team, const char *pLine, void *pUser);
 };
 
 #endif

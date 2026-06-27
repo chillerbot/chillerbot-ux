@@ -1583,3 +1583,9 @@ int CChillerBotUX::GetUnusedJumpsCallback(void *pUser)
 	CChillerBotUX *pSelf = &static_cast<CGameClient *>(pUser)->m_ChillerBotUX;
 	return pSelf->GetUnusedJumps();
 }
+
+void CChillerBotUX::SendChatCallback(int Team, const char *pLine, void *pUser)
+{
+	CGameClient *pSelf = static_cast<CGameClient *>(pUser);
+	pSelf->m_Chat.SendChat(Team, pLine);
+}
