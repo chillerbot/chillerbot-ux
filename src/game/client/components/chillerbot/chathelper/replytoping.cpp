@@ -143,6 +143,9 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_pfnIsNearStart = CRaceHelper::IsNearStartCallback;
 	ReplyBot.m_Context.m_pfnIsClusterRangeFinish = CRaceHelper::IsClusterRangeFinishCallback;
 	ReplyBot.m_Context.m_pfnIsClusterRangeStart = CRaceHelper::IsClusterRangeStartCallback;
+	ReplyBot.m_Context.m_Config.m_InpMousesens = g_Config.m_InpMousesens;
+	ReplyBot.m_Context.m_Config.m_ClMouseMaxDistance = g_Config.m_ClMouseMaxDistance;
+	ReplyBot.m_Context.m_Config.m_ClDyncam = g_Config.m_ClDyncam;
 	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
 		return true;
 
