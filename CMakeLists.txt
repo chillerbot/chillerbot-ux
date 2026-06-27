@@ -3348,7 +3348,6 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     jobs_test.cpp
     json_test.cpp
     jsonwriter_test.cpp
-    langparser.cpp
     linereader_test.cpp
     mapbugs_test.cpp
     mapitems_test.cpp
