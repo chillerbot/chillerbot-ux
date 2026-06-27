@@ -83,6 +83,13 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_aOwnTees[1].m_pClan = pDummyClan;
 	ReplyBot.m_Context.m_pUser = GameClient();
 	ReplyBot.m_Context.m_pfnGetWarClansStr = CWarList::GetWarClansStrCallback;
+	ReplyBot.m_Context.m_pfnIsWar = CWarList::IsWarCallback;
+	ReplyBot.m_Context.m_pfnIsWarlist = CWarList::IsWarlistCallback;
+	ReplyBot.m_Context.m_pfnIsTeamlist = CWarList::IsTeamlistCallback;
+	ReplyBot.m_Context.m_pfnIsTraitorlist = CWarList::IsTraitorlistCallback;
+	ReplyBot.m_Context.m_pfnIsWarClanlist = CWarList::IsWarClanlistCallback;
+	ReplyBot.m_Context.m_pfnIsTeamClanlist = CWarList::IsTeamClanlistCallback;
+	ReplyBot.m_Context.m_pfnIsWarClanmate = CWarList::IsWarClanmateCallback;
 	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
 		return true;
 

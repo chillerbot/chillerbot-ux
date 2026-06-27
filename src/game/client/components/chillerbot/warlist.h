@@ -162,7 +162,6 @@ public:
 
 	void GetWarReason(const char *pName, char *pReason, int ReasonSize);
 	void GetWarClansStr(char *pBuf, int Size);
-	static void GetWarClansStrCallback(char *pBuf, size_t BufLen, void *pUser);
 
 	// non cached used when its about the name and there is no up to date id
 	bool IsWar(const char *pName, const char *pClan);
@@ -185,6 +184,15 @@ public:
 
 	int NumEnemies() const { return m_WarDirs + m_TraitorDirs; }
 	int NumTeam() const { return m_TeamDirs; }
+
+	static void GetWarClansStrCallback(char *pBuf, size_t BufLen, void *pUser);
+	static bool IsWarCallback(const char *pName, const char *pClan, void *pUser);
+	static bool IsWarlistCallback(const char *pName, void *pUser);
+	static bool IsTeamlistCallback(const char *pName, void *pUser);
+	static bool IsTraitorlistCallback(const char *pName, void *pUser);
+	static bool IsWarClanlistCallback(const char *pClan, void *pUser);
+	static bool IsTeamClanlistCallback(const char *pClan, void *pUser);
+	static bool IsWarClanmateCallback(const char *pClan, void *pUser);
 };
 
 #endif

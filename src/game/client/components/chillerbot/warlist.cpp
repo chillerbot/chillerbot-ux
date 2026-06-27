@@ -303,12 +303,6 @@ void CWarList::GetWarClansStr(char *pBuf, int Size)
 	str_copy(pBuf, aBuf, Size);
 }
 
-void CWarList::GetWarClansStrCallback(char *pBuf, size_t BufLen, void *pUser)
-{
-	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
-	pSelf->GetWarClansStr(pBuf, BufLen);
-}
-
 bool CWarList::IsWar(const char *pName, const char *pClan)
 {
 	return IsWarlist(pName) || IsTraitorlist(pName) || IsWarClanlist(pClan);
@@ -1033,4 +1027,52 @@ bool CWarList::OnChatCmd(char Prefix, int ClientId, int Team, const char *pCmd, 
 	if(g_Config.m_ClWarListAdvanced)
 		return OnChatCmdAdvanced(Prefix, ClientId, Team, pCmd, NumArgs, ppArgs, pRawArgLine);
 	return OnChatCmdSimple(Prefix, ClientId, Team, pCmd, NumArgs, ppArgs, pRawArgLine);
+}
+
+void CWarList::GetWarClansStrCallback(char *pBuf, size_t BufLen, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	pSelf->GetWarClansStr(pBuf, BufLen);
+}
+
+bool CWarList::IsWarCallback(const char *pName, const char *pClan, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->IsWar(pName, pClan);
+}
+
+bool CWarList::IsWarlistCallback(const char *pName, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->IsWarlist(pName);
+}
+
+bool CWarList::IsTeamlistCallback(const char *pName, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->IsTeamlist(pName);
+}
+
+bool CWarList::IsTraitorlistCallback(const char *pName, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->IsTraitorlist(pName);
+}
+
+bool CWarList::IsWarClanlistCallback(const char *pClan, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->IsWarClanlist(pClan);
+}
+
+bool CWarList::IsTeamClanlistCallback(const char *pClan, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->IsTeamClanlist(pClan);
+}
+
+bool CWarList::IsWarClanmateCallback(const char *pClan, void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->IsWarClanmate(pClan);
 }
