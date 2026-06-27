@@ -115,6 +115,13 @@ public:
 		+--+ +--+ +--+ +--+
 	*/
 	bool IsClusterRangeStart(vec2 Pos, int RadiusInTiles = 10) const;
+
+	static bool IsStartCallback(float PrevX, float PrevY, float PosX, float PosY, void *pUser);
+	static bool IsFinishCallback(float Pos1X, float Pos1Y, float Pos2X, float Pos2Y, void *pUser);
+	static bool IsNearFinishCallback(float PosX, float PosY, int RadiusInTiles, void *pUser);
+	static bool IsNearStartCallback(float PosX, float PosY, int RadiusInTiles, void *pUser);
+	static bool IsClusterRangeFinishCallback(float PosX, float PosY, int RadiusInTiles, void *pUser);
+	static bool IsClusterRangeStartCallback(float PosX, float PosY, int RadiusInTiles, void *pUser);
 };
 
 #endif // GAME_CLIENT_RACE_H

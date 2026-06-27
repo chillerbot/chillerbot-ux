@@ -118,6 +118,12 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_pfnIsWarClanmateId = CWarList::IsWarClanmateCallback;
 	ReplyBot.m_Context.m_pfnNumEnemies = CWarList::NumEnemiesCallback;
 	ReplyBot.m_Context.m_pfnNumTeam = CWarList::NumTeamCallback;
+	ReplyBot.m_Context.m_pfnIsStart = CRaceHelper::IsStartCallback;
+	ReplyBot.m_Context.m_pfnIsFinish = CRaceHelper::IsFinishCallback;
+	ReplyBot.m_Context.m_pfnIsNearFinish = CRaceHelper::IsNearFinishCallback;
+	ReplyBot.m_Context.m_pfnIsNearStart = CRaceHelper::IsNearStartCallback;
+	ReplyBot.m_Context.m_pfnIsClusterRangeFinish = CRaceHelper::IsClusterRangeFinishCallback;
+	ReplyBot.m_Context.m_pfnIsClusterRangeStart = CRaceHelper::IsClusterRangeStartCallback;
 	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
 		return true;
 

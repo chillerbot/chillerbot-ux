@@ -228,3 +228,47 @@ bool CRaceHelper::IsClusterRangeStart(vec2 Pos, int RadiusInTiles) const
 				return true;
 	return false;
 }
+
+bool CRaceHelper::IsStartCallback(float PrevX, float PrevY, float PosX, float PosY, void *pUser)
+{
+	const CRaceHelper *pSelf = static_cast<CGameClient *>(pUser)->RaceHelper();
+	vec2 Prev = vec2(PrevX, PrevY);
+	vec2 Pos = vec2(PosX, PosY);
+	return pSelf->IsStart(Prev, Pos);
+}
+
+bool CRaceHelper::IsFinishCallback(float Pos1X, float Pos1Y, float Pos2X, float Pos2Y, void *pUser)
+{
+	const CRaceHelper *pSelf = static_cast<CGameClient *>(pUser)->RaceHelper();
+	vec2 Pos1 = vec2(Pos1X, Pos1Y);
+	vec2 Pos2 = vec2(Pos2X, Pos2Y);
+	return pSelf->IsFinish(Pos1, Pos2);
+}
+
+bool CRaceHelper::IsNearFinishCallback(float PosX, float PosY, int RadiusInTiles, void *pUser)
+{
+	const CRaceHelper *pSelf = static_cast<CGameClient *>(pUser)->RaceHelper();
+	vec2 Pos = vec2(PosX, PosY);
+	return pSelf->IsNearFinish(Pos, RadiusInTiles);
+}
+
+bool CRaceHelper::IsNearStartCallback(float PosX, float PosY, int RadiusInTiles, void *pUser)
+{
+	const CRaceHelper *pSelf = static_cast<CGameClient *>(pUser)->RaceHelper();
+	vec2 Pos = vec2(PosX, PosY);
+	return pSelf->IsNearStart(Pos, RadiusInTiles);
+}
+
+bool CRaceHelper::IsClusterRangeFinishCallback(float PosX, float PosY, int RadiusInTiles, void *pUser)
+{
+	const CRaceHelper *pSelf = static_cast<CGameClient *>(pUser)->RaceHelper();
+	vec2 Pos = vec2(PosX, PosY);
+	return pSelf->IsClusterRangeFinish(Pos, RadiusInTiles);
+}
+
+bool CRaceHelper::IsClusterRangeStartCallback(float PosX, float PosY, int RadiusInTiles, void *pUser)
+{
+	const CRaceHelper *pSelf = static_cast<CGameClient *>(pUser)->RaceHelper();
+	vec2 Pos = vec2(PosX, PosY);
+	return pSelf->IsClusterRangeStart(Pos, RadiusInTiles);
+}
