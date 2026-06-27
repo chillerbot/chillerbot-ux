@@ -30,9 +30,6 @@ class CReplyToPing
 	long unsigned int m_SizeOfResponse;
 
 	bool WhatOs();
-	// where are you
-	bool Where();
-	// check all wars "who is on your warlist?"
 	bool SmallTalk(int NameLen, int MsgLen);
 
 public:
