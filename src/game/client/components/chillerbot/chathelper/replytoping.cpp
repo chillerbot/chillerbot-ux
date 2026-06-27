@@ -153,64 +153,6 @@ bool CReplyToPing::Reply()
 		return true;
 	}
 
-	// are you here?
-	if((str_find_nocase(m_pMessage, "u here") || str_find_nocase(m_pMessage, "here?")) && (MsgLen < NameLen + str_length("yo brother are you here????")))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "%s yes I am here", m_pMessageAuthor);
-		return true;
-	}
-
-	// how many jumps do you have?
-	if(str_find_nocase(m_pMessage, "how") &&
-		(str_find_nocase(m_pMessage, "mani") || str_find_nocase(m_pMessage, "many") || str_find_nocase(m_pMessage, "much")) &&
-		(str_find_nocase(m_pMessage, "jamp") || str_find_nocase(m_pMessage, "jump") || str_find_nocase(m_pMessage, "jomp")))
-	{
-		int UnusedJumps = GameClient()->m_ChillerBotUX.GetUnusedJumps();
-		int TotalJumps = GameClient()->m_ChillerBotUX.GetTotalJumps();
-		str_format(m_pResponse, m_SizeOfResponse, "%s I currently have %d out of %d jumps", m_pMessageAuthor, UnusedJumps, TotalJumps);
-		return true;
-	}
-
-	// // do you have double jump?
-	if((str_find_nocase(m_pMessage, "have") || str_find_nocase(m_pMessage, "has") || str_find_nocase(m_pMessage, "got") || str_find_nocase(m_pMessage, "you") || str_find_nocase(m_pMessage, " u ")) &&
-		(str_find_nocase(m_pMessage, " dj") || str_find_nocase(m_pMessage, "double") || str_find_nocase(m_pMessage, "lejump") || str_find_nocase(m_pMessage, "lejamp") || str_find_nocase(m_pMessage, "lejomp")))
-	{
-		int UnusedJumps = GameClient()->m_ChillerBotUX.GetUnusedJumps();
-		int TotalJumps = GameClient()->m_ChillerBotUX.GetTotalJumps();
-		if(UnusedJumps > 0)
-			str_format(m_pResponse, m_SizeOfResponse, "%s Yes. I currently have %d out of %d jumps", m_pMessageAuthor, UnusedJumps, TotalJumps);
-		else
-			str_format(m_pResponse, m_SizeOfResponse, "%s No. I currently have %d out of %d jumps", m_pMessageAuthor, UnusedJumps, TotalJumps);
-		return true;
-	}
-
-	// spec me
-	if(str_find_nocase(m_pMessage, "spec") || str_find_nocase(m_pMessage, "watch") || (str_find_nocase(m_pMessage, "look") && !str_find_nocase(m_pMessage, "looks")) || str_find_nocase(m_pMessage, "schau"))
-	{
-		str_format(m_pResponse, m_SizeOfResponse, "/pause %s", m_pMessageAuthor);
-		GameClient()->m_Chat.SendChat(0, m_pResponse);
-		str_format(m_pResponse, m_SizeOfResponse, "%s ok i am watching you", m_pMessageAuthor);
-		return true;
-	}
-	// wanna? (always say no automated if motivated to do something type yes manually)
-	if(str_find_nocase(m_pMessage, "wanna") || str_find_nocase(m_pMessage, "want"))
-	{
-		// TODO: fix tone
-		// If you get asked to be given something "no sorry" sounds weird
-		// If you are being asked to do something together "no thanks" sounds weird
-		// the generic "no" might be a bit dry
-		str_format(m_pResponse, m_SizeOfResponse, "%s no", m_pMessageAuthor);
-		return true;
-	}
-	// help
-	if(str_find_nocase(m_pMessage, "help") || str_find_nocase(m_pMessage, "hilfe"))
-	{
-		if(!str_find_nocase(m_pMessage, "helper"))
-		{
-			str_format(m_pResponse, m_SizeOfResponse, "%s where? what?", m_pMessageAuthor);
-			return true;
-		}
-	}
 	if(SmallTalk(NameLen, MsgLen))
 		return true;
 	// greetings
