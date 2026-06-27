@@ -203,6 +203,7 @@ public:
 	static int GetTotalJumpsCallback(void *pUser);
 	static int GetUnusedJumpsCallback(void *pUser);
 	static void SendChatCallback(int Team, const char *pLine, void *pUser);
+	static bool GetWeaponGotCallback(int ClientId, int Weapon, void *pUser);
 };
 
 #endif

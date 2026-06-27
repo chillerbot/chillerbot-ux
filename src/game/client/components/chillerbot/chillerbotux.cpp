@@ -1589,3 +1589,17 @@ void CChillerBotUX::SendChatCallback(int Team, const char *pLine, void *pUser)
 	CGameClient *pSelf = static_cast<CGameClient *>(pUser);
 	pSelf->m_Chat.SendChat(Team, pLine);
 }
+
+bool CChillerBotUX::GetWeaponGotCallback(int ClientId, int Weapon, void *pUser)
+{
+	CGameClient *pSelf = static_cast<CGameClient *>(pUser);
+	CCharacter *pChar = pSelf->m_GameWorld.GetCharacterById(ClientId);
+	if(!pChar)
+		return false;
+	if(Weapon < 0)
+		return false;
+	if(Weapon >= NUM_WEAPONS)
+		return false;
+
+	return pChar->GetWeaponGot(Weapon);
+}
