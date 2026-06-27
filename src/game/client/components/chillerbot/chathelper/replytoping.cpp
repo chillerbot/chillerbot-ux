@@ -104,9 +104,6 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
 		return true;
 	}
-	// check war for others "is war name?"
-	if(IsWarName())
-		return true;
 	// why? (check war for self)
 	if(WhyDoYouKillMe(NameLen, MsgLen))
 		return true;

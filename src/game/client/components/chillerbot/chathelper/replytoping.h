@@ -36,7 +36,6 @@ class CReplyToPing
 	bool ListWars();
 	bool SmallTalk(int NameLen, int MsgLen);
 	bool WhyWar(const char *pVictim, bool IsCheck = false);
-	bool IsWarName();
 	bool NameIsWar();
 	/*
 		WhyDoYouKillMe

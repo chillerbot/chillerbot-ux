@@ -30,6 +30,8 @@
 #include <external/chillerbot_reply/include/chillerbot_reply/langparser.h>
 #include <external/chillerbot_reply/include/chillerbot_reply/text_helper.h>
 
+// WARNING: DO NOT EDIT THIS METHOD THERE IS A COPY OF THIS IN reply lib
+// FIXME: delete this as soon as we moved all callsites to reply lib
 bool CReplyToPing::WhyWar(const char *pVictim, bool IsCheck)
 {
 	if(!pVictim)
@@ -195,138 +197,6 @@ int CReplyToPing::IsWarCheckSuffix(const char *pStr)
 		}
 	}
 	return ChopEnding;
-}
-
-bool CReplyToPing::IsWarName()
-{
-	// check if a player has war or not
-	const char *pDoYou = nullptr;
-	if(!pDoYou && (pDoYou = str_find_nocase(m_pMessage, "you war ")))
-		pDoYou = pDoYou + str_length("you war ");
-	if(!pDoYou && (pDoYou = str_find_nocase(m_pMessage, "you in war with ")))
-		pDoYou = pDoYou + str_length("you in war with ");
-	// "hast du war mit"
-	// "hast du eig war mit"
-	// "hast du eigentlich war mit"
-	// "hast du überhaupt war mit"
-	// "hast du einen war mit"
-	if(!pDoYou && (pDoYou = LangParser::StrFindOrder(m_pMessage, 2, "hast du ", "war mit ")))
-		pDoYou = pDoYou + str_length("war mit ");
-	if(pDoYou)
-		if(WhyWar(pDoYou, true))
-			return true;
-
-	// check war reason for others
-	const char *pWhy = str_find_nocase(m_pMessage, "why has ");
-	if(pWhy)
-		pWhy = pWhy + str_length("why has ");
-	if(!pWhy)
-		if((pWhy = str_find_nocase(m_pMessage, "why")))
-			pWhy = pWhy + str_length("why");
-	if(!pWhy)
-		if((pWhy = str_find_nocase(m_pMessage, "warum hat ")))
-			pWhy = pWhy + str_length("warum hat ");
-	if(!pWhy)
-		if((pWhy = str_find_nocase(m_pMessage, "warum")))
-			pWhy = pWhy + str_length("warum");
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "stop");
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "do not");
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "don't");
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "do u");
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "do you");
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "is u");
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "is you");
-	if(!pWhy)
-	{
-		pWhy = str_find_nocase(m_pMessage, "is war");
-	}
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "are u");
-	if(!pWhy)
-		pWhy = str_find_nocase(m_pMessage, "are you");
-	if(pWhy)
-	{
-		const char *pKill = nullptr;
-		pKill = str_find_nocase(pWhy, "kill "); // why do you kill foo?
-		if(pKill)
-			pKill = pKill + str_length("kill ");
-		else if((pKill = str_find_nocase(pWhy, "kil "))) // why kil foo?
-			pKill = pKill + str_length("kil ");
-		else if((pKill = str_find_nocase(pWhy, "killed "))) // why killed foo?
-			pKill = pKill + str_length("killed ");
-		else if((pKill = str_find_nocase(pWhy, "block "))) // why do you block foo?
-			pKill = pKill + str_length("block ");
-		else if((pKill = str_find_nocase(pWhy, "blocked "))) // why do you blocked foo?
-			pKill = pKill + str_length("blocked ");
-		else if((pKill = str_find_nocase(pWhy, "help "))) // why no help foo?
-			pKill = pKill + str_length("help ");
-		else if((pKill = str_find_nocase(pWhy, "war with "))) // why do you have war with foo?
-			pKill = pKill + str_length("war with ");
-		else if((pKill = str_find_nocase(pWhy, "war "))) // why war foo?
-			pKill = pKill + str_length("war ");
-		else if((pKill = str_find_nocase(pWhy, "wared "))) // why wared foo?
-			pKill = pKill + str_length("wared ");
-		else if((pKill = str_find_nocase(pWhy, "waring "))) // why waring foo?
-			pKill = pKill + str_length("waring ");
-		else if((pKill = str_find_nocase(pWhy, "bully "))) // why bully foo?
-			pKill = pKill + str_length("bully ");
-		else if((pKill = str_find_nocase(pWhy, "bullying "))) // why bullying foo?
-			pKill = pKill + str_length("bullying ");
-		else if((pKill = str_find_nocase(pWhy, "bullied "))) // why bullied foo?
-			pKill = pKill + str_length("bullied ");
-		else if((pKill = str_find_nocase(pWhy, "freeze "))) // why freeze foo?
-			pKill = pKill + str_length("freeze ");
-		else if((pKill = str_find_nocase(pWhy, "warlist "))) // is warlist foo?
-			pKill = pKill + str_length("warlist ");
-		else if((pKill = str_find_nocase(pWhy, "enemi "))) // is enemi foo?
-			pKill = pKill + str_length("enemi ");
-		else if((pKill = str_find_nocase(pWhy, "enemy "))) // is enemy foo?
-			pKill = pKill + str_length("enemy ");
-
-		if(pKill && WhyWar(pKill))
-			return true;
-
-		// "why foo war?"
-		// chop off the "war" at the end
-		char aWhy[128];
-		str_copy(aWhy, pWhy, sizeof(aWhy));
-
-		int CutOffWar = -1;
-		if((CutOffWar = LangParser::StrFindIndex(aWhy, " war")) != -1)
-			aWhy[CutOffWar] = '\0';
-		else if((CutOffWar = LangParser::StrFindIndex(aWhy, " kill")) != -1)
-			aWhy[CutOffWar] = '\0';
-
-		// trim
-		int Trim = 0;
-		while(aWhy[Trim] == ' ')
-			Trim++;
-
-		if(CutOffWar != -1)
-			if(WhyWar(aWhy + Trim))
-				return true;
-
-		if(pKill)
-		{
-			char aStripped[128];
-			const char *pName = ChatHelper()->PlayerName();
-			const char *pDummyName = ChatHelper()->DummyName();
-			TextHelper::StripSpacesAndPunctuationAndOwnName(pKill, pName, pDummyName, aStripped, sizeof(aStripped));
-			if(!TextHelper::IsEmptyStr(aStripped))
-			{
-				str_format(m_pResponse, m_SizeOfResponse, "%s: '%s' is not on my warlist.", m_pMessageAuthor, aStripped);
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 bool CReplyToPing::NameIsWar()
