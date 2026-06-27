@@ -195,6 +195,8 @@ public:
 	static bool IsTeamClanlistCallback(const char *pClan, void *pUser);
 	static bool IsWarClanmateCallback(const char *pClan, void *pUser);
 	static bool IsWarClanmateCallback(int ClientId, void *pUser);
+	static int NumEnemiesCallback(void *pUser);
+	static int NumTeamCallback(void *pUser);
 };
 
 #endif

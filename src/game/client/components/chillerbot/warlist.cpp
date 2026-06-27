@@ -1088,3 +1088,15 @@ bool CWarList::IsWarClanmateCallback(int ClientId, void *pUser)
 	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
 	return pSelf->IsWarClanmate(ClientId);
 }
+
+int CWarList::NumEnemiesCallback(void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->NumEnemies();
+}
+
+int CWarList::NumTeamCallback(void *pUser)
+{
+	CWarList *pSelf = &static_cast<CGameClient *>(pUser)->m_WarList;
+	return pSelf->NumTeam();
+}

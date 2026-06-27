@@ -96,6 +96,8 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_pfnIsTeamClanlist = CWarList::IsTeamClanlistCallback;
 	ReplyBot.m_Context.m_pfnIsWarClanmate = CWarList::IsWarClanmateCallback;
 	ReplyBot.m_Context.m_pfnIsWarClanmateId = CWarList::IsWarClanmateCallback;
+	ReplyBot.m_Context.m_pfnNumEnemies = CWarList::NumEnemiesCallback;
+	ReplyBot.m_Context.m_pfnNumTeam = CWarList::NumTeamCallback;
 	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
 		return true;
 
@@ -105,10 +107,6 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
 		return true;
 	}
-
-	// check all wars "who is on your warlist?"
-	if(ListWars())
-		return true;
 
 	// intentionally check for being on warlist
 	// also expecting an no if not
