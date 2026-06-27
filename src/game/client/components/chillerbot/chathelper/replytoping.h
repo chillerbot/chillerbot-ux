@@ -52,25 +52,6 @@ class CReplyToPing
 		also expecting an no if not
 	*/
 	bool DoYouWarMe(int NameLen, int MsgLen);
-	/*
-		GetSuffixLen
-
-		if pStr ends with pSuffix return length of pSuffix
-	*/
-	int GetSuffixLen(const char *pStr, const char *pSuffix);
-	/*
-		StripSpacesAndPunctuationAndOwnName
-
-		If the input pStr "yourname: hello, world  ??! ? !?"
-		is given the pStripped will point to "hello, world"
-	*/
-	void StripSpacesAndPunctuationAndOwnName(const char *pStr, char *pStripped, int SizeOfStripped);
-	/*
-		IsEmptyStr
-
-		returns true if pStr is null "" or " " or "			 "
-	*/
-	bool IsEmptyStr(const char *pStr);
 
 	/*
 		IsWarCheckSuffix

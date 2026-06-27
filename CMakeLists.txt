@@ -2551,7 +2551,6 @@ if(CLIENT)
     components/chillerbot/chathelper/replytoping.cpp
     components/chillerbot/chathelper/replytoping.h
     components/chillerbot/chathelper/smalltalk.cpp
-    components/chillerbot/chathelper/text_helpers.cpp
     components/chillerbot/chathelper/where.cpp
     components/chillerbot/chillerbotux.cpp
     components/chillerbot/chillerbotux.h

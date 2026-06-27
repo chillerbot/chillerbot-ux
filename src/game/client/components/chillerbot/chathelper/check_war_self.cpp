@@ -1,5 +1,6 @@
 // chillerbot-ux reply to ping
 
+#include "external/chillerbot_reply/include/chillerbot_reply/text_helper.h"
 #include "replytoping.h"
 
 #include <engine/client/notifications.h>
@@ -38,7 +39,9 @@ bool CReplyToPing::WhyDoYouKillMe(int NameLen, int MsgLen)
 	if(MsgLen - NameLen < 10 && str_find_nocase(m_pMessage, "got dj?"))
 		return false;
 	char aStripped[128];
-	StripSpacesAndPunctuationAndOwnName(m_pMessage, aStripped, sizeof(aStripped));
+	const char *pName = ChatHelper()->PlayerName();
+	const char *pDummyName = ChatHelper()->DummyName();
+	TextHelper::StripSpacesAndPunctuationAndOwnName(m_pMessage, pName, pDummyName, aStripped, sizeof(aStripped));
 	if(LangParser::IsQuestionWhy(m_pMessage) || (str_find_nocase(m_pMessage, "?") && str_length(aStripped) < NameLen + 4) ||
 		((str_find_nocase(aStripped, "what") || str_find_nocase(aStripped, "wat") || str_find_nocase(aStripped, "warum") || str_find_nocase(aStripped, "why") || str_find_nocase(aStripped, "waht")) && str_length(aStripped) < 8) ||
 		((str_find_nocase(aStripped, "what") || str_find_nocase(aStripped, "wat") || str_find_nocase(aStripped, "was") || str_find_nocase(aStripped, "waht")) && str_find_nocase(aStripped, "problem")) ||

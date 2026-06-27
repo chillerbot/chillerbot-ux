@@ -28,6 +28,7 @@
 #include <game/version.h>
 
 #include <external/chillerbot_reply/include/chillerbot_reply/langparser.h>
+#include <external/chillerbot_reply/include/chillerbot_reply/text_helper.h>
 
 bool CReplyToPing::WhyWar(const char *pVictim, bool IsCheck)
 {
@@ -182,13 +183,13 @@ int CReplyToPing::IsWarCheckSuffix(const char *pStr)
 		for(const auto &aWarlist : aaWarlists)
 		{
 			str_format(aOnYourWarlist, sizeof(aOnYourWarlist), "%s%s", aPrefix, aWarlist);
-			ChopEnding = GetSuffixLen(pStr, aOnYourWarlist);
+			ChopEnding = TextHelper::GetSuffixLen(pStr, aOnYourWarlist);
 			if(ChopEnding)
 				return ChopEnding;
 			for(const auto &aYou : aaYous)
 			{
 				str_format(aOnYourWarlist, sizeof(aOnYourWarlist), "%s%s%s", aPrefix, aYou, aWarlist);
-				if((ChopEnding = GetSuffixLen(pStr, aOnYourWarlist)))
+				if((ChopEnding = TextHelper::GetSuffixLen(pStr, aOnYourWarlist)))
 					return ChopEnding;
 			}
 		}
@@ -315,8 +316,10 @@ bool CReplyToPing::IsWarName()
 		if(pKill)
 		{
 			char aStripped[128];
-			StripSpacesAndPunctuationAndOwnName(pKill, aStripped, sizeof(aStripped));
-			if(!IsEmptyStr(aStripped))
+			const char *pName = ChatHelper()->PlayerName();
+			const char *pDummyName = ChatHelper()->DummyName();
+			TextHelper::StripSpacesAndPunctuationAndOwnName(pKill, pName, pDummyName, aStripped, sizeof(aStripped));
+			if(!TextHelper::IsEmptyStr(aStripped))
 			{
 				str_format(m_pResponse, m_SizeOfResponse, "%s: '%s' is not on my warlist.", m_pMessageAuthor, aStripped);
 				return true;
@@ -331,48 +334,50 @@ bool CReplyToPing::NameIsWar()
 	// still check war for others but now different order
 	// also cover "name is war?" in addition to "is war name?"
 	char aStrippedMsg[256];
-	StripSpacesAndPunctuationAndOwnName(m_pMessage, aStrippedMsg, sizeof(aStrippedMsg));
+	const char *pName = ChatHelper()->PlayerName();
+	const char *pDummyName = ChatHelper()->DummyName();
+	TextHelper::StripSpacesAndPunctuationAndOwnName(m_pMessage, pName, pDummyName, aStrippedMsg, sizeof(aStrippedMsg));
 	int ChopEnding = IsWarCheckSuffix(aStrippedMsg);
 	bool Strict = false;
 	if(!ChopEnding)
 	{
 		Strict = true;
-		ChopEnding = GetSuffixLen(aStrippedMsg, " bad");
+		ChopEnding = TextHelper::GetSuffixLen(aStrippedMsg, " bad");
 	}
 	if(!ChopEnding)
 	{
 		Strict = true;
-		ChopEnding = GetSuffixLen(aStrippedMsg, " good");
+		ChopEnding = TextHelper::GetSuffixLen(aStrippedMsg, " good");
 	}
 	if(!ChopEnding)
 	{
 		Strict = true;
-		ChopEnding = GetSuffixLen(aStrippedMsg, " friend");
+		ChopEnding = TextHelper::GetSuffixLen(aStrippedMsg, " friend");
 	}
 	if(!ChopEnding)
 	{
 		Strict = true;
-		ChopEnding = GetSuffixLen(aStrippedMsg, " frien");
+		ChopEnding = TextHelper::GetSuffixLen(aStrippedMsg, " frien");
 	}
 	if(!ChopEnding)
 	{
 		Strict = true;
-		ChopEnding = GetSuffixLen(aStrippedMsg, " frent");
+		ChopEnding = TextHelper::GetSuffixLen(aStrippedMsg, " frent");
 	}
 	if(!ChopEnding)
 	{
 		Strict = true;
-		ChopEnding = GetSuffixLen(aStrippedMsg, " fren");
+		ChopEnding = TextHelper::GetSuffixLen(aStrippedMsg, " fren");
 	}
 	if(!ChopEnding)
 	{
 		Strict = true;
-		ChopEnding = GetSuffixLen(aStrippedMsg, " frint");
+		ChopEnding = TextHelper::GetSuffixLen(aStrippedMsg, " frint");
 	}
 	if(!ChopEnding)
 	{
 		Strict = true;
-		ChopEnding = GetSuffixLen(aStrippedMsg, " enemy");
+		ChopEnding = TextHelper::GetSuffixLen(aStrippedMsg, " enemy");
 	}
 
 	if(ChopEnding)
