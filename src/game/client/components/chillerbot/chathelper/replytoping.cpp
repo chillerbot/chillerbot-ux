@@ -83,11 +83,19 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_aOwnTees[0].m_pName = pName;
 	ReplyBot.m_Context.m_aOwnTees[0].m_pClan = pClan;
 	{
-		CCharacter *pChr = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[0]);
-		if(pChr)
+		if(g_Config.m_ClDummy == 0 && GameClient()->m_Snap.m_pLocalCharacter)
 		{
-			ReplyBot.m_Context.m_aOwnTees[0].m_PosX = pChr->m_Pos.x;
-			ReplyBot.m_Context.m_aOwnTees[0].m_PosY = pChr->m_Pos.y;
+			ReplyBot.m_Context.m_aOwnTees[0].m_PosX = GameClient()->m_PredictedChar.m_Pos.x;
+			ReplyBot.m_Context.m_aOwnTees[0].m_PosY = GameClient()->m_PredictedChar.m_Pos.x;
+		}
+		else
+		{
+			CCharacter *pChr = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[0]);
+			if(pChr)
+			{
+				ReplyBot.m_Context.m_aOwnTees[0].m_PosX = pChr->m_Pos.x;
+				ReplyBot.m_Context.m_aOwnTees[0].m_PosY = pChr->m_Pos.y;
+			}
 		}
 	}
 	ReplyBot.m_Context.m_aOwnTees[1].m_ClientId = GameClient()->m_aLocalIds[1];
@@ -95,11 +103,19 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_aOwnTees[1].m_pClan = pDummyClan;
 	if(GameClient()->Client()->DummyConnected())
 	{
-		CCharacter *pChr = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[1]);
-		if(pChr)
+		if(g_Config.m_ClDummy == 1 && GameClient()->m_Snap.m_pLocalCharacter)
 		{
-			ReplyBot.m_Context.m_aOwnTees[1].m_PosX = pChr->m_Pos.x;
-			ReplyBot.m_Context.m_aOwnTees[1].m_PosY = pChr->m_Pos.y;
+			ReplyBot.m_Context.m_aOwnTees[1].m_PosX = GameClient()->m_PredictedChar.m_Pos.x;
+			ReplyBot.m_Context.m_aOwnTees[1].m_PosY = GameClient()->m_PredictedChar.m_Pos.x;
+		}
+		else
+		{
+			CCharacter *pChr = GameClient()->m_GameWorld.GetCharacterById(GameClient()->m_aLocalIds[1]);
+			if(pChr)
+			{
+				ReplyBot.m_Context.m_aOwnTees[1].m_PosX = pChr->m_Pos.x;
+				ReplyBot.m_Context.m_aOwnTees[1].m_PosY = pChr->m_Pos.y;
+			}
 		}
 	}
 	ReplyBot.m_Context.m_pUser = GameClient();
@@ -133,10 +149,6 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
 		return true;
 	}
-
-	// where are you
-	if(Where())
-		return true;
 
 	// are you here?
 	if((str_find_nocase(m_pMessage, "u here") || str_find_nocase(m_pMessage, "here?")) && (MsgLen < NameLen + str_length("yo brother are you here????")))
