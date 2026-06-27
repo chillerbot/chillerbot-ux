@@ -20,6 +20,7 @@
 #include <game/client/components/camera.h>
 #include <game/client/components/chat.h>
 #include <game/client/components/chillerbot/chathelper.h>
+#include <game/client/components/chillerbot/chillerbotux.h>
 #include <game/client/components/chillerbot/version.h>
 #include <game/client/components/chillerbot/warlist.h>
 #include <game/client/components/controls.h>
@@ -82,6 +83,8 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_aOwnTees[1].m_pName = pDummyName;
 	ReplyBot.m_Context.m_aOwnTees[1].m_pClan = pDummyClan;
 	ReplyBot.m_Context.m_pUser = GameClient();
+	ReplyBot.m_Context.m_pfnGetClientName = CChillerBotUX::GetClientNameCallback;
+	ReplyBot.m_Context.m_pfnGetClientClan = CChillerBotUX::GetClientClanCallback;
 	ReplyBot.m_Context.m_pfnGetWarReason = CWarList::GetWarReasonCallback;
 	ReplyBot.m_Context.m_pfnGetWarClansStr = CWarList::GetWarClansStrCallback;
 	ReplyBot.m_Context.m_pfnIsWar = CWarList::IsWarCallback;
@@ -91,6 +94,7 @@ bool CReplyToPing::Reply()
 	ReplyBot.m_Context.m_pfnIsWarClanlist = CWarList::IsWarClanlistCallback;
 	ReplyBot.m_Context.m_pfnIsTeamClanlist = CWarList::IsTeamClanlistCallback;
 	ReplyBot.m_Context.m_pfnIsWarClanmate = CWarList::IsWarClanmateCallback;
+	ReplyBot.m_Context.m_pfnIsWarClanmateId = CWarList::IsWarClanmateCallback;
 	if(ReplyBot.Reply(&Message, m_pResponse, m_SizeOfResponse))
 		return true;
 

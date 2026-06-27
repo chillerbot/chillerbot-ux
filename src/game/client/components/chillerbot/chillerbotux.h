@@ -194,6 +194,9 @@ public:
 	// returns true if `ClientId`
 	// matches our current or our dummies current client id
 	bool IsOurClientId(int ClientId);
+
+	static const char *GetClientNameCallback(int ClientId, void *pUser);
+	static const char *GetClientClanCallback(int ClientId, void *pUser);
 };
 
 #endif

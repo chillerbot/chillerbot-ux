@@ -1510,3 +1510,25 @@ bool CChillerBotUX::IsOurClientId(int ClientId)
 		return false;
 	return ClientId == GameClient()->m_aLocalIds[1];
 }
+
+const char *CChillerBotUX::GetClientNameCallback(int ClientId, void *pUser)
+{
+	CGameClient *pSelf = static_cast<CGameClient *>(pUser);
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+		return "";
+	auto &Client = pSelf->m_aClients[ClientId];
+	if(!Client.m_Active)
+		return "";
+	return Client.m_aName;
+}
+
+const char *CChillerBotUX::GetClientClanCallback(int ClientId, void *pUser)
+{
+	CGameClient *pSelf = static_cast<CGameClient *>(pUser);
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+		return "";
+	auto &Client = pSelf->m_aClients[ClientId];
+	if(!Client.m_Active)
+		return "";
+	return Client.m_aClan;
+}
