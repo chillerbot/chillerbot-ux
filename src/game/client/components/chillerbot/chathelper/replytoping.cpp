@@ -105,10 +105,6 @@ bool CReplyToPing::Reply()
 		str_format(m_pResponse, m_SizeOfResponse, "%s ?", m_pMessageAuthor);
 		return true;
 	}
-	// still check war for others but now different order
-	// also cover "name is war?" in addition to "is war name?"
-	if(NameIsWar())
-		return true;
 
 	// check all wars "who is on your warlist?"
 	if(ListWars())
