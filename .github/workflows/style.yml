@@ -69,11 +69,6 @@ jobs:
         export PATH=/home/runner/style-tools:$PATH
         doxygen --version
         doxygen -q
-
-        # https://github.com/M0REKZ/ddnet-custom-clients/issues/10
-        grep -vF skin-color-method docs/warn.log > docs/warn.log.tmp || true
-        mv docs/warn.log.tmp docs/warn.log
-
         if [ -s docs/warn.log ]; then
           echo "--------------------------------------------------"
           echo "Doxygen warnings:"
