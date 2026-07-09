@@ -1067,7 +1067,7 @@ void CTerminalUI::CompleteNames(bool IsReverse)
 	}
 	const char *PlayerName, *FoundInput;
 	int Matches = 0;
-	const char *pMatch = NULL;
+	const char *pMatch = nullptr;
 	bool Found = false;
 	for(auto &PlayerInfo : GameClient()->m_Snap.m_apInfoByName)
 	{
