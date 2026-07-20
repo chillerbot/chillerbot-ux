@@ -43,8 +43,7 @@ void CRemoteControl::OnChatMessage(int ClientId, int Team, const char *pMsg)
 	if(Team != 3) // whisper only
 		return;
 
-	CServerInfo ServerInfo;
-	Client()->GetServerInfo(&ServerInfo);
+	const CServerInfo &ServerInfo = Client()->ServerInfo();
 	bool IsFDDRace = !str_comp(ServerInfo.m_aGameType, "F-DDrace");
 
 	char aBuf[128];

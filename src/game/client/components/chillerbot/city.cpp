@@ -313,8 +313,7 @@ void CCityHelper::OnChatMsg(int ClientId, int Team, const char *pMsg)
 	if(!NameLen && Team < 2)
 		return;
 
-	CServerInfo ServerInfo;
-	Client()->GetServerInfo(&ServerInfo);
+	const CServerInfo &ServerInfo = Client()->ServerInfo();
 	bool IsFDDRace = !str_comp(ServerInfo.m_aGameType, "F-DDrace");
 	int MsgOffset = 0;
 	char aName[64];
