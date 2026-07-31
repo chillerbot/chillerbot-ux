@@ -3,8 +3,8 @@
 comments out graphic code to turn any src base into a headless client
 """
 
-import os
 import argparse
+import os
 import re
 
 os.chdir(os.path.dirname(__file__) + "/..")

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+
 import twmap
 
 if len(sys.argv) != 6:
