@@ -327,13 +327,13 @@ void CTerminalUI::OnInit()
 		for(int i = 0; i < NUM_INPUTS; i++)
 			LoadInputHistoryFile(i);
 
-	const char aaWeclomePopup[][128] = {
+	const char aaWelcomePopup[][128] = {
 		"Keybindings:",
 		"?       - opens a help page",
 		"b       - to open server list",
 		"enter   - to close popups like this one"};
 
-	DoPopup(POPUP_NOT_IMPORTANT, "term-ux - chillerbot-ux in the terminal", aaWeclomePopup[0], 128, sizeof(aaWeclomePopup) / 128);
+	DoPopup(POPUP_NOT_IMPORTANT, "term-ux - chillerbot-ux in the terminal", aaWelcomePopup[0], 128, sizeof(aaWelcomePopup) / 128);
 }
 
 void CTerminalUI::OnReset()
