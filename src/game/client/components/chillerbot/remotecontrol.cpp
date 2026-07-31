@@ -2,6 +2,7 @@
 
 #include "remotecontrol.h"
 
+#include <base/dbg.h>
 #include <base/io.h>
 
 #include <engine/console.h>

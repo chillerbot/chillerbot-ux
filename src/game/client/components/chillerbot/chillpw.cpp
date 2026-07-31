@@ -2,8 +2,10 @@
 
 #include "chillpw.h"
 
+#include <base/dbg.h>
 #include <base/io.h>
 #include <base/log.h>
+#include <base/mem.h>
 #include <base/str.h>
 
 #include <engine/console.h>

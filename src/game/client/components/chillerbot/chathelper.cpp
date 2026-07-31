@@ -3,6 +3,7 @@
 #include "chathelper.h"
 
 #include <base/math.h>
+#include <base/mem.h>
 #include <base/str.h>
 #include <base/vmath.h>
 

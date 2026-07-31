@@ -3,7 +3,7 @@
 
 #include <engine/client.h>
 #include <engine/console.h>
-#include <engine/shared/http.h>
+#include <engine/http.h>
 
 #include <game/client/component.h>
 #include <game/client/render.h>
@@ -26,7 +26,7 @@ class CChillerBotUX : public CComponent
 	};
 	int m_HeartbeatState = STATE_DONE;
 	int m_PlaytimeMinutes;
-	std::shared_ptr<CHttpRequest> m_pAliveGet = nullptr;
+	std::shared_ptr<IHttpRequest> m_pAliveGet = nullptr;
 	int64_t m_NextHeartbeat;
 	int64_t m_AfkTill;
 

@@ -12,10 +12,10 @@
 #include <engine/console.h>
 #include <engine/engine.h>
 #include <engine/graphics.h>
+#include <engine/http.h>
 #include <engine/keys.h>
 #include <engine/shared/chillerbot/ddnet-custom-clients/custom_clients_ids.h>
 #include <engine/shared/config.h>
-#include <engine/shared/http.h>
 #include <engine/shared/json.h>
 #include <engine/shared/protocol.h>
 #include <engine/textrender.h>
@@ -366,7 +366,7 @@ void CChillerBotUX::SendPlayTimeTick()
 			return;
 		}
 		m_HeartbeatState = STATE_DONE;
-		std::shared_ptr<CHttpRequest> pGetServers = nullptr;
+		std::shared_ptr<IHttpRequest> pGetServers = nullptr;
 		std::swap(m_pAliveGet, pGetServers);
 
 		if(pGetServers->State() != EHttpState::DONE)

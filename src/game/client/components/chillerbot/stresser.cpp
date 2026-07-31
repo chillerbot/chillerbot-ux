@@ -5,6 +5,8 @@
 #include "stresser.h"
 
 #include <base/io.h>
+#include <base/log.h>
+#include <base/mem.h>
 #include <base/str.h>
 
 #include <engine/shared/config.h>
@@ -86,7 +88,7 @@ void CStresser::OnRender()
 				// dbg_msg("pentest", "append chat cmd=%s", ChatCmd);
 			}
 			// m_pChat->SayChat(aBuf);
-			dbg_msg("pentest", "found chat cmds=%s", aBuf);
+			log_debug("pentest", "found chat cmds=%s", aBuf);
 			// m_pChat->SayChat("stopped waiting.");
 			m_RequestCmdlist = 0; // finished waiting for response
 		}
