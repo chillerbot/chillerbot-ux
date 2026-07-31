@@ -5,6 +5,7 @@
 #include "terminalui.h"
 
 #include <base/chillerbot/curses_colors.h>
+#include <base/dbg.h>
 #include <base/terminalui.h>
 
 #include <engine/client/serverbrowser.h>

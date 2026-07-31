@@ -6,6 +6,8 @@
 
 #include <base/ccurses.h>
 #include <base/chillerbot/curses_colors.h>
+#include <base/dbg.h>
+#include <base/mem.h>
 #include <base/str.h>
 #include <base/terminalui.h>
 

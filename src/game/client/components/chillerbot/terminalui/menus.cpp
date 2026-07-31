@@ -3,6 +3,7 @@
 #include "pad_utf8.h"
 #include "terminalui.h"
 
+#include <base/dbg.h>
 #include <base/terminalui.h>
 
 #include <engine/client/serverbrowser.h>
