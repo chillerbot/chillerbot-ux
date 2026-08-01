@@ -104,8 +104,7 @@ void CPlayerPics::Render(const char *pName, const vec4 *pColor, float x, float y
 
 	if(pFlag->m_Texture.IsValid())
 	{
-		float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
-		Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
+		CScreenRect ScreenRect = Graphics()->GetScreen();
 		GameClient()->m_ChillerBotUX.MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 		Graphics()->TextureSet(pFlag->m_Texture);
 		Graphics()->QuadsBegin();
@@ -113,7 +112,7 @@ void CPlayerPics::Render(const char *pName, const vec4 *pColor, float x, float y
 		IGraphics::CQuadItem QuadItem(x, y, w, h);
 		Graphics()->QuadsDrawTL(&QuadItem, 1);
 		Graphics()->QuadsEnd();
-		Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+		Graphics()->MapScreen(ScreenRect);
 	}
 }
 
@@ -173,14 +172,13 @@ void CPlayerPics::RenderNameplatePos(vec2 Position, const CNetObj_PlayerInfo *pP
 				Cursor.m_LineWidth = -1;
 
 				// create nameplates at standard zoom
-				float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
-				Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
+				CScreenRect ScreenRect = Graphics()->GetScreen();
 				GameClient()->m_ChillerBotUX.MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 
 				m_aNamePlates[ClientId].m_WarReasonTextWidth = TextRender()->TextWidth(FontSizeClan, aWarReason, -1, -1.0f);
 
 				TextRender()->CreateTextContainer(m_aNamePlates[ClientId].m_WarReasonTextContainerIndex, &Cursor, aWarReason);
-				Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+				Graphics()->MapScreen(ScreenRect);
 			}
 			YOffset += FontSizeClan;
 			ColorRGBA TColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.6f);
@@ -197,8 +195,13 @@ void CPlayerPics::OnRender()
 		return;
 
 	// get screen edges to avoid rendering offscreen
-	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
-	Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
+	CScreenRect ScreenRect = Graphics()->GetScreen();
+
+	float ScreenX0 = ScreenRect.m_TopLeft.x;
+	float ScreenY0 = ScreenRect.m_TopLeft.y;
+	float ScreenX1 = ScreenRect.m_BottomRight.x;
+	float ScreenY1 = ScreenRect.m_BottomRight.y;
+
 	// expand the edges to prevent popping in/out onscreen
 	//
 	// it is assumed that the nameplate and all its components fit into a 800x800 box placed directly above the tee

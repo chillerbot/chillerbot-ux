@@ -61,10 +61,9 @@ static const char *HttpStateToStr(EHttpState State)
 void CChillerBotUX::MapScreenToGroup(float CenterX, float CenterY, CMapItemGroup *pGroup, float Zoom)
 {
 	float ParallaxZoom = std::clamp((double)(std::max(pGroup->m_ParallaxX, pGroup->m_ParallaxY)), 0., 100.);
-	float aPoints[4];
-	Graphics()->MapScreenToWorld(CenterX, CenterY, pGroup->m_ParallaxX, pGroup->m_ParallaxY, ParallaxZoom,
-		pGroup->m_OffsetX, pGroup->m_OffsetY, Graphics()->ScreenAspect(), Zoom, aPoints);
-	Graphics()->MapScreen(aPoints[0], aPoints[1], aPoints[2], aPoints[3]);
+	CScreenRect ScreenRect = Graphics()->MapScreenToWorld(CenterX, CenterY, pGroup->m_ParallaxX, pGroup->m_ParallaxY, ParallaxZoom,
+		pGroup->m_OffsetX, pGroup->m_OffsetY, Graphics()->ScreenAspect(), Zoom);
+	Graphics()->MapScreen(ScreenRect);
 }
 
 void CChillerBotUX::OnRender()
@@ -449,7 +448,8 @@ void CChillerBotUX::RenderSpeedHud()
 		return;
 
 	float Width = 300 * Graphics()->ScreenAspect();
-	Graphics()->MapScreen(0, 0, Width, 300);
+	CScreenRect ScreenRect = CScreenRect(0, 0, Width, 300);
+	Graphics()->MapScreen(ScreenRect);
 	// float Velspeed = length(vec2(GameClient()->m_Snap.m_pLocalCharacter->m_VelX / 256.0f, GameClient()->m_Snap.m_pLocalCharacter->m_VelY / 256.0f)) * 50;
 
 	const char *paStrings[] = {"Vel X:", "Vel Y:"};
@@ -633,8 +633,7 @@ void CChillerBotUX::RenderDbgIntersect()
 	vec2 OutBeforeCol;
 	ColorRGBA Color = ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f);
 
-	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
-	Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
+	CScreenRect ScreenRect = Graphics()->GetScreen();
 	MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 
 	if(Collision()->IntersectLine(InitPos, FinishPos, &OutCol, &OutBeforeCol))
@@ -658,7 +657,7 @@ void CChillerBotUX::RenderDbgIntersect()
 	Graphics()->LinesDraw(&LineItem, 1);
 	Graphics()->LinesEnd();
 
-	Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+	Graphics()->MapScreen(ScreenRect);
 }
 
 void CChillerBotUX::CampHackTick()
@@ -669,8 +668,7 @@ void CChillerBotUX::CampHackTick()
 		return;
 	if(Layers()->GameGroup())
 	{
-		float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
-		Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
+		CScreenRect ScreenRect = Graphics()->GetScreen();
 		MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 		Graphics()->DrawRect(m_CampHackX1, m_CampHackY1, 20.0f, 20.0f, ColorRGBA(0, 0, 0, 0.4f), IGraphics::CORNER_ALL, 3.0f);
 		Graphics()->DrawRect(m_CampHackX2, m_CampHackY2, 20.0f, 20.0f, ColorRGBA(0, 0, 0, 0.4f), IGraphics::CORNER_ALL, 3.0f);
@@ -683,7 +681,7 @@ void CChillerBotUX::CampHackTick()
 		}
 		TextRender()->Text(m_CampHackX1, m_CampHackY1, 10.0f, "1", -1);
 		TextRender()->Text(m_CampHackX2, m_CampHackY2, 10.0f, "2", -1);
-		Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+		Graphics()->MapScreen(ScreenRect);
 	}
 	if(!m_CampHackX1 || !m_CampHackX2 || !m_CampHackY1 || !m_CampHackY2)
 		return;
@@ -1260,11 +1258,7 @@ void CChillerBotUX::TraceSpikes()
 	int ToX = std::min(Collision()->GetWidth(), CurrentX + g_Config.m_ClSpikeTracer);
 	int FromY = std::max(0, CurrentY - g_Config.m_ClSpikeTracer);
 	int ToY = std::min(Collision()->GetHeight(), CurrentY + g_Config.m_ClSpikeTracer);
-	float ScreenX0;
-	float ScreenX1;
-	float ScreenY0;
-	float ScreenY1;
-	Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
+	CScreenRect ScreenRect = Graphics()->GetScreen();
 	MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
 	for(int x = FromX; x < ToX; x++)
 	{
@@ -1292,7 +1286,7 @@ void CChillerBotUX::TraceSpikes()
 			}
 		}
 	}
-	Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+	Graphics()->MapScreen(ScreenRect);
 }
 
 void CChillerBotUX::OnMessage(int MsgType, void *pRawMsg)
