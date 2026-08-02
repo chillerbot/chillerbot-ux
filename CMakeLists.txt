@@ -1983,7 +1983,7 @@ set(COPY_FILES
 if(TARGET_OS STREQUAL "emscripten")
   list(APPEND COPY_FILES other/emscripten/background.png)
   list(APPEND COPY_FILES other/emscripten/index.html)
-  list(APPEND COPY_FILES "other/icons/${CMAKE_PROJECT_NAME}.ico") # chillerbot: useses proj name instead of hardcodet DDNet.ico
+  list(APPEND COPY_FILES "other/icons/${CMAKE_PROJECT_NAME}.ico") # chillerbot: uses proj name instead of hardcodet DDNet.ico
 endif()
 file(COPY ${COPY_FILES} DESTINATION .)
 
