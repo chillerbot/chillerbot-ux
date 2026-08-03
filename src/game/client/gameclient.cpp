@@ -910,7 +910,7 @@ void CGameClient::OnRender()
 					m_aClients[m_aLocalIds[0]].m_Country != g_Config.m_PlayerCountry ||
 					str_comp(m_aClients[m_aLocalIds[0]].m_aSkinName, g_Config.m_ClPlayerSkin) ||
 					m_aClients[m_aLocalIds[0]].m_UseCustomColor != g_Config.m_ClPlayerUseCustomColor ||
-					m_aClients[m_aLocalIds[0]].m_ColorBody != (int)g_Config.m_ClPlayerColorBody ||
+					m_aClients[m_aLocalIds[0]].m_ColorBody != m_ChillerBotUX.InsertCustomClientIdIntoSkinColor(g_Config.m_ClPlayerColorBody) ||
 					m_aClients[m_aLocalIds[0]].m_ColorFeet != (int)g_Config.m_ClPlayerColorFeet)
 					SendInfo(false);
 				else
@@ -942,7 +942,7 @@ void CGameClient::OnRender()
 						m_aClients[m_aLocalIds[1]].m_Country != g_Config.m_ClDummyCountry ||
 						str_comp(m_aClients[m_aLocalIds[1]].m_aSkinName, g_Config.m_ClDummySkin) ||
 						m_aClients[m_aLocalIds[1]].m_UseCustomColor != g_Config.m_ClDummyUseCustomColor ||
-						m_aClients[m_aLocalIds[1]].m_ColorBody != (int)g_Config.m_ClDummyColorBody ||
+						m_aClients[m_aLocalIds[1]].m_ColorBody != m_ChillerBotUX.InsertCustomClientIdIntoSkinColor(g_Config.m_ClDummyColorBody) ||
 						m_aClients[m_aLocalIds[1]].m_ColorFeet != (int)g_Config.m_ClDummyColorFeet)
 						SendDummyInfo(false);
 					else
