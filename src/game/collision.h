@@ -115,6 +115,7 @@ public:
 	int IsFrontTimeCheckpoint(int Index) const;
 
 	int MoverSpeed(int x, int y, vec2 *pSpeed) const;
+	bool HasHookTeleIns() const;
 
 	CLayers *Layers() const { return m_pLayers; } // chillerbot-ux non const for minetee
 	const CTile *GameLayer() const { return m_pTiles; }
@@ -169,8 +170,9 @@ private:
 	std::map<int, std::vector<vec2>> m_TeleOuts;
 	// TILE_TELECHECKOUT
 	std::map<int, std::vector<vec2>> m_TeleCheckOuts;
-	// TILE_TELEINEVIL, TILE_TELECHECK, TILE_TELECHECKIN, TILE_TELECHECKINEVIL
+	// TILE_TELEINEVIL, TILE_TELECHECK, TILE_TELECHECKIN, TILE_TELECHECKINEVIL, TILE_TELEINHOOK
 	std::map<int, std::vector<vec2>> m_TeleOthers;
+	bool m_HasHookTeleIns;
 };
 
 void ThroughOffset(vec2 Pos0, vec2 Pos1, int *pOffsetX, int *pOffsetY);
