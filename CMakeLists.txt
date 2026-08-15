@@ -194,6 +194,13 @@ endif()
 # Compiler flags
 ########################################################################
 
+check_cxx_compiler_flag(-Werror=unused-command-line-argument FLAG_SUPPORTED_Werror_unused_command_line_argument)
+if(FLAG_SUPPORTED_Werror_unused_command_line_argument)
+  set(FLAG_CHECK_FLAGS "-Werror=unused-command-line-argument")
+else()
+  set(FLAG_CHECK_FLAGS "")
+endif()
+
 function(add_c_compiler_flag_if_supported VARIABLE FLAG)
   if(ARGC GREATER 2)
     set(CHECKED_FLAG "${ARGV2}")
@@ -201,6 +208,7 @@ function(add_c_compiler_flag_if_supported VARIABLE FLAG)
     set(CHECKED_FLAG "${FLAG}")
   endif()
   string(REGEX REPLACE "[^A-Za-z0-9]" "_" CONFIG_VARIABLE "FLAG_SUPPORTED${CHECKED_FLAG}")
+  set(CMAKE_REQUIRED_FLAGS "${FLAG_CHECK_FLAGS}")
   check_c_compiler_flag("${CHECKED_FLAG}" ${CONFIG_VARIABLE})
   if(${CONFIG_VARIABLE})
     if(${VARIABLE})
@@ -218,6 +226,7 @@ function(add_cxx_compiler_flag_if_supported VARIABLE FLAG)
     set(CHECKED_FLAG "${FLAG}")
   endif()
   string(REGEX REPLACE "[^A-Za-z0-9]" "_" CONFIG_VARIABLE "FLAG_SUPPORTED${CHECKED_FLAG}")
+  set(CMAKE_REQUIRED_FLAGS "${FLAG_CHECK_FLAGS}")
   check_cxx_compiler_flag("${CHECKED_FLAG}" ${CONFIG_VARIABLE})
   if(${CONFIG_VARIABLE})
     if(${VARIABLE})
@@ -296,6 +305,16 @@ if(NOT MSVC AND NOT HAIKU)
     if(MINGW)
       add_linker_flag_if_supported(OUR_FLAGS_LINK -lssp)
     endif()
+    # Protect against stack clash attacks by probing every page of large stack allocations.
+    add_cxx_compiler_flag_if_supported(OUR_FLAGS -fstack-clash-protection)
+    # Forward-edge control-flow protection (CET on x86, BTI/PAC on aarch64).
+    add_cxx_compiler_flag_if_supported(OUR_FLAGS -fcf-protection=full)
+    add_cxx_compiler_flag_if_supported(OUR_FLAGS -mbranch-protection=standard)
+    if(NOT TARGET_OS STREQUAL "windows" AND NOT TARGET_OS STREQUAL "mac")
+      # Resolve all dynamic symbols at startup and make the GOT read-only afterwards (full RELRO).
+      add_linker_flag_if_supported(OUR_FLAGS_LINK -Wl,-z,relro)
+      add_linker_flag_if_supported(OUR_FLAGS_LINK -Wl,-z,now)
+    endif()
   endif()
 
   # Disable exceptions as DDNet does not use them.
@@ -368,7 +387,17 @@ if(NOT MSVC AND NOT HAIKU)
 endif()
 
 if(NOT MSVC AND NOT HAIKU AND SECURITY_COMPILER_FLAGS)
-  check_c_compiler_flag("-O2;-Wp,-Werror;-D_FORTIFY_SOURCE=2" DEFINE_FORTIFY_SOURCE) # Some distributions define _FORTIFY_SOURCE by themselves.
+  # Use the highest level the compiler lets us set
+  check_c_compiler_flag("-O2;-Wp,-Werror;-D_FORTIFY_SOURCE=3" DEFINE_FORTIFY_SOURCE_3)
+  check_c_compiler_flag("-O2;-Wp,-Werror;-D_FORTIFY_SOURCE=2" DEFINE_FORTIFY_SOURCE)
+  if(NOT CMAKE_VERSION VERSION_LESS 3.14 AND NOT TARGET_OS STREQUAL "emscripten")
+    # Build position-independent executables so the main binary image participates in ASLR.
+    include(CheckPIESupported)
+    check_pie_supported(LANGUAGES C CXX)
+    if(CMAKE_C_LINK_PIE_SUPPORTED AND CMAKE_CXX_LINK_PIE_SUPPORTED)
+      set(ENABLE_PIE TRUE)
+    endif()
+  endif()
 endif()
 
 ########################################################################
@@ -2634,6 +2663,7 @@ if(CLIENT)
     components/menus_settings_assets.cpp
     components/menus_settings_controls.cpp
     components/menus_settings_controls.h
+    components/menus_settings_credits.cpp
     components/menus_settings_ddnet.cpp
     components/menus_settings_general.cpp
     components/menus_settings_graphics.cpp
@@ -3089,6 +3119,8 @@ if(SERVER)
     mutes.cpp
     player.cpp
     player.h
+    playermapping.cpp
+    playermapping.h
     save.cpp
     save.h
     score.cpp
@@ -4012,15 +4044,20 @@ foreach(target ${TARGETS})
   if(OUR_FLAGS)
     target_compile_options(${target} PRIVATE ${OUR_FLAGS})
   endif()
-  if(DEFINE_FORTIFY_SOURCE)
+  if(DEFINE_FORTIFY_SOURCE_3 OR DEFINE_FORTIFY_SOURCE)
     if(MINGW)
       target_compile_definitions(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:_FORTIFY_SOURCE=0>) # Currently broken in MinGW, see https://sourceforge.net/p/mingw-w64/discussion/723798/thread/b9d24f041f/
+    elseif(DEFINE_FORTIFY_SOURCE_3)
+      target_compile_definitions(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:_FORTIFY_SOURCE=3>) # Detect some buffer overflows, including in dynamically-sized buffers.
     else()
       target_compile_definitions(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:_FORTIFY_SOURCE=2>) # Detect some buffer overflows.
     endif()
   endif()
   if(ENABLE_IPO)
     set_property(TARGET ${target} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  endif()
+  if(ENABLE_PIE)
+    set_property(TARGET ${target} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
   endif()
   if(TARGET_OS STREQUAL "emscripten")
     # Preload data directory into the filesystem

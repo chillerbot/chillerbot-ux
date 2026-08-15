@@ -51,7 +51,8 @@ void CMenus::RenderSettings(CUIRect MainView)
 		Localize("Sound"),
 		Localize("DDNet"),
 		Localize("Assets"),
-		("chillerbot")};
+		Localize("Credits"),
+		"chillerbot"};
 	static CButtonContainer s_aTabButtons[SETTINGS_LENGTH];
 
 	for(int i = 0; i < SETTINGS_LENGTH; i++)
@@ -115,8 +116,16 @@ void CMenus::RenderSettings(CUIRect MainView)
 		GameClient()->m_MenuBackground.ChangePosition(CMenuBackground::POS_SETTINGS_ASSETS);
 		RenderSettingsAssets(MainView);
 	}
+	else if(g_Config.m_UiSettingsPage == SETTINGS_CREDITS)
+	{
+		GameClient()->m_MenuBackground.ChangePosition(CMenuBackground::POS_SETTINGS_CREDITS);
+		RenderSettingsCredits(MainView);
+	}
 	else if(g_Config.m_UiSettingsPage == SETTINGS_CHILLERBOT)
+	{
+		GameClient()->m_MenuBackground.ChangePosition(CMenuBackground::POS_SETTINGS_CREDITS);
 		RenderSettingsChillerbot(MainView);
+	}
 	else
 	{
 		dbg_assert_failed("ui_settings_page invalid");

@@ -572,6 +572,9 @@ protected:
 	//       member function, to move this function to CMenusSettingsControls
 	void ResetSettingsControls();
 
+	// found in menus_settings_credits.cpp
+	void RenderSettingsCredits(CUIRect MainView);
+
 	// found in menus_settings_ddnet.cpp
 	void RenderSettingsDDNet(CUIRect MainView);
 
@@ -706,8 +709,8 @@ public:
 		SETTINGS_SOUND,
 		SETTINGS_DDNET,
 		SETTINGS_ASSETS,
+		SETTINGS_CREDITS,
 		SETTINGS_CHILLERBOT,
-
 		SETTINGS_LENGTH,
 	};
 
