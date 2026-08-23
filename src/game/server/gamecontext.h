@@ -339,7 +339,6 @@ public:
 
 	void SendTuningParams(int ClientId, int Zone = 0);
 
-	const CVoteOptionServer *GetVoteOption(int Index) const;
 	void ProgressVoteOptions(int ClientId);
 
 	//
@@ -380,6 +379,7 @@ public:
 	void OnClientConnected(int ClientId, void *pData) override;
 	void OnClientEnter(int ClientId) override;
 	void OnClientDrop(int ClientId, const char *pReason) override;
+	void OnClientInfoChange(int ClientId) override;
 	void OnClientPrepareInput(int ClientId, void *pInput) override;
 	void OnClientDirectInput(int ClientId, const void *pInput) override;
 	void OnClientPredictedInput(int ClientId, const void *pInput) override;
@@ -670,7 +670,7 @@ public:
 	void SendFinish(int ClientId, float Time, std::optional<float> PreviousBestTime);
 	void SendSaveCode(int Team, int TeamSize, int State, const char *pError, const char *pSaveRequester, const char *pServerName, const char *pGeneratedCode, const char *pCode);
 	void OnSetAuthed(int ClientId, int Level) override;
-	void OnSetTimedOut(int ClientId) override;
+	void ReinitPlayerMap(int ClientId, bool Timeout) override;
 
 	void ResetTuning();
 };

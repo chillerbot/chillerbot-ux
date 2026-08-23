@@ -101,7 +101,9 @@ enum
 
 	NET_CONN_BUFFERSIZE = 1024 * 32,
 
-	NET_CONNLIMIT_IPS = 16,
+	// Addresses tracked for `sv_connlimit`, evicted least recently used. The limit stops
+	// applying once addresses are evicted before they reach `sv_connlimit`.
+	NET_CONNLIMIT_IPS = 256,
 
 	NET_TOKENCACHE_ADDRESSEXPIRY = 64,
 	NET_TOKENCACHE_PACKETEXPIRY = 5,
@@ -261,6 +263,8 @@ private:
 	int64_t m_LastUpdateTime;
 	int64_t m_LastRecvTime;
 	int64_t m_LastSendTime;
+	int64_t m_LastResendTime;
+	bool m_ResendRequested;
 
 	char m_aErrorString[256];
 
@@ -293,6 +297,7 @@ private:
 	void SendControlWithToken7(int ControlMsg, SECURITY_TOKEN ResponseToken);
 	void ResendChunk(CNetChunkResend *pResend);
 	void Resend();
+	void AnswerResendRequest(int64_t Now);
 
 public:
 	bool m_TimeoutProtected;
@@ -410,6 +415,8 @@ private:
 	NETADDR m_Addr;
 	CNetConnection *m_pConnection;
 	int m_CurrentChunk;
+	// offset of the next chunk header in m_Data.m_aChunkData
+	int m_CurrentOffset;
 	int m_ClientId;
 	CNetPacketConstruct m_Data;
 };
@@ -426,7 +433,10 @@ class CNetServer
 	struct CSpamConn
 	{
 		NETADDR m_Addr;
+		// start of the timespan the connections are counted in
 		int64_t m_Time;
+		// last connection, only used to pick the entry to evict
+		int64_t m_LastSeen;
 		int m_Conns;
 	};
 
@@ -452,7 +462,14 @@ class CNetServer
 	int64_t m_VConnFirst;
 	int m_VConnNum;
 
-	CSpamConn m_aSpamConns[NET_CONNLIMIT_IPS];
+	// budgets for work unauthenticated peers can request, reset in Update():
+	// `m_NumRecvPackets` per Recv() batch, the others per second
+	int m_NumRecvPackets = 0;
+	int64_t m_BudgetStart = 0;
+	int m_NumPreConnDecompress = 0;
+	int m_NumBanReplies = 0;
+
+	CSpamConn m_aSpamConns[NET_CONNLIMIT_IPS] = {};
 
 	CPacketChunkUnpacker m_PacketChunkUnpacker;
 	CNetPacketConstruct m_RecvBuffer;
@@ -659,7 +676,10 @@ public:
 	static void SendPacket(NETSOCKET Socket, NETADDR *pAddr, CNetPacketConstruct *pPacket, SECURITY_TOKEN SecurityToken, bool Sixup = false);
 
 	static std::optional<int> UnpackPacketFlags(unsigned char *pBuffer, int Size);
-	static int UnpackPacket(unsigned char *pBuffer, int Size, CNetPacketConstruct *pPacket, bool &Sixup, SECURITY_TOKEN *pSecurityToken = nullptr, SECURITY_TOKEN *pResponseToken = nullptr);
+	// `AllowDecompression` false rejects compressed packets instead of decompressing them,
+	// decompression being the most expensive part of receiving a packet. `pDecompressed` is
+	// set when decompression was attempted, successfully or not.
+	static int UnpackPacket(unsigned char *pBuffer, int Size, CNetPacketConstruct *pPacket, bool &Sixup, bool AllowDecompression, SECURITY_TOKEN *pSecurityToken = nullptr, SECURITY_TOKEN *pResponseToken = nullptr, bool *pDecompressed = nullptr);
 
 	// The backroom is ack-NET_MAX_SEQUENCE/2. Used for knowing if we acked a packet or not
 	static bool IsSeqInBackroom(int Seq, int Ack);

@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.12...3.27.4)
 
+# In-source builds writes into src/generated, causing out-of-date files to be reused in later builds
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+  message(FATAL_ERROR
+    "In-source builds are not supported. To build out of source:\n"
+    "  rm -rf CMakeCache.txt CMakeFiles src/generated\n"
+    "  cmake -Bbuild -GNinja\n"
+    "  cmake --build build")
+endif()
+
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15 CACHE STRING "Minimum macOS deployment version")
 if(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS 10.15)
   message(WARNING "Building for macOS < 10.15 is not supported")
@@ -2893,6 +2902,13 @@ if(CLIENT)
     ${OGG_LIBRARIES}
 
     ${TARGET_STEAMAPI}
+    # chillerbot-ux kept rust_engine_shared here while ddnet removed it in
+    # https://github.com/ddnet/ddnet/pull/12677
+    # because of some compiler error i cba to fix
+    # /home/chiller/Desktop/git/chillerbot-ux/src/external/chillerbot_reply/include/chillerbot_reply/chillerbot_reply.h:3:10: fatal error: polynet/vmath.h: No such file or directory
+    #     3 | #include <polynet/vmath.h>
+    #       |          ^~~~~~~~~~~~~~~~~
+    # compilation terminated.
     rust_engine_shared
     rust_chillerbot_rs
     chillerbot_reply
@@ -3166,7 +3182,10 @@ if(SERVER)
     ${MINIUPNPC_LIBRARIES}
     ${MYSQL_LIBRARIES}
     ${TARGET_ANTIBOT}
-    rust_engine_shared
+    # TODO: ddnet moved the rust link somewhere else
+    #       https://github.com/ddnet/ddnet/pull/12677
+    #       should do the same in chillerbot-ux there is probably less conflict
+    #       surface in the other location
     rust_chillerbot_rs
 
     ${LIBS}
@@ -3844,6 +3863,7 @@ if(CLIENT AND DMGBUILD_FOUND)
   if(SERVER)
     set(DMG_SERVER_COMMANDS
       COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/data/maps ${DMG_TMPDIR}/${SERVER_EXECUTABLE}.app/Contents/Resources/data/maps
+      COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/data/autoexec_server.cfg ${DMG_TMPDIR}/${SERVER_EXECUTABLE}.app/Contents/Resources/data/
       COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/other/icons/${SERVER_EXECUTABLE}.icns ${DMG_TMPDIR}/${SERVER_EXECUTABLE}.app/Contents/Resources/
       COMMAND ${CMAKE_COMMAND} -E copy bundle/server/Info.plist ${PROJECT_SOURCE_DIR}/other/bundle/server/PkgInfo ${DMG_TMPDIR}/${SERVER_EXECUTABLE}.app/Contents/
       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:game-server> $<TARGET_FILE:game-server-launcher> ${DMG_TMPDIR}/${SERVER_EXECUTABLE}.app/Contents/MacOS/

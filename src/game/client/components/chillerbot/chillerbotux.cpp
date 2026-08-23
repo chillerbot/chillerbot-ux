@@ -1366,8 +1366,8 @@ void CChillerBotUX::OnMessage(int MsgType, void *pRawMsg)
 		Collision()->ModifyTile(pMsg->m_X, pMsg->m_Y, pMsg->m_Group, pMsg->m_Layer, pMsg->m_Index, pMsg->m_Flags);
 
 		// fixes tiles not being updated if the gpu supports tile buffering
-		GameClient()->m_MapLayersForeground.RefreshTileBuffers([&]() {});
-		GameClient()->m_MapLayersBackground.RefreshTileBuffers([&]() {});
+		GameClient()->m_MapLayersForeground.RefreshTileBuffers(std::nullopt);
+		GameClient()->m_MapLayersBackground.RefreshTileBuffers(std::nullopt);
 
 		// fixes skipped tiles that were empty
 		Collision()->Layers()->Init(GameClient()->Map(), false, false);

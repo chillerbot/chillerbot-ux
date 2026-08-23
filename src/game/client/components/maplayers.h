@@ -25,7 +25,7 @@ class CMapLayers : public CComponent
 public:
 	// chillerbot-ux START
 	// chillerbot-ux for minetee
-	void RefreshTileBuffers(const std::function<void()> &RenderLoading);
+	void RefreshTileBuffers(std::optional<FCallbackMapRendererInit> ProgressBarCallback);
 	// chillerbot-ux END
 
 	CMapLayers(ERenderType Type, bool OnlineOnly = true);
