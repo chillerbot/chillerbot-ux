@@ -155,7 +155,9 @@ void CServerBan::ConBanExt(IConsole::IResult *pResult, void *pUser)
 	if(str_isallnum(pStr))
 	{
 		int ClientId = str_toint(pStr);
-		if(ClientId < 0 || ClientId >= MAX_CLIENTS || pThis->Server()->m_aClients[ClientId].m_State == CServer::CClient::STATE_EMPTY)
+		if(!pThis->Server()->ClientUsesRealClientIds(pResult->m_ClientId))
+			pThis->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "net_ban", "ban error (use a more recent DDNet client)");
+		else if(ClientId < 0 || ClientId >= MAX_CLIENTS || pThis->Server()->m_aClients[ClientId].m_State == CServer::CClient::STATE_EMPTY)
 			pThis->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "net_ban", "ban error (invalid client id)");
 		else
 			pThis->BanAddr(pThis->Server()->ClientAddr(ClientId), Minutes * 60, pReason, false);
@@ -1357,7 +1359,13 @@ void CServer::SendCapabilities(int ClientId)
 {
 	CMsgPacker Msg(NETMSG_CAPABILITIES, true);
 	Msg.AddInt(SERVERCAP_CURVERSION); // version
-	Msg.AddInt(SERVERCAPFLAG_DDNET | SERVERCAPFLAG_CHATTIMEOUTCODE | SERVERCAPFLAG_ANYPLAYERFLAG | SERVERCAPFLAG_PINGEX | SERVERCAPFLAG_ALLOWDUMMY | SERVERCAPFLAG_SYNCWEAPONINPUT); // flags
+	Msg.AddInt(
+		SERVERCAPFLAG_DDNET |
+		SERVERCAPFLAG_CHATTIMEOUTCODE |
+		SERVERCAPFLAG_ANYPLAYERFLAG |
+		SERVERCAPFLAG_PINGEX |
+		SERVERCAPFLAG_ALLOWDUMMY |
+		SERVERCAPFLAG_SYNCWEAPONINPUT); // flags
 	SendMsg(&Msg, MSGFLAG_VITAL, ClientId);
 }
 
@@ -2233,6 +2241,11 @@ void CServer::OnNetMsgRconAuth(int ClientId, const char *pName, const char *pPw,
 			}
 			}
 
+			if(!ClientUsesRealClientIds(ClientId))
+			{
+				SendRconLine(ClientId, "Your client does not see the real client IDs of this server. Use a more recent DDNet client.");
+			}
+
 			// DDRace
 			GameServer()->OnSetAuthed(ClientId, AuthLevel);
 		}
@@ -2345,13 +2358,13 @@ void CServer::CacheServerInfo(CCache *pCache, int Type, bool SendClients)
 	} while(0)
 
 	p.AddString(GameServer()->Version(), 32);
-	if(Type != SERVERINFO_VANILLA)
+	if(Type != SERVERINFO_VANILLA && Type != SERVERINFO_64_LEGACY)
 	{
 		p.AddString(Config()->m_SvName, 256);
 	}
 	else
 	{
-		if(m_NetServer.MaxClients() <= VANILLA_MAX_CLIENTS)
+		if(m_NetServer.MaxClients() <= (Type == SERVERINFO_VANILLA ? VANILLA_MAX_CLIENTS : LEGACY_MAX_CLIENTS))
 		{
 			p.AddString(Config()->m_SvName, 64);
 		}
@@ -2392,6 +2405,25 @@ void CServer::CacheServerInfo(CCache *pCache, int Type, bool SendClients)
 		MaxClientsProtocol = VANILLA_MAX_CLIENTS;
 		if(PlayerCount > ClientCount)
 			PlayerCount = ClientCount;
+	}
+	else if(Type == SERVERINFO_64_LEGACY)
+	{
+		if(ClientCount >= LEGACY_MAX_CLIENTS)
+		{
+			const int MaxIncludedClients = ClientCount < MaxClients ? LEGACY_MAX_CLIENTS - 1 : LEGACY_MAX_CLIENTS;
+			PlayerCount = 0;
+			ClientCount = 0;
+			for(int i = 0; i < MAX_CLIENTS && ClientCount < MaxIncludedClients; i++)
+			{
+				if(m_aClients[i].IncludedInServerInfo())
+				{
+					if(GameServer()->IsClientPlayer(i))
+						PlayerCount++;
+					ClientCount++;
+				}
+			}
+		}
+		MaxClientsProtocol = LEGACY_MAX_CLIENTS;
 	}
 
 	ADD_INT(p, PlayerCount); // num players
@@ -2459,6 +2491,8 @@ void CServer::CacheServerInfo(CCache *pCache, int Type, bool SendClients)
 	{
 		if(m_aClients[i].IncludedInServerInfo())
 		{
+			if(Type == SERVERINFO_64_LEGACY && PlayersStored == ClientCount)
+				break;
 			if(Remaining == 0)
 			{
 				if(Type == SERVERINFO_VANILLA || Type == SERVERINFO_INGAME)
@@ -2552,10 +2586,27 @@ void CServer::CacheServerInfoSixup(CCache *pCache, bool SendClients, int MaxCons
 		}
 	}
 
+	// 0.7 protocol only supports up to LEGACY_MAX_CLIENTS clients.
+	if(ClientCount >= LEGACY_MAX_CLIENTS)
+	{
+		const int MaxIncludedClients = ClientCountAll < m_NetServer.MaxClients() ? LEGACY_MAX_CLIENTS - 1 : LEGACY_MAX_CLIENTS;
+		PlayerCount = 0;
+		ClientCount = 0;
+		for(int i = 0; i < MaxConsideredClients && ClientCount < MaxIncludedClients; i++)
+		{
+			if(m_aClients[i].IncludedInServerInfo())
+			{
+				if(GameServer()->IsClientPlayer(i))
+					PlayerCount++;
+				ClientCount++;
+			}
+		}
+	}
+
 	char aVersion[32];
 	str_format(aVersion, sizeof(aVersion), "0.7↔%s", GameServer()->Version());
 	Packer.AddString(aVersion, 32);
-	if(!SendClients || ClientCountAll == ClientCount)
+	if(!SendClients || (m_NetServer.MaxClients() <= LEGACY_MAX_CLIENTS && ClientCountAll == ClientCount))
 	{
 		Packer.AddString(Config()->m_SvName, 64);
 	}
@@ -2580,16 +2631,18 @@ void CServer::CacheServerInfoSixup(CCache *pCache, bool SendClients, int MaxCons
 	int MaxClients = m_NetServer.MaxClients();
 	Packer.AddInt(Config()->m_SvSkillLevel); // server skill level
 	Packer.AddInt(PlayerCount); // num players
-	Packer.AddInt(std::max(MaxClients - std::max(Config()->m_SvSpectatorSlots, Config()->m_SvReservedSlots), PlayerCount)); // max players
+	Packer.AddInt(std::min<int>(LEGACY_MAX_CLIENTS, std::max(MaxClients - std::max(Config()->m_SvSpectatorSlots, Config()->m_SvReservedSlots), PlayerCount))); // max players
 	Packer.AddInt(ClientCount); // num clients
-	Packer.AddInt(std::max(MaxClients - Config()->m_SvReservedSlots, ClientCount)); // max clients
+	Packer.AddInt(std::min<int>(LEGACY_MAX_CLIENTS, std::max(MaxClients - Config()->m_SvReservedSlots, ClientCount))); // max clients
 
 	if(SendClients)
 	{
-		for(int i = 0; i < MaxConsideredClients; i++)
+		int ClientsIncluded = 0;
+		for(int i = 0; i < MaxConsideredClients && ClientsIncluded < ClientCount; i++)
 		{
 			if(m_aClients[i].IncludedInServerInfo())
 			{
+				ClientsIncluded++;
 				Packer.AddString(ClientName(i), MAX_NAME_LENGTH); // client name
 				Packer.AddString(ClientClan(i), MAX_CLAN_LENGTH); // client clan
 				Packer.AddInt(m_aClients[i].m_Country); // client country (ISO 3166-1 numeric)
@@ -3655,11 +3708,11 @@ void CServer::ConKick(IConsole::IResult *pResult, void *pUser)
 	{
 		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), "Kicked (%s)", pResult->GetString(1));
-		((CServer *)pUser)->Kick(pResult->GetVictim(), aBuf);
+		((CServer *)pUser)->Kick(pResult->GetVictim(0), aBuf);
 	}
 	else
 	{
-		((CServer *)pUser)->Kick(pResult->GetVictim(), "Kicked by console");
+		((CServer *)pUser)->Kick(pResult->GetVictim(0), "Kicked by console");
 	}
 }
 
@@ -3746,6 +3799,9 @@ bool CServer::CanClientUseCommandCallback(int ClientId, const IConsole::ICommand
 
 bool CServer::CanClientUseCommand(int ClientId, const IConsole::ICommandInfo *pCommand) const
 {
+	// make sure we don't affect the wrong client, disallow id targeting commands when a moderator is using id translation
+	if(pCommand->TakesClientId() && !ClientUsesRealClientIds(ClientId))
+		return false;
 	if(pCommand->Flags() & CFGFLAG_CHAT)
 		return true;
 	if(pCommand->Flags() & CMDFLAG_PRACTICE)

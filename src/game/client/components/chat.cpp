@@ -30,7 +30,7 @@
 #include <game/client/gameclient.h>
 #include <game/localization.h>
 
-char CChat::ms_aDisplayText[MAX_LINE_LENGTH] = "";
+char CChat::ms_aDisplayText[MAX_CHAT_LENGTH] = "";
 
 CChat::CLine::CLine()
 {
@@ -369,7 +369,7 @@ bool CChat::OnInput(const IInput::CEvent &Event)
 			// insert the command
 			if(pCompletionCommand)
 			{
-				char aBuf[MAX_LINE_LENGTH];
+				char aBuf[MAX_CHAT_LENGTH];
 				// add part before the name
 				str_truncate(aBuf, sizeof(aBuf), m_Input.GetString(), m_PlaceholderOffset);
 
@@ -428,7 +428,7 @@ bool CChat::OnInput(const IInput::CEvent &Event)
 			// insert the name
 			if(pCompletionString)
 			{
-				char aBuf[MAX_LINE_LENGTH];
+				char aBuf[MAX_CHAT_LENGTH];
 				// add part before the name
 				str_truncate(aBuf, sizeof(aBuf), m_Input.GetString(), m_PlaceholderOffset);
 
@@ -563,7 +563,7 @@ void CChat::OnMessage(int MsgType, void *pRawMsg)
 		/*
 		if(g_Config.m_ClCensorChat)
 		{
-			char aMessage[MAX_LINE_LENGTH];
+			char aMessage[MAX_CHAT_LENGTH];
 			str_copy(aMessage, pMsg->m_pMessage);
 			GameClient()->m_Censor.CensorMessage(aMessage);
 			AddLine(pMsg->m_ClientId, pMsg->m_Team, aMessage);
@@ -693,7 +693,7 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 			pEnd = pStrOld;
 		}
 
-		if(++Length >= MAX_LINE_LENGTH)
+		if(++Length >= MAX_CHAT_LENGTH)
 		{
 			*(const_cast<char *>(pStr)) = '\0';
 			break;
