@@ -4,13 +4,17 @@
 
 #include <base/str.h>
 
-#include <rust-bridge-chillerbot/unicode.h>
+int str_terminal_width(const char *pText)
+{
+	// YES THIS IS WRONG XD
+	return str_length(pText);
+}
 
 void str_pad_right_utf8(char *pStr, int size, int pad_len)
 {
 	char aBuf[2048];
 	str_copy(aBuf, pStr, sizeof(aBuf));
-	int full_width_length = str_width_unicode(pStr);
+	int full_width_length = str_terminal_width(pStr);
 	int c_len = str_length(pStr);
 	int pad_len_utf8_rust = pad_len - (full_width_length - c_len);
 

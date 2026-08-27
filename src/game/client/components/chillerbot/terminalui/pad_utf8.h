@@ -4,7 +4,9 @@
 
 #if defined(CONF_CURSES_CLIENT)
 
-#include <engine/shared/rust_version.h>
+// Get the amount of terminal columns this string will take up.
+// It supports multi byte utf-8 characters and also wide characters
+int str_terminal_width(const char *pText);
 
 /*
     Function: str_pad_right_utf8

@@ -11,8 +11,6 @@
 #include <game/client/components/controls.h>
 #include <game/client/gameclient.h>
 
-#include <rust-bridge-chillerbot/unicode.h>
-
 #if defined(CONF_CURSES_CLIENT)
 
 void CTerminalUI::RenderScoreboard(int Team, CTermWindow *pWin)

@@ -12,8 +12,6 @@
 #include <game/client/gameclient.h>
 #include <game/localization.h>
 
-#include <rust-bridge-chillerbot/unicode.h>
-
 #include <csignal>
 
 #if defined(CONF_CURSES_CLIENT)
@@ -225,7 +223,7 @@ void CTerminalUI::RenderServerList()
 
 		// MAX_MAP_LENGTH is 128
 		// so this could overflow
-		int MapLen = str_width_unicode(aMap);
+		int MapLen = str_terminal_width(aMap);
 		if(MapLen >= MAP_COL_SIZE)
 		{
 			aMap[MAP_COL_SIZE - 2] = '\0';

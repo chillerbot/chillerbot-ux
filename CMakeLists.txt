@@ -1124,8 +1124,6 @@ set(RUST_SRC
 )
 set(RUST_TARGETS engine_shared)
 
-include("cmake/chillerbot/chillerbot_rust.cmake")
-
 if(NOT CMAKE_OSX_ARCHITECTURES OR TARGET_OS STREQUAL "ios")
   set(RUST_OUTPUTS)
   foreach(rust_target ${RUST_TARGETS})
@@ -2985,14 +2983,6 @@ if(CLIENT)
     ${OGG_LIBRARIES}
 
     ${TARGET_STEAMAPI}
-    # chillerbot-ux kept rust_engine_shared here while ddnet removed it in
-    # https://github.com/ddnet/ddnet/pull/12677
-    # because of some compiler error i cba to fix
-    # /home/chiller/Desktop/git/chillerbot-ux/src/external/chillerbot_reply/include/chillerbot_reply/chillerbot_reply.h:3:10: fatal error: polynet/vmath.h: No such file or directory
-    #     3 | #include <polynet/vmath.h>
-    #       |          ^~~~~~~~~~~~~~~~~
-    # compilation terminated.
-    rust_chillerbot_rs
     chillerbot_reply
 
     ${PLATFORM_CLIENT_LIBS}
@@ -3038,7 +3028,6 @@ if(CLIENT)
       $<TARGET_OBJECTS:engine-gfx>
       $<TARGET_OBJECTS:engine-shared>
       $<TARGET_OBJECTS:game-shared>
-      $<TARGET_OBJECTS:rust-bridge-chillerbot>
       $<TARGET_OBJECTS:rust-bridge-shared>
       # tidy-alphabetical-end
     )
@@ -3067,7 +3056,6 @@ if(CLIENT)
       $<TARGET_OBJECTS:engine-gfx>
       $<TARGET_OBJECTS:engine-shared>
       $<TARGET_OBJECTS:game-shared>
-      $<TARGET_OBJECTS:rust-bridge-chillerbot>
       $<TARGET_OBJECTS:rust-bridge-shared>
       # tidy-alphabetical-end
     )
@@ -3299,11 +3287,6 @@ if(SERVER)
     ${MINIUPNPC_LIBRARIES}
     ${MYSQL_LIBRARIES}
     ${TARGET_ANTIBOT}
-    # TODO: ddnet moved the rust link somewhere else
-    #       https://github.com/ddnet/ddnet/pull/12677
-    #       should do the same in chillerbot-ux there is probably less conflict
-    #       surface in the other location
-    rust_chillerbot_rs
 
     ${LIBS}
   )
@@ -3348,7 +3331,6 @@ if(SERVER)
       $<TARGET_OBJECTS:engine-shared>
       $<TARGET_OBJECTS:game-shared>
       $<TARGET_OBJECTS:rust-bridge-shared>
-      $<TARGET_OBJECTS:rust-bridge-chillerbot> # chillerbot-ux
       # tidy-alphabetical-sort
     )
   endif()
@@ -3576,7 +3558,6 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     $<TARGET_OBJECTS:game-server-without-main>
     $<TARGET_OBJECTS:game-shared>
     $<TARGET_OBJECTS:rust-bridge-shared>
-    $<TARGET_OBJECTS:rust-bridge-chillerbot> # chillerbot-ux
     # tidy-alphabetical-end
     ${DEPS}
   )
@@ -3610,7 +3591,6 @@ add_library(rust_test STATIC EXCLUDE_FROM_ALL
   $<TARGET_OBJECTS:engine-gfx>
   $<TARGET_OBJECTS:engine-shared>
   $<TARGET_OBJECTS:game-shared>
-  $<TARGET_OBJECTS:rust-bridge-chillerbot>
   $<TARGET_OBJECTS:rust-bridge-shared>
   # tidy-alphabetical-end
   ${DEPS}
