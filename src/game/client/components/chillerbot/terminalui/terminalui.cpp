@@ -1255,21 +1255,21 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 	{
 		ServerBrowser()->Refresh(ServerBrowser()->GetCurrentType());
 	}
-	else if(Key == KEY_LEFT)
+	else if(Key == 260) // arrow left
 	{
 		g_InputWin.PrevMenuItem();
 		m_Input.m_TargetX = std::max(m_Input.m_TargetX - 10, -20);
 		if(m_RenderServerList)
 			SetServerBrowserPage(g_Config.m_UiPage - 1);
 	}
-	else if(Key == KEY_RIGHT)
+	else if(Key == 261) // arrow right
 	{
 		g_InputWin.NextMenuItem();
 		m_Input.m_TargetX = std::max(m_Input.m_TargetX + 10, 20);
 		if(m_RenderServerList)
 			SetServerBrowserPage(g_Config.m_UiPage + 1);
 	}
-	else if(Key == KEY_UP)
+	else if(Key == 259) // arrow up
 	{
 		m_Input.m_TargetY = std::max(m_Input.m_TargetY - 10, -20);
 		if(m_RenderServerList && m_NumServers)
@@ -1279,7 +1279,7 @@ int CTerminalUI::OnKeyPress(int Key, WINDOW *pWin)
 		gs_NeedLogDraw = true;
 		m_NewInput = true;
 	}
-	else if(Key == KEY_DOWN)
+	else if(Key == 258) // arrow down
 	{
 		m_Input.m_TargetY = std::max(m_Input.m_TargetY + 10, 20);
 		if(m_RenderServerList && m_NumServers)
