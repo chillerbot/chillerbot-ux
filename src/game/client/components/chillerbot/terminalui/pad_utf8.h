@@ -4,6 +4,14 @@
 
 #if defined(CONF_CURSES_CLIENT)
 
+#include <engine/external/uwidth/uwidth.h>
+
+#include <cstddef>
+
+// Convert string to array of codepoints
+// returns length of array or negative on error
+int str_to_uwidth_codepoints(const char *pStr, Uwidth_Code_Point *pOutArr, size_t OutArrMaxElements);
+
 // Get the amount of terminal columns this string will take up.
 // It supports multi byte utf-8 characters and also wide characters
 int str_terminal_width(const char *pText);

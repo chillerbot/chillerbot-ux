@@ -1,0 +1,9 @@
+.DS_Store
+.ruff_cache/
+.unicode-data/
+__pycache__/
+/uwidth_test
+*.dylib
+*.exe
+*.o
+*.so
