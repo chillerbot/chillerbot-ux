@@ -2992,7 +2992,6 @@ if(CLIENT)
     #     3 | #include <polynet/vmath.h>
     #       |          ^~~~~~~~~~~~~~~~~
     # compilation terminated.
-    rust_engine_shared
     rust_chillerbot_rs
     chillerbot_reply
 
@@ -3577,6 +3576,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     $<TARGET_OBJECTS:game-server-without-main>
     $<TARGET_OBJECTS:game-shared>
     $<TARGET_OBJECTS:rust-bridge-shared>
+    $<TARGET_OBJECTS:rust-bridge-chillerbot> # chillerbot-ux
     # tidy-alphabetical-end
     ${DEPS}
   )
