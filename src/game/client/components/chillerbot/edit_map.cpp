@@ -40,6 +40,7 @@
 
 void CEditMapJob::Run()
 {
+#if !defined(CONF_PLATFORM_IOS)
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "cd $HOME/.teeworlds/ && /usr/bin/python3 ./maps/tmp/set_gametile.py %s %s %d %d %d",
 		m_aSource, m_aDestination, m_X, m_Y, m_Index);
@@ -47,6 +48,7 @@ void CEditMapJob::Run()
 	{
 		dbg_msg("edit_map", "process failed: %s", aBuf);
 	}
+#endif
 	m_State = STATE_DONE;
 }
 
