@@ -330,6 +330,7 @@ public:
 
 	int m_Mode;
 	int m_Dialog;
+	bool m_CloseMapAfterSave = false;
 	char m_aTooltip[256] = "";
 
 	bool m_BrushColorEnabled;
