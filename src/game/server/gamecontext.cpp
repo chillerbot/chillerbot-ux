@@ -1973,11 +1973,11 @@ void CGameContext::TeehistorianRecordTeamFinish(int TeamId, int TimeTicks)
 	}
 }
 
-void CGameContext::TeehistorianRecordAuthLogin(int ClientId, int Level, const char *pAuthName)
+void CGameContext::TeehistorianRecordAuthLogin(int ClientId, const char *pRoleName, const char *pAuthName)
 {
 	if(m_TeeHistorianActive)
 	{
-		m_TeeHistorian.RecordAuthLogin(ClientId, Level, pAuthName);
+		m_TeeHistorian.RecordAuthLogin(ClientId, pRoleName, pAuthName);
 	}
 }
 
@@ -3395,6 +3395,8 @@ void CGameContext::ConSay(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConSetTeam(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!pSelf->m_pController)
+		return;
 	int Team = pResult->GetInteger(1);
 	if(!pSelf->m_pController->IsValidTeam(Team))
 	{
@@ -3617,7 +3619,7 @@ void CGameContext::ConForceVote(IConsole::IResult *pResult, void *pUserData)
 	}
 	else if(str_comp_nocase(pType, "kick") == 0)
 	{
-		if(!pSelf->Server()->ClientSupportsServerMaxClients(pResult->m_ClientId))
+		if(pResult->m_ClientId >= 0 && !pSelf->Server()->ClientSupportsServerMaxClients(pResult->m_ClientId))
 		{
 			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "Your client does not see the real client IDs of this server. Use a more recent DDNet client.");
 			return;
@@ -3642,7 +3644,7 @@ void CGameContext::ConForceVote(IConsole::IResult *pResult, void *pUserData)
 	}
 	else if(str_comp_nocase(pType, "spectate") == 0)
 	{
-		if(!pSelf->Server()->ClientSupportsServerMaxClients(pResult->m_ClientId))
+		if(pResult->m_ClientId >= 0 && !pSelf->Server()->ClientSupportsServerMaxClients(pResult->m_ClientId))
 		{
 			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "Your client does not see the real client IDs of this server. Use a more recent DDNet client.");
 			return;
@@ -4740,7 +4742,10 @@ void CGameContext::OnSetAuthed(int ClientId, int Level)
 	{
 		if(Level != AUTHED_NO)
 		{
-			m_TeeHistorian.RecordAuthLogin(ClientId, Level, Server()->GetAuthName(ClientId));
+			m_TeeHistorian.RecordAuthLogin(
+				ClientId,
+				CAuthManager::AuthLevelToRoleName(Level),
+				Server()->GetAuthName(ClientId));
 		}
 		else
 		{

@@ -4313,7 +4313,11 @@ void CClient::DemoRecorder_UpdateReplayRecorder()
 
 void CClient::DemoRecorder_AddDemoMarker(int Recorder)
 {
-	DemoRecorders()[Recorder].AddDemoMarker();
+	auto &DemoRecorder = DemoRecorders()[Recorder];
+	if(DemoRecorder.IsRecording())
+	{
+		DemoRecorder.AddDemoMarker();
+	}
 }
 
 CDemoRecorder (&CClient::DemoRecorders())[RECORDER_MAX]
