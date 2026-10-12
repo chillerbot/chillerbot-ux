@@ -177,7 +177,6 @@ void CGameClient::OnConsoleInit()
 					      &m_Statboard,
 					      &m_Motd,
 					      &m_Menus,
-					      &m_Tooltips,
 					      &m_KeyBinder,
 					      &m_GameConsole,
 
@@ -643,6 +642,7 @@ void CGameClient::OnConnected()
 		pComponent->OnMapLoad();
 		pComponent->OnReset();
 	}
+	Ui()->OnReset();
 
 	ConfigManager()->ResetGameSettings();
 	LoadMapSettings();
@@ -767,6 +767,7 @@ void CGameClient::OnReset()
 
 	for(auto &pComponent : m_vpAll)
 		pComponent->OnReset();
+	Ui()->OnReset();
 
 	Editor()->ResetMentions();
 	Editor()->ResetIngameMoved();
@@ -864,6 +865,7 @@ void CGameClient::OnRender()
 	// render all systems
 	for(auto &pComponent : m_vpAll)
 		pComponent->OnRender();
+	Ui()->OnRenderTooltip();
 
 	// clear all events/input for this frame
 	Input()->Clear();
@@ -1929,7 +1931,8 @@ void CGameClient::OnNewSnapshot(bool DummySwapped)
 
 					if(m_aClients[Item.m_Id].m_FinishTimeSeconds == FinishTime::UNSET)
 						HasUnsetDDNetFinishTimes = true;
-					else if(m_aClients[Item.m_Id].m_FinishTimeMillis % 10 != 0)
+					// Sub-second precision is only rendered for times under an hour in the scoreboard
+					else if(m_aClients[Item.m_Id].m_FinishTimeSeconds < 60 * 60 && m_aClients[Item.m_Id].m_FinishTimeMillis % 10 != 0)
 						HasTrueMillisecondFinishTimes = true;
 
 					if(Item.m_Id == m_Snap.m_LocalClientId && (m_aClients[Item.m_Id].m_Paused || m_aClients[Item.m_Id].m_Spec))

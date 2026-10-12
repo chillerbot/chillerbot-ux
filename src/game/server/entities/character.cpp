@@ -731,8 +731,18 @@ void CCharacter::OnPredictedInput(const CNetObj_PlayerInput *pNewInput)
 	if(mem_comp(&m_SavedInput, pNewInput, sizeof(CNetObj_PlayerInput)) != 0)
 		m_LastAction = Server()->Tick();
 
+	const int PrevTargetX = m_Input.m_TargetX;
+	const int PrevTargetY = m_Input.m_TargetY;
+
 	// copy new input
 	mem_copy(&m_Input, pNewInput, sizeof(m_Input));
+
+	// reset target due to spectator mode input not being in aim space
+	if(pNewInput->m_PlayerFlags & PLAYERFLAG_SPEC_CAM)
+	{
+		m_Input.m_TargetX = PrevTargetX;
+		m_Input.m_TargetY = PrevTargetY;
+	}
 
 	// it is not allowed to aim in the center
 	if(m_Input.m_TargetX == 0 && m_Input.m_TargetY == 0)
@@ -746,6 +756,13 @@ void CCharacter::OnDirectInput(const CNetObj_PlayerInput *pNewInput)
 	mem_copy(&m_LatestPrevInput, &m_LatestInput, sizeof(m_LatestInput));
 	mem_copy(&m_LatestInput, pNewInput, sizeof(m_LatestInput));
 	m_NumInputs++;
+
+	// reset target due to spectator mode input not being in aim space
+	if(pNewInput->m_PlayerFlags & PLAYERFLAG_SPEC_CAM)
+	{
+		m_LatestInput.m_TargetX = m_LatestPrevInput.m_TargetX;
+		m_LatestInput.m_TargetY = m_LatestPrevInput.m_TargetY;
+	}
 
 	// it is not allowed to aim in the center
 	if(m_LatestInput.m_TargetX == 0 && m_LatestInput.m_TargetY == 0)
@@ -1616,17 +1633,15 @@ void CCharacter::SetTimeCheckpoint(int TimeCheckpoint)
 				if(Server()->IsSixup(m_pPlayer->GetCid()))
 				{
 					protocol7::CNetMsg_Sv_Checkpoint Msg;
-					float Diff = (m_aCurrentTimeCp[m_LastTimeCp] - pData->m_aBestTimeCp[m_LastTimeCp]) * 1000;
-					Msg.m_Diff = (int)Diff;
+					Msg.m_Diff = static_cast<int>(time_milliseconds_from_seconds(m_aCurrentTimeCp[m_LastTimeCp]) - time_milliseconds_from_seconds(pData->m_aBestTimeCp[m_LastTimeCp]));
 					Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, m_pPlayer->GetCid());
 				}
 				else
 				{
 					CNetMsg_Sv_DDRaceTime Msg;
-					Msg.m_Time = (int)(m_Time * 100.0f);
+					Msg.m_Time = static_cast<int>(time_even_centiseconds_from_seconds(m_Time));
 					Msg.m_Finish = 0;
-					float Diff = (m_aCurrentTimeCp[m_LastTimeCp] - pData->m_aBestTimeCp[m_LastTimeCp]) * 100;
-					Msg.m_Check = (int)Diff;
+					Msg.m_Check = static_cast<int>(time_even_centiseconds_from_seconds(m_aCurrentTimeCp[m_LastTimeCp]) - time_even_centiseconds_from_seconds(pData->m_aBestTimeCp[m_LastTimeCp]));
 					Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, m_pPlayer->GetCid());
 				}
 			}
