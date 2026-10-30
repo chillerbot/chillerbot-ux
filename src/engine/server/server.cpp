@@ -625,6 +625,8 @@ int CServer::Init()
 
 	m_CurrentGameTick = MIN_TICK;
 
+	m_StartTime = time_get();
+
 	m_AnnouncementLastLine = -1;
 	std::fill(std::begin(m_aPrevStates), std::end(m_aPrevStates), 0);
 
@@ -3579,44 +3581,31 @@ int CServer::Run()
 				GameServer()->OnPreTickTeehistorian();
 				UpdateDebugDummies(false);
 
-				for(int c = 0; c < MAX_CLIENTS; c++)
+				const CClient::CInput *apInput[MAX_CLIENTS] = {};
+				for(int ClientId = 0; ClientId < MAX_CLIENTS; ClientId++)
 				{
-					if(m_aClients[c].m_State != CClient::STATE_INGAME)
+					if(m_aClients[ClientId].m_State != CClient::STATE_INGAME)
 						continue;
-					bool ClientHadInput = false;
-					for(auto &Input : m_aClients[c].m_aInputs)
+					for(const auto &Input : m_aClients[ClientId].m_aInputs)
 					{
 						if(Input.m_GameTick == Tick() + 1)
 						{
-							GameServer()->OnClientPredictedEarlyInput(c, Input.m_aData);
-							ClientHadInput = true;
+							apInput[ClientId] = &Input;
 							break;
 						}
 					}
-					if(!ClientHadInput)
-						GameServer()->OnClientPredictedEarlyInput(c, nullptr);
+					GameServer()->OnClientPredictedEarlyInput(ClientId, apInput[ClientId] == nullptr ? nullptr : apInput[ClientId]->m_aData);
 				}
 
 				m_CurrentGameTick++;
 				NewTicks++;
 
 				// apply new input
-				for(int c = 0; c < MAX_CLIENTS; c++)
+				for(int ClientId = 0; ClientId < MAX_CLIENTS; ClientId++)
 				{
-					if(m_aClients[c].m_State != CClient::STATE_INGAME)
+					if(m_aClients[ClientId].m_State != CClient::STATE_INGAME)
 						continue;
-					bool ClientHadInput = false;
-					for(auto &Input : m_aClients[c].m_aInputs)
-					{
-						if(Input.m_GameTick == Tick())
-						{
-							GameServer()->OnClientPredictedInput(c, Input.m_aData);
-							ClientHadInput = true;
-							break;
-						}
-					}
-					if(!ClientHadInput)
-						GameServer()->OnClientPredictedInput(c, nullptr);
+					GameServer()->OnClientPredictedInput(ClientId, apInput[ClientId] == nullptr ? nullptr : apInput[ClientId]->m_aData);
 				}
 
 				GameServer()->OnTick();
@@ -4137,6 +4126,16 @@ void CServer::ConShutdown(IConsole::IResult *pResult, void *pUser)
 	{
 		str_copy(pThis->m_aShutdownReason, pReason);
 	}
+}
+
+void CServer::ConUptime(IConsole::IResult *pResult, void *pUser)
+{
+	CServer *pThis = static_cast<CServer *>(pUser);
+	// str_time expects centiseconds, convert directly to avoid overflow
+	const int64_t UptimeCentisecs = (time_get() - pThis->m_StartTime) / (time_freq() / 100);
+	char aTime[64];
+	str_time(UptimeCentisecs, ETimeFormat::DAYS, aTime, sizeof(aTime));
+	log_info("server", "Uptime %s", aTime);
 }
 
 void CServer::DemoRecorder_HandleAutoStart()
@@ -4741,6 +4740,7 @@ void CServer::RegisterCommands()
 	Console()->Register("kick", "v[id] ?r[reason]", CFGFLAG_SERVER, ConKick, this, "Kick player with specified id for any reason");
 	Console()->Register("status", "?r[name]", CFGFLAG_SERVER, ConStatus, this, "List players containing name or all players");
 	Console()->Register("shutdown", "?r[reason]", CFGFLAG_SERVER, ConShutdown, this, "Shut down");
+	Console()->Register("uptime", "", CFGFLAG_SERVER, ConUptime, this, "Show server uptime");
 	Console()->Register("logout", "", CFGFLAG_SERVER, ConLogout, this, "Logout of rcon");
 	Console()->Register("show_ips", "?i[show]", CFGFLAG_SERVER, ConShowIps, this, "Show IP addresses in rcon commands (1 = on, 0 = off)");
 	Console()->Register("hide_auth_status", "?i[hide]", CFGFLAG_SERVER, ConHideAuthStatus, this, "Opt out of spectator count and hide auth status to non-authed players (1 = hidden, 0 = shown)");

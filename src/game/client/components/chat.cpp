@@ -200,6 +200,11 @@ void CChat::ConEcho(IConsole::IResult *pResult, void *pUserData)
 	((CChat *)pUserData)->Echo(pResult->GetString(0));
 }
 
+void CChat::ConEchoConfig(IConsole::IResult *pResult, void *pUserData)
+{
+	((CChat *)pUserData)->EchoConfig(pResult->GetString(0));
+}
+
 void CChat::ConClearChat(IConsole::IResult *pResult, void *pUserData)
 {
 	((CChat *)pUserData)->ClearLines();
@@ -232,6 +237,21 @@ void CChat::Echo(const char *pString)
 	AddLine(CLIENT_MSG, 0, pString);
 }
 
+void CChat::EchoConfig(const char *pName)
+{
+	char aBuf[2048];
+	const SConfigVariable *pVariable = GameClient()->ConfigManager()->FindVariable(pName);
+	if(pVariable == nullptr)
+	{
+		str_format(aBuf, sizeof(aBuf), "Invalid config variable: %s", pName);
+	}
+	else
+	{
+		pVariable->SerializeHumanReadable(aBuf, sizeof(aBuf));
+	}
+	Echo(aBuf);
+}
+
 void CChat::OnConsoleInit()
 {
 	Console()->Register("say", "r[message]", CFGFLAG_CLIENT, ConSay, this, "Say in chat");
@@ -239,6 +259,7 @@ void CChat::OnConsoleInit()
 	Console()->Register("chat", "s['team'|'all'] ?r[message]", CFGFLAG_CLIENT, ConChat, this, "Enable chat with all/team mode");
 	Console()->Register("+show_chat", "", CFGFLAG_CLIENT, ConShowChat, this, "Show chat");
 	Console()->Register("echo", "r[message]", CFGFLAG_CLIENT | CFGFLAG_STORE, ConEcho, this, "Echo the text in chat window");
+	Console()->Register("echo_config", "r[config]", CFGFLAG_CLIENT | CFGFLAG_STORE, ConEchoConfig, this, "Echo the config value in chat window");
 	Console()->Register("clear_chat", "", CFGFLAG_CLIENT | CFGFLAG_STORE, ConClearChat, this, "Clear chat messages");
 }
 
@@ -1314,11 +1335,7 @@ void CChat::OnRender()
 				float OffsetTeeY = TeeSize / 2.0f;
 				float FullHeightMinusTee = RowHeight - TeeSize;
 
-				const CAnimState *pIdleState = CAnimState::GetIdle();
-				vec2 OffsetToMid;
-				CRenderTools::GetRenderTeeOffsetToRenderedTee(pIdleState, &TeeRenderInfo, OffsetToMid);
-				vec2 TeeRenderPos(x + (RealMsgPaddingX + TeeSize) / 2.0f, y + OffsetTeeY + FullHeightMinusTee / 2.0f + OffsetToMid.y);
-				RenderTools()->RenderTee(pIdleState, &TeeRenderInfo, EMOTE_NORMAL, vec2(1, 0.1f), TeeRenderPos, Blend);
+				RenderTools()->RenderIdleTeeAtCenter(&TeeRenderInfo, vec2(x + (RealMsgPaddingX + TeeSize) / 2.0f, y + OffsetTeeY + FullHeightMinusTee / 2.0f), EMOTE_NORMAL, vec2(1, 0.1f), Blend);
 			}
 
 			const ColorRGBA TextColor = TextRender()->DefaultTextColor().WithMultipliedAlpha(Blend);

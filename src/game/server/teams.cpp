@@ -1282,7 +1282,8 @@ void CGameTeams::OnCharacterSpawn(int ClientId)
 	if(GetSaving(Team))
 		return;
 
-	if(!IsValidTeamNumber(Team) || !m_aTeamLocked[Team])
+	if(!IsValidTeamNumber(Team) || Team == TEAM_FLOCK || g_Config.m_SvTeam == SV_TEAM_FORCED_SOLO ||
+		(!m_aTeamLocked[Team] && !m_aTeamFlock[Team] && m_aTeamState[Team] > ETeamState::OPEN))
 	{
 		if(g_Config.m_SvTeam != SV_TEAM_FORCED_SOLO)
 			SetForceCharacterTeam(ClientId, TEAM_FLOCK);
@@ -1335,7 +1336,7 @@ void CGameTeams::OnCharacterDeath(int ClientId, int Weapon)
 				{
 					for(int ClientId1 = 0; ClientId1 < MAX_CLIENTS; ClientId1++)
 					{
-						if(m_Core.Team(ClientId1) == Team)
+						if(ClientId1 != ClientId && m_Core.Team(ClientId1) == Team)
 						{
 							CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId1];
 							if(pPlayer && pPlayer->IsPaused() == -1 * CPlayer::PAUSE_SPEC)
@@ -1354,6 +1355,11 @@ void CGameTeams::OnCharacterDeath(int ClientId, int Weapon)
 					GameServer()->SendChatTeam(Team, "This team was disbanded because there are more players than allowed in the team.");
 					SetTeamLock(Team, false);
 					KillTeam(Team, Weapon == WEAPON_SELF ? ClientId : -1, ClientId);
+					for(int MemberId = 0; MemberId < MAX_CLIENTS; MemberId++)
+					{
+						if(m_Core.Team(MemberId) == Team && GameServer()->m_apPlayers[MemberId])
+							SetForceCharacterTeam(MemberId, TEAM_FLOCK);
+					}
 					return;
 				}
 
